@@ -1,5 +1,6 @@
-from . import prepare as module
 import pytest
+
+from . import prepare as module
 
 
 @pytest.mark.parametrize("hostname,expected_is_valid", [
