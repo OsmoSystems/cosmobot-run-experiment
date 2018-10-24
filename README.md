@@ -30,4 +30,4 @@ sudo python3.6 setup.py install
 pi@pi-cam-CF60:~/cosmobot-run-experiment $ run_experiment --help
 ```
 
-Images will be saved in the `~/camera-sensor-output` folder and automatically synced to s3
+Images will be saved in the `~/camera-sensor-output` folder and automatically synced to s3.
