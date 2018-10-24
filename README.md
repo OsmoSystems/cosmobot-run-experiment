@@ -16,14 +16,8 @@ pi@pi-cam-CF60:~/cosmobot-run-experiment $ git pull
 
 3. Install the python package:
 ```
-sudo python3.6 setup.py install
+sudo pip3 install -e .
 ```
-
-(If this fails with an error about setuptools, you may need to pip install setuptools first:
-    ```
-    pi@pi-cam-CF60:~/cosmobot-run-experiment $ pip3.6 install setuptools
-    ```
-)
 
 4. Run your experiment using the `run_experiment` console script, passing in appropriate args. To see which arguments are available:
 ```
