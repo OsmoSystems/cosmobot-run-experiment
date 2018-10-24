@@ -2,26 +2,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='osmo_camera',
+    name='cosmobot_run_experiment',
     version='0.0.1',
     author='Osmo Systems',
     author_email='dev@osmobot.com',
-    description='Prototype code for an osmobot camera sensor',
-    url='https://www.github.com/osmosystems/camera-sensor-prototype',
+    description='Script for running an image-collecting experiment on a Raspberry Pi',
+    url='https://github.com/OsmoSystems/cosmobot-run-experiment.git',
     packages=find_packages(),
     entry_points={
-        'console_scripts': ['run_experiment = osmo_camera.experiment:run_experiment']
+        'console_scripts': ['run_experiment = cosmobot_run_experiment.experiment:run_experiment']
     },
-    install_requires=[
-        'boto',
-        'ipywidgets',
-        'numpy',
-        'matplotlib',
-        'opencv-python',
-        'pandas',
-        'Pillow',
-        'plotly >= 3, < 4',
-        'rawpy',
-    ],
+    install_requires=[],
     include_package_data=True
 )

@@ -1,47 +1,33 @@
-# Terminology
-* `RAW image file` - A JPEG+RAW image file as directly captured by a PiCam v2, saved as a .JPEG
-* `.DNG image file` - An RAW image file converted to the Adobe Digital Negative (.DNG) format
-* `RGB image` - A 3D numpy.ndarray: a 2D array of "pixels" (row-major), where each "pixel" is a 1D array of [red, green, blue] channels with a value between 0 and 1. This is our default format for interacting with images. An example 4-pixel (2x2) image would have this shape:
-
-```
-[
- [ [r1, g1, b1], [r2, g2, b2] ],
- [ [r3, g3, b3], [r4, g4, b4] ]
-]
-```
-
-* `ROI` - An `RGB image` that has been cropped to a specific Region of Interest (ROI).
-* `ROI definition` - A 4-tuple in the format provided by cv2.selectROI: (start_col, start_row, cols, rows), used to define a Region of Interest (ROI).
-
+# Pre-reqs
+This assumes you are ssh'd into a Raspberry Pi that already has the latest cosmobot image on it. 
 
 # Usage
-The function `process_experiment` is meant to be run from a local Jupyter Notebook.
-
-## Pre-reqs
-Some set up is required before you can run `process_experiment` locally. These directions are very minimal - check with software team if you have questions or run into problems.
-
-### awscli
-Install:
-1. Follow instructions here: https://docs.aws.amazon.com/cli/latest/userguide/installing.html
-Note: I had to use `pip` and not `pip3` to successfully install awscli
-2. Run `aws --version` from the command line to confirm it's installed correctly
-
-Set up credentials:
-1. Generate an AWS access key
-2. Run `aws configure` and put in the access key ID and secret key
-3. Confirm your credentials are working by running `aws s3 ls` - you should get a list of directories
-
-### raspiraw
-1. Clone our forked repo:
+To use this code to run an experiment on a Raspberry Pi:
+1. Navigate to where this repo is installed on the Pi:
 ```
-git clone https://github.com/OsmoSystems/raspiraw.git
+pi@pi-cam-CF60:~ $ cd cosmobot-run-experiment/
+pi@pi-cam-CF60:~/cosmobot-run-experiment $
 ```
 
-2. Navigate to that directory and run `make`, e.g.:
+2. Get the latest code (as appropriate) using git pull:
 ```
-~$ cd ~/osmo/raspiraw
-~/osmo/raspiraw$ make
+pi@pi-cam-CF60:~/cosmobot-run-experiment $ git pull
 ```
 
-## Running
-See this example jupyter notebook: "process_experiment - for Cosmobot experiments.ipynb" in the Jupyter Snippets folder: https://drive.google.com/drive/folders/1A-Rlb-VYTwQ6Tl3sm12eR-cnmCHbj6UP
+3. Install the python package:
+```
+sudo python3.6 setup.py install
+```
+
+(If this fails with an error about setuptools, you may need to pip install setuptools first:
+    ```
+    pi@pi-cam-CF60:~/cosmobot-run-experiment $ pip3.6 install setuptools
+    ```
+)
+
+4. Run your experiment using the `run_experiment` console script, passing in appropriate args. To see which arguments are available:
+```
+pi@pi-cam-CF60:~/cosmobot-run-experiment $ run_experiment --help
+```
+
+Images will be saved in the `~/camera-sensor-output` folder and automatically synced to s3.
