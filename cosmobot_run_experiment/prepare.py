@@ -50,7 +50,7 @@ def _parse_args():
     arg_parser = argparse.ArgumentParser(description='''
         The --variant flag passes through parameters directly to raspistill. Some relevant parameters:
             "-ISO" should be a value from 100-800, in increments of 100
-            "-ss" (Shutter Speed) is in us, and is undefined above 6s (-ss 6000000)
+            "-ss" (Shutter Speed) is in microseconds, and is undefined above 6s (-ss 6000000)
             "-q 100 -awb off -awbg 1.307,1.615" adding these Pagnutti parameters optimize the jpeg for visual inspection
 
     ''')
