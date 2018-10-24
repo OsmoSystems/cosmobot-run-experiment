@@ -26,8 +26,8 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params='" -ss 100 -ISO 100"'),
-            module.ExperimentVariant(capture_params='" -ss 200 -ISO 100"')
+            module.ExperimentVariant(capture_params='" -ss 100 -ISO 100 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 200 -ISO 100 -q 100 -awb off -awbg 1.307,1.615"')
         ]
 
         actual = module.get_experiment_variants(args)
@@ -43,10 +43,10 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params='" -ss 100 -ISO 100"'),
-            module.ExperimentVariant(capture_params='" -ss 100 -ISO 200"'),
-            module.ExperimentVariant(capture_params='" -ss 200 -ISO 100"'),
-            module.ExperimentVariant(capture_params='" -ss 200 -ISO 200"')
+            module.ExperimentVariant(capture_params='" -ss 100 -ISO 100 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 100 -ISO 200 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 200 -ISO 100 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 200 -ISO 200 -q 100 -awb off -awbg 1.307,1.615"')
         ]
 
         actual = module.get_experiment_variants(args)
@@ -63,10 +63,10 @@ class TestGetExperimentVariants():
 
         expected = [
             module.ExperimentVariant(capture_params=' -ss 4000000 -ISO 100'),
-            module.ExperimentVariant(capture_params='" -ss 100 -ISO 100"'),
-            module.ExperimentVariant(capture_params='" -ss 100 -ISO 200"'),
-            module.ExperimentVariant(capture_params='" -ss 200 -ISO 100"'),
-            module.ExperimentVariant(capture_params='" -ss 200 -ISO 200"')
+            module.ExperimentVariant(capture_params='" -ss 100 -ISO 100 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 100 -ISO 200 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 200 -ISO 100 -q 100 -awb off -awbg 1.307,1.615"'),
+            module.ExperimentVariant(capture_params='" -ss 200 -ISO 200 -q 100 -awb off -awbg 1.307,1.615"')
         ]
 
         actual = module.get_experiment_variants(args)
@@ -99,7 +99,7 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 1500000 -ISO 100')
+            module.ExperimentVariant(capture_params=' -ss 1500000 -ISO 100 -q 100 -awb off -awbg 1.307,1.615')
         ]
 
         actual = module.get_experiment_variants(args)
