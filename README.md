@@ -3,6 +3,12 @@
 ## Pre-reqs
 This assumes you are ssh'd into a Raspberry Pi that already has the latest cosmobot image on it (with Python 3.6 already installed).
 
+## SSH
+Do this by finding the IP of the pi and ssh pi@[IP]
+```
+you@yourlaptop ~ $ ssh pi@[IP]
+```
+
 ## Setup
 Depending on what image you have, this might already be done for you.
 

@@ -47,22 +47,36 @@ def _parse_args():
      Returns:
         dictionary of arguments parsed from the command line
     '''
-    arg_parser = argparse.ArgumentParser()
+    arg_parser = argparse.ArgumentParser(description='''
+        The --variant flag passes through parameters directly to raspistill. Some relevant parameters:
+            "-ISO" should be a value from 100-800, in increments of 100
+            "-ss" (Shutter Speed) is in us, and is undefined above 6s (-ss 6000000)
+            "-q 100 -awb off -awbg 1.307,1.615" adding these Pagnutti parameters optimize the jpeg for visual inspection
+
+    ''')
 
     arg_parser.add_argument('--name', required=True, type=str, help='name for experiment')
     arg_parser.add_argument('--interval', required=True, type=int, help='interval between image capture in seconds')
-    arg_parser.add_argument('--duration', required=False, type=int, default=None, help='Duration in seconds. Optional.')
-    arg_parser.add_argument('--variant', required=False, type=str, default=[], action='append',
-                            help='variants of camera capture parameters to use during experiment.'
-                            'Ex: --variant " -ss 500000 -ISO 100" --variant " -ss 100000 -ISO 200" ...'
-                            f'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used')
+    arg_parser.add_argument(
+        '--duration', required=False, type=int, default=None,
+        help='Duration in seconds. Optional: if not provided, will run indefinitely.'
+    )
+    arg_parser.add_argument(
+        '--variant', required=False, type=str, default=[], action='append',
+        help='variants of camera capture parameters to use during experiment.'
+        'Ex: --variant " -ss 500000 -ISO 100" --variant " -ss 100000 -ISO 200" ...'
+        f'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used'
+    )
 
-    arg_parser.add_argument("--exposures", required=False, type=int, nargs='+', default=None,
-                            help="list of exposures to iterate capture through ex. --exposures 1000000, 2000000")
-    arg_parser.add_argument("--isos", required=False, type=int, nargs='+', default=None,
-                            help='List of isos to iterate capture through ex. --isos 100, 200 . \n'
-                            f' If not provided and --exposures is provided, ISO {DEFAULT_ISO} will'
-                            ' be used when iterating over exposures.')
+    arg_parser.add_argument(
+        '--exposures', required=False, type=int, nargs='+', default=None,
+        help='List of exposures to iterate capture through ex. "--exposures 1000000, 2000000"'
+    )
+    arg_parser.add_argument(
+        '--isos', required=False, type=int, nargs='+', default=None,
+        help='List of isos to iterate capture through ex. "--isos 100, 200"\n'
+        f'If not provided and --exposures is provided, ISO {DEFAULT_ISO} will be used when iterating over exposures.'
+    )
 
     return vars(arg_parser.parse_args())
 
