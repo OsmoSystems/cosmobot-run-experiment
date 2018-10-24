@@ -13,7 +13,9 @@ from .file_structure import create_directory, iso_datetime_for_filename, get_bas
 
 DEFAULT_ISO = 100
 DEFAULT_EXPOSURE = 1500000
-DEFAULT_CAPTURE_PARAMS = f' -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO}'
+AWB_QUALITY_CAPTURE_PARAMS = '-q 100 -awb off -awbg 1.307,1.615'
+DEFAULT_CAPTURE_PARAMS = f' -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO} {AWB_QUALITY_CAPTURE_PARAMS}'
+
 
 ExperimentConfiguration = namedtuple(
     'ExperimentConfiguration',
@@ -91,7 +93,7 @@ def get_experiment_variants(args):
     if args['exposures']:
         isos = args['isos'] or [DEFAULT_ISO]
         variants.extend(
-            ExperimentVariant(capture_params=f'" -ss {exposure} -ISO {iso}"')
+            ExperimentVariant(capture_params=f'" -ss {exposure} -ISO {iso} {AWB_QUALITY_CAPTURE_PARAMS}"')
             for exposure in args['exposures']
             for iso in isos
         )
