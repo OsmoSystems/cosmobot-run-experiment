@@ -15,7 +15,6 @@ DEFAULT_ISO = 100
 DEFAULT_EXPOSURE = 1500000
 DEFAULT_CAPTURE_PARAMS = f' -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO}'
 
-
 ExperimentConfiguration = namedtuple(
     'ExperimentConfiguration',
     [
