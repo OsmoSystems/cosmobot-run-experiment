@@ -1,7 +1,6 @@
 import argparse
 import sys
 import os
-import re
 import yaml
 from socket import gethostname
 from datetime import datetime, timedelta
@@ -102,6 +101,16 @@ def get_experiment_variants(args):
     return variants
 
 
+def _get_mac_address():
+    integer_mac_address = get_mac()  # Returns as an integer
+    hex_mac_address = hex(integer_mac_address).upper()
+    return hex_mac_address[2:]  # Hex is in form '0X<mac address' - trim the '0X'
+
+
+def _get_mac_last_4():
+    return _get_mac_address()[-4:]
+
+
 def get_experiment_configuration():
     '''Return a constructed named experimental configuration in a namedtuple.
      Args:
@@ -115,8 +124,8 @@ def get_experiment_configuration():
     duration = args['duration']
     start_date = datetime.now()
     end_date = start_date if duration is None else start_date + timedelta(seconds=duration)
-    mac_address = hex(get_mac()).upper()
-    mac_last_4 = str(mac_address)[-4:]
+    mac_address = _get_mac_address()
+    mac_last_4 = _get_mac_last_4()
 
     iso_ish_datetime = iso_datetime_for_filename(start_date)
     experiment_directory_name = f'{iso_ish_datetime}-Pi{mac_last_4}-{args["name"]}'
@@ -156,7 +165,8 @@ def hostname_is_valid(hostname):
      Returns:
         Boolean: is hostname valid
     '''
-    return re.search('^pi-cam-[0-9A-F]{4}$', hostname) is not None
+    mac_last_4 = _get_mac_last_4()
+    return hostname == f'pi-cam-{mac_last_4}'
 
 
 def _git_hash():
