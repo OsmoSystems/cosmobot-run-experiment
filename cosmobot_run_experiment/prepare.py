@@ -90,7 +90,7 @@ def get_experiment_variants(args):
     if args['exposures']:
         isos = args['isos'] or [DEFAULT_ISO]
         variants.extend(
-            ExperimentVariant(capture_params=f'" -ss {exposure} -ISO {iso}"')
+            ExperimentVariant(capture_params=f' -ss {exposure} -ISO {iso}')
             for exposure in args['exposures']
             for iso in isos
         )
