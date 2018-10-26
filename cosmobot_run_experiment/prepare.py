@@ -1,12 +1,13 @@
 import argparse
 import sys
 import os
-import yaml
 from socket import gethostname
 from datetime import datetime, timedelta
 from subprocess import check_output, CalledProcessError
 from uuid import getnode as get_mac
 from collections import namedtuple
+
+import yaml
 
 from .file_structure import create_directory, iso_datetime_for_filename, get_base_output_path
 
