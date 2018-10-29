@@ -12,6 +12,8 @@ setup(
     entry_points={
         'console_scripts': ['run_experiment = cosmobot_run_experiment.experiment:run_experiment']
     },
-    install_requires=[],
+    install_requires=[
+        'pyyaml',
+    ],
     include_package_data=True
 )

@@ -48,8 +48,7 @@ sudo pip3 install -e .
 ## Run
 Run your experiment using the `run_experiment` console script, passing in appropriate args (use --help to see available args).
 ```
-pi@pi-cam-CF60:~ $ cd ~/cosmobot-run-experiment/
-pi@pi-cam-CF60:~/cosmobot-run-experiment $ run_experiment --help
+pi@pi-cam-CF60:~ $ run_experiment --help
 ```
 
 Images will be saved in the `~/camera-sensor-output` folder and automatically synced to s3.
