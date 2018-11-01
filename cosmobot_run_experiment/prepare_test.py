@@ -19,7 +19,8 @@ class TestParseArgs:
             'duration': 100,
             'variant': ['variant1', 'variant2'],
             'exposures': [20, 30],
-            'isos': [45, 55]
+            'isos': [45, 55],
+            'skip_sync': False,
         }
         assert module._parse_args(args_in) == expected_args_out
 

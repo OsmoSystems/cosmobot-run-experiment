@@ -1,5 +1,6 @@
-import os
 from datetime import datetime, timedelta
+import os
+import time
 
 from .camera import capture
 from .file_structure import iso_datetime_for_filename
@@ -39,6 +40,7 @@ def perform_experiment(configuration):
 
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
+            time.sleep(0.01)  # No need to totally peg the CPU
             continue
 
         # next_capture_time is agnostic to the time needed for capture and writing of image
@@ -58,7 +60,8 @@ def perform_experiment(configuration):
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
             # If a sync is currently occuring, this is a no-op.
-            sync_directory_in_separate_process(configuration.experiment_directory_path)
+            if not configuration.skip_sync:
+                sync_directory_in_separate_process(configuration.experiment_directory_path)
 
     end_experiment(configuration, quit_message='Experiment completed successfully!')
 
@@ -68,13 +71,14 @@ def end_experiment(experiment_configuration, quit_message):
     # If a file(s) is written after a sync process begins it does not get added to the list to sync.
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
     # remaining images. To that end, we end any existing sync process and start a new one
-    end_syncing_process()
-    sync_directory_in_separate_process(experiment_configuration.experiment_directory_path, wait_for_finish=True)
+    if not experiment_configuration.skip_sync:
+        end_syncing_process()
+        sync_directory_in_separate_process(experiment_configuration.experiment_directory_path, wait_for_finish=True)
     quit(quit_message)
 
 
-def run_experiment():
-    configuration = get_experiment_configuration()
+def run_experiment(cli_args=None):
+    configuration = get_experiment_configuration(cli_args)
 
     if not hostname_is_correct(configuration.hostname):
         quit_message = f'"{configuration.hostname}" is not a valid hostname.'

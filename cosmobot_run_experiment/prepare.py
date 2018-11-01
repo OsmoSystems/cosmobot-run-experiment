@@ -29,6 +29,7 @@ ExperimentConfiguration = namedtuple(
         'git_hash',  # git hash of camera-sensor-prototype repo
         'hostname',  # hostname of the device the experient was executed on
         'mac',  # mac address
+        'skip_sync',  # whether to skip syncing to s3
     ]
 )
 
@@ -43,7 +44,8 @@ ExperimentVariant = namedtuple(
 def _parse_args(args=None):
     '''Extract and verify arguments passed in from the command line
      Args:
-        args: list of command-line argument strings. If not provided, will get args from the command line
+        args: list of command-line argument strings.
+            If None or not provided, will get args from the command line invocation
      Returns:
         dictionary of arguments parsed from the command line
     '''
@@ -56,9 +58,9 @@ def _parse_args(args=None):
     ''')
 
     arg_parser.add_argument('--name', required=True, type=str, help='name for experiment')
-    arg_parser.add_argument('--interval', required=True, type=int, help='interval between image capture in seconds')
+    arg_parser.add_argument('--interval', required=True, type=float, help='interval between image capture in seconds')
     arg_parser.add_argument(
-        '--duration', required=False, type=int, default=None,
+        '--duration', required=False, type=float, default=None,
         help='Duration in seconds. Optional: if not provided, will run indefinitely.'
     )
     arg_parser.add_argument(
@@ -76,6 +78,11 @@ def _parse_args(args=None):
         '--isos', required=False, type=int, nargs='+', default=None,
         help='List of isos to iterate capture through ex. "--isos 100 200"\n'
         f'If not provided and --exposures is provided, ISO {DEFAULT_ISO} will be used when iterating over exposures.'
+    )
+    arg_parser.add_argument(
+        '--skip-sync',
+        action='store_true',
+        help='If provided, skips syncing files to s3.'
     )
 
     return vars(arg_parser.parse_args(args))
@@ -112,15 +119,16 @@ def _get_mac_last_4():
     return _get_mac_address()[-4:]
 
 
-def get_experiment_configuration():
+def get_experiment_configuration(cli_args=None):
     '''Return a constructed named experimental configuration in a namedtuple.
      Args:
-        None, but retrieves arguments from the command line using _parse_args
+        cli_args: list of command-line argument strings.
+            If None or not provided, will get args from the command line invocation
      Returns:
         an instance of ExperimentConfiguration namedtuple
 
     '''
-    args = _parse_args()
+    args = _parse_args(cli_args)
 
     duration = args['duration']
     start_date = datetime.now()
@@ -145,7 +153,8 @@ def get_experiment_configuration():
         git_hash=_git_hash(),
         hostname=gethostname(),
         mac=mac_address,
-        variants=variants
+        variants=variants,
+        skip_sync=args['skip_sync'],
     )
 
     return experiment_configuration
