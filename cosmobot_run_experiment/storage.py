@@ -1,3 +1,4 @@
+import math
 from shutil import disk_usage
 
 
@@ -6,15 +7,20 @@ from shutil import disk_usage
 IMAGE_SIZE_IN_BYTES = 1600000
 
 
-def _free_space_for_image_count(image_count):
+def _get_free_disk_space_bytes():
+    _, _, free = disk_usage('/')
+    return free
+
+
+def _is_there_free_space_for_image_count(image_count):
     '''Check if there is enough space with the storage device
      Args:
         image_count: how many images will be stored
      Returns:
         Boolean: True/False - is there space to store the experiment
     '''
-    _, _, free = disk_usage('/')
-    return free > IMAGE_SIZE_IN_BYTES * image_count
+    free = _get_free_disk_space_bytes()
+    return free >= IMAGE_SIZE_IN_BYTES * image_count
 
 
 def how_many_images_with_free_space():
@@ -24,8 +30,8 @@ def how_many_images_with_free_space():
      Returns:
         Boolean: How many images can be stored
     '''
-    _, _, free = disk_usage('/')
-    return free / IMAGE_SIZE_IN_BYTES
+    free = _get_free_disk_space_bytes()
+    return math.floor(free / IMAGE_SIZE_IN_BYTES)
 
 
 def free_space_for_one_image():
@@ -35,4 +41,4 @@ def free_space_for_one_image():
      Returns:
         Boolean: True/False - is there space to store one image
     '''
-    return _free_space_for_image_count(1)
+    return _is_there_free_space_for_image_count(1)
