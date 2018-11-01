@@ -6,6 +6,10 @@ from .s3 import sync_to_s3
 _SYNC_PROCESS = None
 
 
+def _is_sync_process_running():
+    return _SYNC_PROCESS and _SYNC_PROCESS.is_alive()
+
+
 def end_syncing_process():
     '''Stops the syncing process. Intended to be used if experimental image capture has finished and a final
        sync should be initiated.
@@ -15,10 +19,8 @@ def end_syncing_process():
         None
     '''
     global _SYNC_PROCESS
-    if _SYNC_PROCESS and _SYNC_PROCESS.is_alive():
+    if _is_sync_process_running():
         _SYNC_PROCESS.terminate()
-
-    _SYNC_PROCESS = None
 
 
 def sync_directory_in_separate_process(directory, wait_for_finish=False):
@@ -31,7 +33,7 @@ def sync_directory_in_separate_process(directory, wait_for_finish=False):
         None.
     '''
     global _SYNC_PROCESS
-    if _SYNC_PROCESS and _SYNC_PROCESS.is_alive():
+    if _is_sync_process_running():
         return
 
     _SYNC_PROCESS = multiprocessing.Process(target=sync_to_s3, args=(directory,))

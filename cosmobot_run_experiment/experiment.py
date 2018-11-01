@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from .camera import capture
 from .file_structure import iso_datetime_for_filename
-from .prepare import hostname_is_valid, get_experiment_configuration, create_file_structure_for_experiment
+from .prepare import hostname_is_correct, get_experiment_configuration, create_file_structure_for_experiment
 from .storage import how_many_images_with_free_space, free_space_for_one_image
 from .sync_manager import sync_directory_in_separate_process, end_syncing_process
 
@@ -76,7 +76,7 @@ def end_experiment(experiment_configuration, quit_message):
 def run_experiment():
     configuration = get_experiment_configuration()
 
-    if not hostname_is_valid(configuration.hostname):
+    if not hostname_is_correct(configuration.hostname):
         quit_message = f'"{configuration.hostname}" is not a valid hostname.'
         quit_message += ' Contact your local dev for instructions on setting a valid hostname.'
         quit(quit_message)
