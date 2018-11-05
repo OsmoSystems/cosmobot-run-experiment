@@ -1,6 +1,9 @@
-import pytest
+import os
 
+import pytest
 from . import prepare as module
+
+from collections import namedtuple
 
 
 class TestParseArgs:
@@ -153,3 +156,49 @@ class TestGetExperimentVariants():
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
+
+
+class TestCreateFileStructureForExperiment:
+    MockExperimentConfiguration = namedtuple(
+        'MockExperimentConfiguration',
+        ['experiment_directory_path']
+    )
+
+    subdir_name = 'subdirectory'
+
+    def test_mock_experiment_configuration_subset_of_real_experiment_configuration(self):
+        assert set(self.MockExperimentConfiguration._fields).issubset(module.ExperimentConfiguration._fields)
+
+    def _create_mock_configuration(self, mocker, tmp_path):
+        experiment_directory_path = os.path.join(tmp_path, self.subdir_name)
+
+        return self.MockExperimentConfiguration(
+            experiment_directory_path=experiment_directory_path,
+        )
+
+    def test_output_directory_present__does_not_explode(self, mocker, tmp_path):
+        mock_config = self._create_mock_configuration(mocker, tmp_path)
+
+        os.mkdir(mock_config.experiment_directory_path)
+
+        module.create_file_structure_for_experiment(
+            mock_config
+        )
+
+    def test_creates_output_directory_if_not_present(self, mocker, tmp_path):
+        mock_config = self._create_mock_configuration(mocker, tmp_path)
+
+        module.create_file_structure_for_experiment(
+            mock_config
+        )
+
+        assert os.path.exists(mock_config.experiment_directory_path)
+
+    def test_creates_metadata_file_in_output_directory(self, mocker, tmp_path):
+        mock_config = self._create_mock_configuration(mocker, tmp_path)
+
+        module.create_file_structure_for_experiment(
+            mock_config
+        )
+
+        assert os.listdir(mock_config.experiment_directory_path) == ['experiment_metadata.yml']
