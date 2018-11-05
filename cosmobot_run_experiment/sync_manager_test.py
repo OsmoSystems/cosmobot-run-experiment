@@ -22,7 +22,7 @@ class TestIsSyncProcessRunning:
 
 
 class TestEndSyncingProcess:
-    def test_process_not_running__dont_blow_up(self, mocker, mock_sync_process):
+    def test_process_not_running__dont_attempt_to_terminate_it(self, mocker, mock_sync_process):
         mocker.patch.object(module, '_is_sync_process_running').return_value = False
         module.end_syncing_process()
         mock_sync_process.terminate.assert_not_called()
