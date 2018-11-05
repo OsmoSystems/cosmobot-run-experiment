@@ -41,11 +41,10 @@ ExperimentVariant = namedtuple(
 )
 
 
-def _parse_args(args=None):
+def _parse_args(args):
     '''Extract and verify arguments passed in from the command line
      Args:
-        args: list of command-line argument strings.
-            If None or not provided, will get args from the command line invocation
+        args: list of command-line-like argument strings such as sys.argv
      Returns:
         dictionary of arguments parsed from the command line
     '''
@@ -119,11 +118,10 @@ def _get_mac_last_4():
     return _get_mac_address()[-4:]
 
 
-def get_experiment_configuration(cli_args=None):
+def get_experiment_configuration(cli_args):
     '''Return a constructed named experimental configuration in a namedtuple.
      Args:
-        cli_args: list of command-line argument strings.
-            If None or not provided, will get args from the command line invocation
+        cli_args: list of command-line argument strings like sys.argv
      Returns:
         an instance of ExperimentConfiguration namedtuple
 

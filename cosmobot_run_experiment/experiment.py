@@ -1,12 +1,14 @@
-from datetime import datetime, timedelta
 import os
+import sys
 import time
 
 from .camera import capture
 from .file_structure import iso_datetime_for_filename
-from .prepare import hostname_is_correct, get_experiment_configuration, create_file_structure_for_experiment
-from .storage import how_many_images_with_free_space, free_space_for_one_image
-from .sync_manager import sync_directory_in_separate_process, end_syncing_process
+from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
+from .storage import free_space_for_one_image, how_many_images_with_free_space
+from .sync_manager import end_syncing_process, sync_directory_in_separate_process
+
+from datetime import datetime, timedelta
 
 
 def perform_experiment(configuration):
@@ -78,6 +80,17 @@ def end_experiment(experiment_configuration, quit_message):
 
 
 def run_experiment(cli_args=None):
+    ''' Top-level function to run an experiment.
+    Collects command-line arguments, captures images, and syncs them to s3.
+    Also checks that the system has the correct hostname configured and handles graceful closure upon KeyboardInterrupt.
+
+    Args:
+        cli_args: Optional: list of command-line argument strings like sys.argv. If not provided, sys.argv will be used
+    Returns:
+        None
+    '''
+    if cli_args is None:
+        cli_args = sys.argv
     configuration = get_experiment_configuration(cli_args)
 
     if not hostname_is_correct(configuration.hostname):
