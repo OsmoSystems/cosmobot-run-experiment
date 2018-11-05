@@ -22,7 +22,7 @@ class TestCapture:
         mock_check_call = mocker.patch.object(module, 'check_call')
         additional_capture_params = 'additional!!'
 
-        module.capture('filename doesnt matter', additional_capture_params)
+        module.capture(mocker.sentinel.filename, additional_capture_params)
 
         # Call args looks like [call(command, shell=True)] where call is a tuple
         actual_call_command = mock_check_call.call_args[0][0]
@@ -37,14 +37,14 @@ class TestCapture:
         )
 
         with pytest.raises(Exception):
-            module.capture('', '')
+            module.capture(mocker.sentinel.filename)
 
 
 class TestSimulateCaptureWithCopy:
     def test_calls_something_other_than_raspistill(self, mocker):
         mock_check_call = mocker.patch.object(module, 'check_call')
 
-        module.simulate_capture_with_copy('doesnt matter')
+        module.simulate_capture_with_copy(mocker.sentinel.filename)
 
         # Call args looks like [call(command, shell=True)] where call is a tuple
         actual_call_command = mock_check_call.call_args[0][0]
@@ -55,6 +55,6 @@ class TestSimulateCaptureWithCopy:
         mock_check_call = mocker.patch.object(module, 'check_call')
         additional_capture_params = 'additional!!'
 
-        module.capture('doesnt matter', additional_capture_params)
+        module.capture(mocker.sentinel.filename, additional_capture_params)
 
         mock_check_call.assert_called()
