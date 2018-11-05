@@ -17,7 +17,7 @@ def _is_there_free_space_for_image_count(image_count):
      Args:
         image_count: how many images will be stored
      Returns:
-        Boolean: is there space to store the experiment
+        Boolean of whether there is space to store the experiment
     '''
     free = _get_free_disk_space_bytes()
     return free >= IMAGE_SIZE_IN_BYTES * image_count
@@ -28,7 +28,7 @@ def how_many_images_with_free_space():
      Args:
         None
      Returns:
-        integer: How many images can be stored
+        an integer of how many images can be stored
     '''
     free = _get_free_disk_space_bytes()
     return math.floor(free / IMAGE_SIZE_IN_BYTES)
@@ -39,6 +39,6 @@ def free_space_for_one_image():
      Args:
         None
      Returns:
-        Boolean: is there space to store one image
+        a Boolean: is there space to store one image?
     '''
     return _is_there_free_space_for_image_count(1)
