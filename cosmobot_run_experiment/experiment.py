@@ -40,7 +40,7 @@ def perform_experiment(configuration):
 
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
-            time.sleep(0.01)  # No need to totally peg the CPU
+            time.sleep(0.1)  # No need to totally peg the CPU
             continue
 
         # next_capture_time is agnostic to the time needed for capture and writing of image
