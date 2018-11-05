@@ -28,6 +28,11 @@ class TestParseArgs:
         args_in = ['--name', 'thebest', '--interval', '500']
         module._parse_args(args_in)
 
+    def test_missing_args_blows_up(self):
+        args_in = []
+        with pytest.raises(SystemExit):
+            module._parse_args(args_in)
+
 
 def test_get_mac_address(mocker):
     mocker.patch.object(module, 'get_mac').return_value = 141726673902100
