@@ -3,18 +3,12 @@ from . import sync_manager as module
 
 
 @pytest.fixture
-def initialize_module():
-    # In test cases where we want the behavior of a "real" initialization, use this
-    module._SYNC_PROCESS = None
-
-
-@pytest.fixture
 def mock_sync_process(mocker):
     return mocker.patch.object(module, '_SYNC_PROCESS')
 
 
 class TestIsSyncProcessRunning:
-    def test_process_doesnt_exist__return_falsey(self, initialize_module):
+    def test_process_doesnt_exist__return_falsey(self):
         module._SYNC_PROCESS = None
         assert not module._is_sync_process_running()
 
@@ -22,7 +16,7 @@ class TestIsSyncProcessRunning:
         mock_sync_process.is_alive.return_value = False
         assert not module._is_sync_process_running()
 
-    def test_process_exists_but_terminated__return_truthy(self, mock_sync_process):
+    def test_process_exists_and_is_running__return_truthy(self, mock_sync_process):
         mock_sync_process.is_alive.return_value = True
         assert module._is_sync_process_running()
 

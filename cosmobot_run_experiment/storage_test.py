@@ -4,8 +4,7 @@ from . import storage as module
 
 @pytest.fixture
 def mock_get_free_disk_space(mocker):
-    get_free_disk_space = mocker.patch.object(module, '_get_free_disk_space_bytes')
-    return get_free_disk_space
+    return mocker.patch.object(module, '_get_free_disk_space_bytes')
 
 
 class TestHowManyImagesWithFreeSpace:
