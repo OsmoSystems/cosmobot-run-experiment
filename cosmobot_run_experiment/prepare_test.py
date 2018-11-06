@@ -8,19 +8,33 @@ from collections import namedtuple
 
 class TestParseArgs:
     def test_all_args_parsed_appropriately(self):
-        args_in = (
-            '--name thebest --interval 25 --duration 100 '
-            # NOTE: variants can't be multiple words in this format - IRL, the input args get split smartly and you can
-            # use quotes to keep multiple "words" together. I didn't want the complexity of reimplementing that here.
-            '--variant variant1 --variant variant2 '
-            '--exposures 20 30 --isos 45 55'
-        ).split()
+        # Args in the format you'd get from sys.argv
+        args_in = [
+            '--name',
+            'thebest',
+            '--interval',
+            '25',
+            '--duration',
+            '100',
+            '--variant',
+            # Note: when a quoted command-line value is read using sys.argv,
+            # it's grouped into a single list item like this:
+            '-ISO 100 -ss 50000',
+            '--variant',
+            'variant2',
+            '--exposures',
+            '20',
+            '30',
+            '--isos',
+            '45',
+            '55',
+        ]
 
         expected_args_out = {
             'name': 'thebest',
             'interval': 25,
             'duration': 100,
-            'variant': ['variant1', 'variant2'],
+            'variant': ['-ISO 100 -ss 50000', 'variant2'],
             'exposures': [20, 30],
             'isos': [45, 55],
             'skip_sync': False,
