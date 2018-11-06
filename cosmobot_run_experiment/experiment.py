@@ -1,11 +1,14 @@
 import os
-from datetime import datetime, timedelta
+import sys
+import time
 
 from .camera import capture
 from .file_structure import iso_datetime_for_filename
-from .prepare import hostname_is_valid, get_experiment_configuration, create_file_structure_for_experiment
-from .storage import how_many_images_with_free_space, free_space_for_one_image
-from .sync_manager import sync_directory_in_separate_process, end_syncing_process
+from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
+from .storage import free_space_for_one_image, how_many_images_with_free_space
+from .sync_manager import end_syncing_process, sync_directory_in_separate_process
+
+from datetime import datetime, timedelta
 
 
 def perform_experiment(configuration):
@@ -39,6 +42,7 @@ def perform_experiment(configuration):
 
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
+            time.sleep(0.1)  # No need to totally peg the CPU
             continue
 
         # next_capture_time is agnostic to the time needed for capture and writing of image
@@ -58,7 +62,8 @@ def perform_experiment(configuration):
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
             # If a sync is currently occuring, this is a no-op.
-            sync_directory_in_separate_process(configuration.experiment_directory_path)
+            if not configuration.skip_sync:
+                sync_directory_in_separate_process(configuration.experiment_directory_path)
 
     end_experiment(configuration, quit_message='Experiment completed successfully!')
 
@@ -68,15 +73,27 @@ def end_experiment(experiment_configuration, quit_message):
     # If a file(s) is written after a sync process begins it does not get added to the list to sync.
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
     # remaining images. To that end, we end any existing sync process and start a new one
-    end_syncing_process()
-    sync_directory_in_separate_process(experiment_configuration.experiment_directory_path, wait_for_finish=True)
+    if not experiment_configuration.skip_sync:
+        end_syncing_process()
+        sync_directory_in_separate_process(experiment_configuration.experiment_directory_path, wait_for_finish=True)
     quit(quit_message)
 
 
-def run_experiment():
-    configuration = get_experiment_configuration()
+def run_experiment(cli_args=None):
+    ''' Top-level function to run an experiment.
+    Collects command-line arguments, captures images, and syncs them to s3.
+    Also checks that the system has the correct hostname configured and handles graceful closure upon KeyboardInterrupt.
 
-    if not hostname_is_valid(configuration.hostname):
+    Args:
+        cli_args: Optional: list of command-line argument strings like sys.argv. If not provided, sys.argv will be used
+    Returns:
+        None
+    '''
+    if cli_args is None:
+        cli_args = sys.argv
+    configuration = get_experiment_configuration(cli_args)
+
+    if not hostname_is_correct(configuration.hostname):
         quit_message = f'"{configuration.hostname}" is not a valid hostname.'
         quit_message += ' Contact your local dev for instructions on setting a valid hostname.'
         quit(quit_message)
