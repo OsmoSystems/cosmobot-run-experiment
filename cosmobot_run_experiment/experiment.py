@@ -90,7 +90,8 @@ def run_experiment(cli_args=None):
         None
     '''
     if cli_args is None:
-        cli_args = sys.argv
+        # First argument is the name of the command itself, not an "argument" we want to parse
+        cli_args = sys.argv[1:]
     configuration = get_experiment_configuration(cli_args)
 
     if not hostname_is_correct(configuration.hostname):
