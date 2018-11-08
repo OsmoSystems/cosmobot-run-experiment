@@ -1,6 +1,7 @@
 import argparse
 import sys
 import os
+import logging
 from socket import gethostname
 from datetime import datetime, timedelta
 from subprocess import check_output, CalledProcessError
@@ -159,7 +160,7 @@ def get_experiment_configuration(cli_args):
 
 
 def create_file_structure_for_experiment(configuration):
-    print(f'Output directory is {configuration.experiment_directory_path}')
+    logging.info(f'Output directory is {configuration.experiment_directory_path}')
     os.makedirs(configuration.experiment_directory_path, exist_ok=True)
 
     metadata_path = os.path.join(configuration.experiment_directory_path, 'experiment_metadata.yml')

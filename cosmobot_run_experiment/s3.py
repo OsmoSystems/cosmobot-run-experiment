@@ -1,4 +1,5 @@
 import os
+import logging
 from subprocess import check_call
 
 
@@ -15,7 +16,7 @@ def sync_to_s3(local_sync_dir):
     # Using CLI vs boto: https://github.com/boto/boto3/issues/358
     # It looks like sync is not a supported function of the python boto library
     # Work around is to use cli sync for now (requires aws cli to be installed)
-    print(f'Performing sync of experiments directory: {local_sync_dir}')
+    logging.info(f'Performing sync of experiments directory: {local_sync_dir}')
     experiment_dir_name = os.path.basename(os.path.normpath(local_sync_dir))
 
     # This argument pattern issues a uni-directional sync to S3 bucket
