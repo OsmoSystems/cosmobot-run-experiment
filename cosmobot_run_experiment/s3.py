@@ -3,7 +3,7 @@ import logging
 from subprocess import check_call
 
 
-def sync_to_s3(local_sync_dir):
+def sync_to_s3(local_sync_dir, additional_sync_params=''):
     ''' Syncs raw images from a local directory to the s3://camera-sensor-experiments bucket
 
     Args:
@@ -21,5 +21,7 @@ def sync_to_s3(local_sync_dir):
 
     # This argument pattern issues a uni-directional sync to S3 bucket
     # https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html
-    command = f'aws s3 sync {local_sync_dir} s3://camera-sensor-experiments/{experiment_dir_name}'
+    s3_sync_dir = f's3://camera-sensor-experiments/{experiment_dir_name}'
+    command = f'aws s3 sync {local_sync_dir} {s3_sync_dir} {additional_sync_params}'
+    logging.info(f'{command}')
     check_call(command, shell=True)

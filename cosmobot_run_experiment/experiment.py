@@ -11,15 +11,17 @@ from .sync_manager import end_syncing_process, sync_directory_in_separate_proces
 
 from datetime import datetime, timedelta
 
+# Basic logging configuration - sets the base log level to INFO and provides a
+# log format (time, log level, log message) for all messages to be written to stdout (console)
+# or to a log file. This is set outside of a function as the execution path through testing
+# shows that setting the values inside a function causes some silent failure with stdout to a console.
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)-5.5s]--- %(message)s",
     handlers=[
-        logging.StreamHandler(),
-        RotatingFileHandler("experiment.log", mode='a', maxBytes=10*1024*1024, backupCount=2, encoding=None, delay=0)
+        logging.StreamHandler()
     ]
 )
-
 
 def perform_experiment(configuration):
     '''Perform experiment using settings passed in through the configuration.
@@ -91,7 +93,11 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     logging.info("Beginning final sync to s3 due to end of experiment...")
     if not experiment_configuration.skip_sync:
         end_syncing_process()
-        sync_directory_in_separate_process(experiment_configuration.experiment_directory_path, wait_for_finish=True)
+        sync_directory_in_separate_process(
+            experiment_configuration.experiment_directory_path,
+            wait_for_finish=True,
+            exclude_log_files=False
+        )
     logging.info("Final sync to s3 completed!")
     quit()
 
@@ -119,6 +125,15 @@ def run_experiment(cli_args=None):
             quit()
 
         create_file_structure_for_experiment(configuration)
+
+        log_filepath = os.path.join(configuration.experiment_directory_path, 'experiment.log')
+        log_file_handler = logging.FileHandler(log_filepath)
+
+        # Retrieve the root logger object that the module level logging.[loglevel] object uses
+        # and adds the additional "log to file" handler.  This is similar to adding a handler to the basicConfig
+        # above but with the issue of stdout logging failing silently coupled with not having the experimental
+        #  directory path prior to this point this workaround must be applied.
+        logging.getLogger('').addHandler(log_file_handler)
 
         try:
             perform_experiment(configuration)
