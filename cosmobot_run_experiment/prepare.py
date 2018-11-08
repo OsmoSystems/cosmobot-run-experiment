@@ -1,7 +1,6 @@
 import argparse
 import sys
 import os
-import logging
 from socket import gethostname
 from datetime import datetime, timedelta
 from subprocess import check_output, CalledProcessError

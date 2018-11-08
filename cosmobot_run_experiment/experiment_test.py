@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+import logging
 import pytest
 from . import experiment as module
 
@@ -12,6 +12,12 @@ class TestRunExperiment:
         mock_hostname_is_correct.return_value = True
         mock_create_file_structure = mocker.patch.object(module, 'create_file_structure_for_experiment')
         mock_capture = mocker.patch.object(module, 'capture')
+
+        mocker.patch.object(logging, 'info')
+        mocker.patch.object(logging, 'error')
+        mocker.patch.object(logging, 'getLogger')
+        mocker.patch.object(logging, 'FileHandler')
+
         # Long enough to do an actual loop; not long enough to make the test feel slow
         duration = 0.1
 

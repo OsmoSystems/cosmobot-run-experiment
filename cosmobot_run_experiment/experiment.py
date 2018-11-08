@@ -134,8 +134,6 @@ def run_experiment(cli_args=None):
         # above but with the issue of stdout logging failing silently coupled with not having the experimental
         #  directory path prior to this point this workaround must be applied.
         logging.getLogger('').addHandler(log_file_handler)
-        logging.info('Begin Log For Experiment')
-        log_file_handler.flush()
 
         try:
             perform_experiment(configuration)
