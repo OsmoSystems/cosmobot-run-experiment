@@ -16,7 +16,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)-5.5s]--- %(message)s",
     handlers=[
         logging.StreamHandler(),
-        RotatingFileHandler("experiment.log", mode='a', maxBytes=5*1024*1024, backupCount=2, encoding=None, delay=0)
+        RotatingFileHandler("experiment.log", mode='a', maxBytes=10*1024*1024, backupCount=2, encoding=None, delay=0)
     ]
 )
 
