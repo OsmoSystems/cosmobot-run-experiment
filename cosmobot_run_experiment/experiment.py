@@ -45,7 +45,8 @@ def perform_experiment(configuration):
     if configuration.duration is None:
         how_many_images_can_be_captured = how_many_images_with_free_space()
         logging.info('No experimental duration provided.')
-        logging.info(f'Number of images that can be captured with free space: {how_many_images_can_be_captured}')
+        logging.info('Estimated number of images that can be captured with free space: ' \
+            f'{how_many_images_can_be_captured}')
 
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
@@ -130,6 +131,7 @@ def run_experiment(cli_args=None):
     except Exception as exception:
         logging.error("Unexpected exception occurred")
         logging.error(exception)
+        logging.error(sys.exc_info())
 
 
 if __name__ == '__main__':
