@@ -160,7 +160,7 @@ def get_experiment_configuration(cli_args):
 
 
 def create_file_structure_for_experiment(configuration):
-    logging.info(f'Output directory is {configuration.experiment_directory_path}')
+    print(f'Output directory is {configuration.experiment_directory_path}')
     os.makedirs(configuration.experiment_directory_path, exist_ok=True)
 
     metadata_path = os.path.join(configuration.experiment_directory_path, 'experiment_metadata.yml')
