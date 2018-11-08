@@ -102,6 +102,17 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     quit()
 
 
+def set_up_log_file_with_base_handler(experiment_directory):
+    log_filepath = os.path.join(experiment_directory, 'experiment.log')
+    log_file_handler = logging.FileHandler(log_filepath)
+
+    # Retrieve the root logger object that the module level logging.[loglevel] object uses
+    # and adds the additional "log to file" handler.  This is similar to adding a handler to the basicConfig
+    # above but with the issue of stdout logging failing silently coupled with not having the experimental
+    #  directory path prior to this point this workaround must be applied.
+    logging.getLogger('').addHandler(log_file_handler)
+
+
 def run_experiment(cli_args=None):
     ''' Top-level function to run an experiment.
     Collects command-line arguments, captures images, and syncs them to s3.
@@ -125,15 +136,7 @@ def run_experiment(cli_args=None):
             quit()
 
         create_file_structure_for_experiment(configuration)
-
-        log_filepath = os.path.join(configuration.experiment_directory_path, 'experiment.log')
-        log_file_handler = logging.FileHandler(log_filepath)
-
-        # Retrieve the root logger object that the module level logging.[loglevel] object uses
-        # and adds the additional "log to file" handler.  This is similar to adding a handler to the basicConfig
-        # above but with the issue of stdout logging failing silently coupled with not having the experimental
-        #  directory path prior to this point this workaround must be applied.
-        logging.getLogger('').addHandler(log_file_handler)
+        set_up_log_file_with_base_handler(configuration.experiment_directory_path)
 
         try:
             perform_experiment(configuration)
