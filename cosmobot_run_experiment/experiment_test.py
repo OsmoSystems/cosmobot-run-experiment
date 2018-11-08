@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-
 import pytest
 from . import experiment as module
 
@@ -12,6 +11,8 @@ class TestRunExperiment:
         mock_hostname_is_correct.return_value = True
         mock_create_file_structure = mocker.patch.object(module, 'create_file_structure_for_experiment')
         mock_capture = mocker.patch.object(module, 'capture')
+        mock_set_up_log_file_with_base_handler = mocker.patch.object(module, 'set_up_log_file_with_base_handler')
+
         # Long enough to do an actual loop; not long enough to make the test feel slow
         duration = 0.1
 
@@ -29,6 +30,7 @@ class TestRunExperiment:
         mock_capture.assert_called_once()
         mock_create_file_structure.assert_called_once()
         mock_hostname_is_correct.assert_called_once()
+        mock_set_up_log_file_with_base_handler.assert_called_once()
 
         # Crude self-test that no major, slow side-effects are occurring:
         # For instance, if we are syncing to s3 we'd expect that to take a few seconds

@@ -18,5 +18,5 @@ class TestSyncToS3:
 
         module.sync_to_s3(local_sync_dir='/output_dir/experiment_name')
 
-        expected_command = f'aws s3 sync /output_dir/experiment_name s3://camera-sensor-experiments/experiment_name'
+        expected_command = f'aws s3 sync /output_dir/experiment_name s3://camera-sensor-experiments/experiment_name '
         mock_check_call.assert_called_with(expected_command, shell=True)
