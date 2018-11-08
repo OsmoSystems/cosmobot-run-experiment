@@ -105,23 +105,31 @@ def run_experiment(cli_args=None):
     Returns:
         None
     '''
-    if cli_args is None:
-        # First argument is the name of the command itself, not an "argument" we want to parse
-        cli_args = sys.argv[1:]
-    configuration = get_experiment_configuration(cli_args)
-
-    if not hostname_is_correct(configuration.hostname):
-        quit_message = f'"{configuration.hostname}" is not a valid hostname.'
-        quit_message += ' Contact your local dev for instructions on setting a valid hostname.'
-        logging.error(quit_message)
-        quit()
-
-    create_file_structure_for_experiment(configuration)
-
     try:
-        perform_experiment(configuration)
-    except KeyboardInterrupt:
-        end_experiment(configuration, experiment_ended_message='Keyboard interrupt detected. Quitting...')
+        if cli_args is None:
+            # First argument is the name of the command itself, not an "argument" we want to parse
+            cli_args = sys.argv[1:]
+        configuration = get_experiment_configuration(cli_args)
+
+        if not hostname_is_correct(configuration.hostname):
+            quit_message = f'"{configuration.hostname}" is not a valid hostname.'
+            quit_message += ' Contact your local dev for instructions on setting a valid hostname.'
+            logging.error(quit_message)
+            quit()
+
+        create_file_structure_for_experiment(configuration)
+
+        try:
+            perform_experiment(configuration)
+        except KeyboardInterrupt:
+            end_experiment(configuration, experiment_ended_message='Keyboard interrupt detected. Quitting...')
+
+    # The Exception used here is generic due to check_call (which calls raspistill/s3 sync) raises a SubprocessError
+    # exception if there is an error.  Additionally, there may be other Exception types that we want to catch as well
+    # that we are not aware of and that can be illuminated by using a generic Exception type
+    except Exception as exception:
+        logging.error("Unexpected exception occurred")
+        logging.error(exception)
 
 
 if __name__ == '__main__':
