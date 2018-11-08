@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 # shows that setting the values inside a function causes some silent failure with stdout to a console.
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)-5.5s]--- %(message)s",
+    format="%(asctime)s [%(levelname)s]--- %(message)s",
     handlers=[
         logging.StreamHandler()
     ]
@@ -143,9 +143,8 @@ def run_experiment(cli_args=None):
         except KeyboardInterrupt:
             end_experiment(configuration, experiment_ended_message='Keyboard interrupt detected. Quitting...')
 
-    # The Exception used here is generic due to check_call (which calls raspistill/s3 sync) raises a SubprocessError
-    # exception if there is an error.  Additionally, there may be other Exception types that we want to catch as well
-    # that we are not aware of and that can be illuminated by using a generic Exception type
+    # We might get a SubprocessError from check_call (which calls raspistill/s3),
+    # but we also want to catch any other type of Exception
     except Exception as exception:
         logging.error("Unexpected exception occurred")
         logging.error(exception)
