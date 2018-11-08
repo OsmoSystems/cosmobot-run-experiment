@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import logging
-from logging.handlers import RotatingFileHandler
 from .camera import capture
 from .file_structure import iso_datetime_for_filename
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
@@ -22,6 +21,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
 
 def perform_experiment(configuration):
     '''Perform experiment using settings passed in through the configuration.
