@@ -1,10 +1,19 @@
 import pytest
+import multiprocessing
 from . import sync_manager as module
+from . import s3
 
 
 @pytest.fixture
 def mock_sync_process(mocker):
     return mocker.patch.object(module, '_SYNC_PROCESS')
+
+
+@pytest.fixture
+def mock_multiprocess_process(mocker):
+    mock_multiprocess_process = mocker.patch.object(multiprocessing, 'Process')
+    mock_multiprocess_process.return_value.start = lambda: True
+    return mock_multiprocess_process
 
 
 class TestIsSyncProcessRunning:
@@ -19,6 +28,14 @@ class TestIsSyncProcessRunning:
     def test_process_exists_and_is_running__return_truthy(self, mock_sync_process):
         mock_sync_process.is_alive.return_value = True
         assert module._is_sync_process_running()
+
+    def test_process_exists_and_is_running_and_excludes_logs(self, mock_multiprocess_process):
+        module.sync_directory_in_separate_process('/tmp', wait_for_finish=False, exclude_log_files=True)
+        expected_additional_sync_params = '--exclude *.log*'
+        mock_multiprocess_process.assert_called_with(
+            target=s3.sync_to_s3,
+            args=('/tmp', expected_additional_sync_params,)
+        )
 
 
 class TestEndSyncingProcess:
