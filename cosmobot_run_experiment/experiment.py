@@ -14,9 +14,10 @@ from datetime import datetime, timedelta
 # log format (time, log level, log message) for all messages to be written to stdout (console)
 # or to a log file. This is set outside of a function as the execution path through testing
 # shows that setting the values inside a function causes some silent failure with stdout to a console.
+logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s]--- %(message)s",
+    format=logging_format,
     handlers=[
         logging.StreamHandler()
     ]
@@ -105,6 +106,8 @@ def end_experiment(experiment_configuration, experiment_ended_message):
 def set_up_log_file_with_base_handler(experiment_directory):
     log_filepath = os.path.join(experiment_directory, 'experiment.log')
     log_file_handler = logging.FileHandler(log_filepath)
+    formatter = logging.Formatter(logging_format)
+    log_file_handler.setFormatter(formatter)
 
     # Retrieve the root logger object that the module level logging.[loglevel] object uses
     # and adds the additional "log to file" handler.  This is similar to adding a handler to the basicConfig
