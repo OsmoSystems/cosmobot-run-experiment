@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 # log format (time, log level, log message) for all messages to be written to stdout (console)
 # or to a log file. This is set outside of a function as the execution path through testing
 # shows that setting the values inside a function causes some silent failure with stdout to a console.
-logging_format = "%(asctime)s [%(levelname)-5.5s]--- %(message)s"
+logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
     level=logging.INFO,
     format=logging_format,
