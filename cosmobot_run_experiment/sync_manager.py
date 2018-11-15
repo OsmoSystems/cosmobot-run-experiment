@@ -21,6 +21,7 @@ def end_syncing_process():
     global _SYNC_PROCESS
     if _is_sync_process_running():
         _SYNC_PROCESS.terminate()
+        _SYNC_PROCESS = None
 
 
 def sync_directory_in_separate_process(directory, wait_for_finish=False, exclude_log_files=True):
