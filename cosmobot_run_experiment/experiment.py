@@ -73,7 +73,7 @@ def perform_experiment(configuration):
 
             iso_ish_datetime = iso_datetime_for_filename(datetime.now())
             capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
-            image_filename = f'{iso_ish_datetime}{capture_params_for_filename}.jpeg'
+            image_filename = f'{iso_ish_datetime}_{capture_params_for_filename}_.jpeg'
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
