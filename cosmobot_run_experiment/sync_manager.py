@@ -1,5 +1,5 @@
 import multiprocessing
-
+import psutil
 from .s3 import sync_to_s3
 
 
@@ -13,6 +13,12 @@ def _is_sync_process_running():
 def end_syncing_process():
     '''Stops the syncing process. Intended to be used if experimental image capture has finished and a final
        sync should be initiated.
+
+       Ending a process: We use multiprocessing to start a new process that calls sync_to_s3
+       which then starts another process calling aws sync s3 with the experiment directory.  Unfortunately,
+       the multiprocessing package does not kill descendent processes that are invoked past the first child
+       which is what our experiment runner does.  We use psutil to kill processes as it has the ability to kill
+       all descendent processes recursively.
      Args:
         None
      Returns:
@@ -20,8 +26,14 @@ def end_syncing_process():
     '''
     global _SYNC_PROCESS
     if _is_sync_process_running():
-        _SYNC_PROCESS.terminate()
+        parent_sync_process = psutil.Process(_SYNC_PROCESS.pid)
+
+        for child in parent_sync_process.children(recursive=True):
+            child.kill()
+
+        parent_sync_process.kill()
         _SYNC_PROCESS = None
+
 
 
 def sync_directory_in_separate_process(directory, wait_for_finish=False, exclude_log_files=True):
