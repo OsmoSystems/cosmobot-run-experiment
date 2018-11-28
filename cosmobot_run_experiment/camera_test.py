@@ -27,7 +27,7 @@ class TestCapture:
         # Call args looks like [call(command, shell=True)] where call is a tuple
         actual_call_command = mock_check_call.call_args[0][0]
 
-        padded_additional_capture_params = f' {additional_capture_params}'
+        padded_additional_capture_params = ' {additional_capture_params}'.format(**locals())
         assert actual_call_command.endswith(padded_additional_capture_params)
 
     def test_blows_up_if_check_call_fails(self, mocker):
@@ -55,6 +55,6 @@ class TestSimulateCaptureWithCopy:
         mock_check_call = mocker.patch.object(module, 'check_call')
         additional_capture_params = 'additional!!'
 
-        module.capture(mocker.sentinel.filename, additional_capture_params)
+        module.simulate_capture_with_copy(mocker.sentinel.filename, additional_capture_params)
 
-        mock_check_call.assert_called()
+        assert mock_check_call.called

@@ -13,7 +13,7 @@ from .file_structure import iso_datetime_for_filename, get_base_output_path
 
 DEFAULT_ISO = 100
 DEFAULT_EXPOSURE = 1500000
-DEFAULT_CAPTURE_PARAMS = f' -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO}'
+DEFAULT_CAPTURE_PARAMS = ' -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO}'.format(**locals())
 
 ExperimentConfiguration = namedtuple(
     'ExperimentConfiguration',
@@ -66,7 +66,7 @@ def _parse_args(args):
         '--variant', required=False, type=str, default=[], action='append',
         help='variants of camera capture parameters to use during experiment.'
         'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200" ...'
-        f'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used'
+        'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used'.format(**globals())
     )
 
     arg_parser.add_argument(
@@ -76,7 +76,8 @@ def _parse_args(args):
     arg_parser.add_argument(
         '--isos', required=False, type=int, nargs='+', default=None,
         help='List of isos to iterate capture through ex. "--isos 100 200"\n'
-        f'If not provided and --exposures is provided, ISO {DEFAULT_ISO} will be used when iterating over exposures.'
+        'If not provided and --exposures is provided, ISO {DEFAULT_ISO}'
+        'will be used when iterating over exposures.'.format(**globals())
     )
     arg_parser.add_argument(
         '--skip-sync',
@@ -97,7 +98,7 @@ def get_experiment_variants(args):
     if args['exposures']:
         isos = args['isos'] or [DEFAULT_ISO]
         variants.extend(
-            ExperimentVariant(capture_params=f' -ss {exposure} -ISO {iso}')
+            ExperimentVariant(capture_params=' -ss {exposure} -ISO {iso}'.format(**locals()))
             for exposure in args['exposures']
             for iso in isos
         )
@@ -135,7 +136,8 @@ def get_experiment_configuration(cli_args):
     mac_last_4 = _get_mac_last_4()
 
     iso_ish_datetime = iso_datetime_for_filename(start_date)
-    experiment_directory_name = f'{iso_ish_datetime}-Pi{mac_last_4}-{args["name"]}'
+    name = args["name"]
+    experiment_directory_name = '{iso_ish_datetime}-Pi{mac_last_4}-{name}'.format(**locals())
     experiment_directory_path = os.path.join(get_base_output_path(), experiment_directory_name)
 
     variants = get_experiment_variants(args)
@@ -159,7 +161,7 @@ def get_experiment_configuration(cli_args):
 
 
 def create_file_structure_for_experiment(configuration):
-    print(f'Output directory is {configuration.experiment_directory_path}')
+    print('Output directory is {configuration.experiment_directory_path}'.format(**locals()))
     os.makedirs(configuration.experiment_directory_path, exist_ok=True)
 
     metadata_path = os.path.join(configuration.experiment_directory_path, 'experiment_metadata.yml')
@@ -175,7 +177,7 @@ def hostname_is_correct(hostname):
         Boolean: is hostname valid
     '''
     mac_last_4 = _get_mac_last_4()
-    return hostname == f'pi-cam-{mac_last_4}'
+    return hostname == 'pi-cam-{mac_last_4}'.format(**locals())
 
 
 def _git_hash():
