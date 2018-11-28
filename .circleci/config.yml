@@ -6,7 +6,7 @@ version: 2
 
 
 jobs:
-  build:
+  build36:
     docker:
       - image: python:3.6
 
@@ -14,9 +14,21 @@ jobs:
       - checkout
 
       - run:
-          name: install python 3 developer extensions (required for installing stuff on python 3.5)
+          name: install tox
           command: |
-            apt-get install python3-dev
+            pip install tox
+
+      - run:
+          name: tox -r to install and run tests and flake. Run py36 env only
+          command: |
+            tox -r -e py36
+
+  build35:
+    docker:
+      - image: python:3.5
+
+    steps:
+      - checkout
 
       - run:
           name: install tox
@@ -24,6 +36,6 @@ jobs:
             pip install tox
 
       - run:
-          name: tox -r to install and run tests and flake
+          name: tox -r to install and run tests and flake. Run py35 env only
           command: |
-            tox -r
+            tox -r -e py35
