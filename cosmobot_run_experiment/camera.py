@@ -29,6 +29,7 @@ def simulate_capture_with_copy(filename, additional_capture_params=''):
 
     Args:
         filename: filename to copy a test image to
+        additional_capture_params: ignored, only exists to keep the same signature as `capture()`
 
     Returns:
         Resulting command line output of the copy command
