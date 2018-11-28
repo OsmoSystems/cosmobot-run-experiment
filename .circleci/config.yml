@@ -14,6 +14,11 @@ jobs:
       - checkout
 
       - run:
+          name: install python 3 developer extensions (required for installing stuff on python 3.5)
+          command: |
+            sudo apt-get install python3-dev
+
+      - run:
           name: install tox
           command: |
             pip install tox
