@@ -49,7 +49,7 @@ def perform_experiment(configuration):
         how_many_images_can_be_captured = how_many_images_with_free_space()
         logging.info('No experimental duration provided.')
         logging.info('Estimated number of images that can be captured with free space: '
-                     f'{how_many_images_can_be_captured}')
+                     '{how_many_images_can_be_captured}'.format(**locals()))
 
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
@@ -73,7 +73,7 @@ def perform_experiment(configuration):
 
             iso_ish_datetime = iso_datetime_for_filename(datetime.now())
             capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
-            image_filename = f'{iso_ish_datetime}_{capture_params_for_filename}_.jpeg'
+            image_filename = '{iso_ish_datetime}_{capture_params_for_filename}_.jpeg'.format(**locals())
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
@@ -133,7 +133,7 @@ def run_experiment(cli_args=None):
         configuration = get_experiment_configuration(cli_args)
 
         if not hostname_is_correct(configuration.hostname):
-            quit_message = f'"{configuration.hostname}" is not a valid hostname.'
+            quit_message = '"{configuration.hostname}" is not a valid hostname.'.format(**locals())
             quit_message += ' Contact your local dev for instructions on setting a valid hostname.'
             logging.error(quit_message)
             quit()

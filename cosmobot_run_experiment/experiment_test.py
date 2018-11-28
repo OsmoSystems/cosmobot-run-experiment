@@ -17,7 +17,7 @@ class TestRunExperiment:
         duration = 0.1
 
         start_time = datetime.now()
-        with pytest.raises(SystemExit, message='Experiment completed successfully!'):
+        with pytest.raises(SystemExit):
             module.run_experiment([
                 '--name', 'automated_integration_test',
                 '--interval', str(duration),
@@ -27,10 +27,10 @@ class TestRunExperiment:
         end_time = datetime.now()
         elapsed_time = end_time - start_time
 
-        mock_capture.assert_called_once()
-        mock_create_file_structure.assert_called_once()
-        mock_hostname_is_correct.assert_called_once()
-        mock_set_up_log_file_with_base_handler.assert_called_once()
+        assert mock_capture.call_count == 1
+        assert mock_create_file_structure.call_count == 1
+        assert mock_hostname_is_correct.call_count == 1
+        assert mock_set_up_log_file_with_base_handler.call_count == 1
 
         # Crude self-test that no major, slow side-effects are occurring:
         # For instance, if we are syncing to s3 we'd expect that to take a few seconds

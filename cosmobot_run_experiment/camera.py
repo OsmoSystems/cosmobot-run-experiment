@@ -15,21 +15,26 @@ def capture(filename, additional_capture_params=''):
     Returns:
         Resulting command line output of the raspistill command
     '''
-    command = f'raspistill --raw -o "{filename}" {AWB_QUALITY_CAPTURE_PARAMS} {additional_capture_params}'
-    logging.info(f'Capturing image using raspistill: {command}')
+    command = 'raspistill --raw -o "{filename}" {AWB_QUALITY_CAPTURE_PARAMS} {additional_capture_params}'.format(
+        **locals(), **globals()
+    )
+    logging.info(
+        'Capturing image using raspistill: {command}'.format(**locals())
+    )
     check_call(command, shell=True)
 
 
-def simulate_capture_with_copy(filename, **kwargs):
+def simulate_capture_with_copy(filename, additional_capture_params=''):
     ''' Simulate capture by copying image file
 
     Args:
         filename: filename to copy a test image to
+        additional_capture_params: ignored, only exists to keep the same signature as `capture()`
 
     Returns:
         Resulting command line output of the copy command
     '''
     test_image_path = pkg_resources.resource_filename(__name__, 'v2_image_for_development.jpeg')
-    command = f'cp "{test_image_path}" "{filename}"'
-    logging.info(f'Simulate capture: {command}')
+    command = 'cp "{test_image_path}" "{filename}"'.format(**locals())
+    logging.info('Simulate capture: {command}'.format(**locals()))
     check_call(command, shell=True)

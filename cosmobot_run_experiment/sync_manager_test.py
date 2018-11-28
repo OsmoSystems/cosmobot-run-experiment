@@ -47,4 +47,4 @@ class TestEndSyncingProcess:
     def test_process_running__kill_it(self, mocker, mock_sync_process):
         mocker.patch.object(module, '_is_sync_process_running').return_value = True
         module.end_syncing_process()
-        mock_sync_process.terminate.assert_called_once()
+        assert mock_sync_process.terminate.call_count == 1
