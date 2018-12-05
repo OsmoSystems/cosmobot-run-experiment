@@ -64,4 +64,4 @@ class TestEndSyncingProcess:
     ):
         mocker.patch.object(module, '_is_sync_process_running').return_value = True
         module.end_syncing_process()
-        mock_psutil_process.return_value.kill.assert_called_once()
+        assert mock_psutil_process.return_value.kill.call_count == 1

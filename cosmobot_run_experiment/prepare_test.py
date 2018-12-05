@@ -184,7 +184,10 @@ class TestCreateFileStructureForExperiment:
         assert set(self.MockExperimentConfiguration._fields).issubset(module.ExperimentConfiguration._fields)
 
     def _create_mock_configuration(self, mocker, tmp_path):
-        experiment_directory_path = os.path.join(tmp_path, self.subdir_name)
+        experiment_directory_path = os.path.join(
+            str(tmp_path),  # tmp_path is a PosixPath instance. python 2.5's os.path.join doesn't know how to handle it.
+            self.subdir_name
+        )
 
         return self.MockExperimentConfiguration(
             experiment_directory_path=experiment_directory_path,
