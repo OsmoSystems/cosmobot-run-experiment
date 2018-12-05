@@ -24,14 +24,13 @@ def end_syncing_process():
     '''
     global _SYNC_PROCESS
 
-    # there is a chance the new process has not been assigned a pid yet
-    if _is_sync_process_running() and _SYNC_PROCESS.pid:
-        parent_sync_process = psutil.Process(_SYNC_PROCESS.pid)
-
-        for child in parent_sync_process.children(recursive=True):
+    if _is_sync_process_running():
+        sync_process_parent = psutil.Process(_SYNC_PROCESS.pid)
+        for child in sync_process_parent.children(recursive=True):
             child.kill()
 
-        parent_sync_process.kill()
+        sync_process_parent.kill()
+
         _SYNC_PROCESS = None
 
 
