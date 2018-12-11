@@ -1,5 +1,5 @@
 import multiprocessing
-
+import psutil
 from .s3 import sync_to_s3
 
 
@@ -13,14 +13,25 @@ def _is_sync_process_running():
 def end_syncing_process():
     '''Stops the syncing process. Intended to be used if experimental image capture has finished and a final
        sync should be initiated.
+
+       Note: we need to make sure to kill all child & descendant processes
+       (_SYNC_PROCESS.terminate() would only kill the top level
+       https://docs.python.org/3.5/library/multiprocessing.html#multiprocessing.Process.terminate)
      Args:
         None
      Returns:
         None
     '''
     global _SYNC_PROCESS
+
     if _is_sync_process_running():
-        _SYNC_PROCESS.terminate()
+        sync_process_parent = psutil.Process(_SYNC_PROCESS.pid)
+        for child in sync_process_parent.children(recursive=True):
+            child.kill()
+
+        sync_process_parent.kill()
+
+        _SYNC_PROCESS = None
 
 
 def sync_directory_in_separate_process(directory, wait_for_finish=False, exclude_log_files=True):

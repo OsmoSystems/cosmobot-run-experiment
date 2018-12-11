@@ -14,6 +14,7 @@ setup(
     },
     install_requires=[
         'pyyaml',
+        'psutil',
     ],
     include_package_data=True
 )
