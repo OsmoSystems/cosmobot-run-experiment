@@ -14,9 +14,8 @@ def mock_sync_process(mocker):
 def mock_psutil_process(mocker):
     mock_psutil_process = mocker.patch.object(psutil, 'Process')
     mock_psutil_process.return_value.pid = 10000
-    mock_psutil_process.return_value.kill.return_value = True
     mock_psutil_process.return_value.children.return_value = [
-        mocker.MagicMock(kill=lambda: True)
+        mocker.Mock()  # mock child process, kill attribute will automatically be mocked
     ]
     return mock_psutil_process
 
@@ -67,4 +66,4 @@ class TestEndSyncingProcess:
         mocker.patch.object(module, '_is_sync_process_running').return_value = True
         module.end_syncing_process()
         assert mock_psutil_process.return_value.kill.call_count == 1
-        assert mock_psutil_process.return_value.children[0].kill.call_count == 1
+        assert mock_psutil_process.return_value.children.return_value[0].kill.call_count == 1
