@@ -7,6 +7,8 @@ def as_rgb(raw_image_path):
     ''' Extracts the raw bayer data from a JPEG+RAW file and converts it to an
         `RGB Image` (see definition in README).
 
+        NOTE: Duplicated from process_experiment
+
     Args:
         raw_image_path: The full path to the JPEG+RAW file
 

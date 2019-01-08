@@ -15,6 +15,8 @@ def iso_datetime_for_filename(datetime):
 def get_files_with_extension(directory, extension):
     ''' Get all file paths in the given directory with the given extension, sorted alphanumerically
 
+        NOTE: Duplicated from process_experiment
+
     Args:
         directory: The full path to the directory of files
         extension: The full extension (including '.') of files to filter to, e.g. '.jpeg'
