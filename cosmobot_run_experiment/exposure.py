@@ -4,7 +4,8 @@ import argparse
 from .file_structure import get_files_with_extension
 from .open import as_rgb
 
-COLOR_CHANNEL_COUNT = 3
+COLOR_CHANNELS = 'rgb'
+COLOR_CHANNEL_COUNT = len(COLOR_CHANNELS)
 
 
 def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_threshold=0.01):
@@ -26,8 +27,9 @@ def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_thr
         'overexposed_percent': (rgb_image > overexposed_threshold).sum() / rgb_image.size,
         'underexposed_percent': (rgb_image < underexposed_threshold).sum() / rgb_image.size,
         ** {
-            'overexposed_percent_{}'.format(color): overexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
-            for color_index, color in enumerate('rgb')
+            'overexposed_percent_{}'.format(color):
+                overexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
+            for color_index, color in enumerate(COLOR_CHANNELS)
         }
     }
 

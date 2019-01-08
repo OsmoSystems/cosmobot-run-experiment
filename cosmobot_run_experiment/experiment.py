@@ -106,7 +106,6 @@ def end_experiment(experiment_configuration, experiment_ended_message):
         )
         logging.info("Final sync to s3 completed!")
 
-
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
 
