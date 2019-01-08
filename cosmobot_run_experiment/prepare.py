@@ -30,7 +30,7 @@ ExperimentConfiguration = namedtuple(
         'hostname',  # hostname of the device the experient was executed on
         'mac',  # mac address
         'skip_sync',  # whether to skip syncing to s3
-        'review_exposure',  # whether to skip syncing to s3
+        'review_exposure',  # review exposure statistics after experiment finishes and do not sync to s3)
     ]
 )
 
