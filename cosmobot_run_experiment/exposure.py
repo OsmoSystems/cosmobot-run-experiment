@@ -7,13 +7,26 @@ from .open import as_rgb
 COLOR_CHANNEL_COUNT = 3
 
 
-def _generate_statistics(rgb_image, overexposed_threshold = 0.99, underexposed_threshold = 0.01):
+def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_threshold=0.01):
+    ''' Generate pixel percentage overexposure & underexposure of entire image and overexposure pixel percentage by
+        color channel
+
+    Args:
+        rgb_image: a `RGB Image`
+        overexposed_threshold: threshold at which a color's intensity is overexposed
+        underexposed_threshold: threshold at which a color's intensity is underexposed
+    Returns:
+        dictionary of overexposure & underexposure statistics
+    '''
+
+    overexposed_pixel_count_by_channel = (rgb_image > overexposed_threshold).sum(axis=(0, 1))
+    per_channel_pixel_count = rgb_image.size / COLOR_CHANNEL_COUNT
+
     return {
         'overexposed_percent': (rgb_image > overexposed_threshold).sum() / rgb_image.size,
         'underexposed_percent': (rgb_image < underexposed_threshold).sum() / rgb_image.size,
-        ** { # overexposure percent by color channel
-            'overexposed_percent_{}'.format(color):
-                (rgb_image[:, :, color_index] > overexposed_threshold).sum() / (rgb_image.size / COLOR_CHANNEL_COUNT)
+        ** {
+            'overexposed_percent_{}'.format(color): overexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
             for color_index, color in enumerate('rgb')
         }
     }
