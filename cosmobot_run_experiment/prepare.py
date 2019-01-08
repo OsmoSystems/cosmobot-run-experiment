@@ -89,7 +89,7 @@ def _parse_args(args):
     arg_parser.add_argument(
         '--review-exposure',
         action='store_true',
-        help='optionally only run experiment to store images review exposure (no s3 sync)'
+        help='optionally only run experiment to store images & review exposure (no s3 sync)'
     )
 
     return vars(arg_parser.parse_args(args))
