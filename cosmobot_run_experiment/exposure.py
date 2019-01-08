@@ -6,13 +6,20 @@ from .open import as_rgb
 
 
 def _generate_statistics(rgb_image, overexposed_threshold = 0.99, underexposed_threshold = 0.01):
-    overexposed_pixel_count = len(rgb_image[rgb_image > overexposed_threshold])
-    underexposed_pixel_count = len(rgb_image[rgb_image < underexposed_threshold])
+    overexposed_pixel_count = (rgb_image > overexposed_threshold).sum()
+    underexposed_pixel_count = (rgb_image < underexposed_threshold).sum()
     total_pixel_count = rgb_image.size
+
+    # flattened_overexposed_stats = {
+    #     f'{color}_{stat}': channel_stats[stat][color_index]
+    #     for stat in channel_stats
+    #     for color_index, color in enumerate('rgb')  # TODO: is it a safe assumption that everything's in rgb??
+    # }
 
     return {
         'overexposed_percent': (overexposed_pixel_count / total_pixel_count),
-        'underexposed_percent': (underexposed_pixel_count / total_pixel_count)
+        'underexposed_percent': (underexposed_pixel_count / total_pixel_count),
+        #**flattened_overexposed_stats
     }
 
 

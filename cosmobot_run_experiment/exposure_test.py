@@ -9,14 +9,16 @@ rgb_image = np.array([
 ])
 
 
-def test_generate_statistics():
-    stats = module._generate_statistics(rgb_image)
+class TestGenerateStastics():
 
-    actual_overexposed_percent = stats['overexposed_percent']
-    actual_underexposed_percent = stats['underexposed_percent']
+    def test_overexposed_percent(self):
+        stats = module._generate_statistics(rgb_image)
+        actual_overexposed_percent = stats['overexposed_percent']
+        expected_overexposed_percent = 0.25
+        assert actual_overexposed_percent == expected_overexposed_percent
 
-    expected_overexposed_percent = 0.25
-    expected_underexposed_percent = 0.25
-
-    assert actual_overexposed_percent == expected_overexposed_percent
-    assert actual_underexposed_percent == expected_underexposed_percent
+    def test_underexposed_percent(self):
+        stats = module._generate_statistics(rgb_image)
+        actual_underexposed_percent = stats['underexposed_percent']
+        expected_underexposed_percent = 0.25
+        assert actual_underexposed_percent == expected_underexposed_percent
