@@ -10,11 +10,16 @@ setup(
     url='https://github.com/OsmoSystems/cosmobot-run-experiment.git',
     packages=find_packages(),
     entry_points={
-        'console_scripts': ['run_experiment = cosmobot_run_experiment.experiment:run_experiment']
+        'console_scripts': [
+            'run_experiment = cosmobot_run_experiment.experiment:run_experiment',
+            'review_exposure = cosmobot_run_experiment.exposure:review_exposure'
+        ]
     },
     install_requires=[
         'pyyaml',
         'psutil',
+        'numpy',
+        'picamraw'
     ],
     include_package_data=True
 )
