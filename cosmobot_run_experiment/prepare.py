@@ -89,7 +89,7 @@ def _parse_args(args):
     arg_parser.add_argument(
         '--review-exposure',
         action='store_true',
-        help='optionally only run experiment to store images & review exposure (no s3 sync)'
+        help='optionally review exposure at the end of the experiment'
     )
 
     return vars(arg_parser.parse_args(args))
@@ -161,7 +161,7 @@ def get_experiment_configuration(cli_args):
         hostname=gethostname(),
         mac=mac_address,
         variants=variants,
-        skip_sync=True if args['skip_sync'] or args['review_exposure'] else False,
+        skip_sync=args['skip_sync'],
         review_exposure=args['review_exposure']
     )
 

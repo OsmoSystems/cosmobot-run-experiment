@@ -52,9 +52,6 @@ def perform_experiment(configuration):
         logging.info('Estimated number of images that can be captured with free space: '
                      '{how_many_images_can_be_captured}'.format(**locals()))
 
-    if configuration.review_exposure:
-        logging.info("Syncing to s3 is disabled due to usage of --review_exposure")
-
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
