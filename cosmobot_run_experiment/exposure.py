@@ -51,7 +51,9 @@ def review_exposure(cli_args=None):
 
     arg_parser = argparse.ArgumentParser(description='''
         The --directory flag specifies the directory that contains the images to generate exposure statstics from
-        Example Usage: review_exposure --directory /Users/osmo/cosmobot-data-sets/directory_of_images_to_generate_exposure_stats_from
+
+        Example Usage:
+        review_exposure --directory /Users/osmo/cosmobot-data-sets/directory_of_images_to_generate_exposure_stats_from
     ''')
 
     arg_parser.add_argument('--directory', required=True, type=str, help='directory to use to review image exposures')
