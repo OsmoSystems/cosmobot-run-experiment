@@ -30,7 +30,7 @@ ExperimentConfiguration = namedtuple(
         'hostname',  # hostname of the device the experient was executed on
         'mac',  # mac address
         'skip_sync',  # whether to skip syncing to s3
-        'preview_exposure',  # whether to skip syncing to s3
+        'review_exposure',  # whether to skip syncing to s3
     ]
 )
 
@@ -87,9 +87,9 @@ def _parse_args(args):
     )
 
     arg_parser.add_argument(
-        '--preview-exposure',
+        '--review-exposure',
         action='store_true',
-        help='optionally only run experiment to preview exposure'
+        help='optionally only run experiment to store images review exposure (no s3 sync)'
     )
 
     return vars(arg_parser.parse_args(args))
@@ -161,8 +161,8 @@ def get_experiment_configuration(cli_args):
         hostname=gethostname(),
         mac=mac_address,
         variants=variants,
-        skip_sync=True if args['skip_sync'] or args['preview_exposure'] else False,
-        preview_exposure=args['preview_exposure']
+        skip_sync=True if args['skip_sync'] or args['review_exposure'] else False,
+        review_exposure=args['review_exposure']
     )
 
     return experiment_configuration
