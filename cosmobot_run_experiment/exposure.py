@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import numpy as np
 from .file_structure import get_files_with_extension
 from .open import as_rgb
 
@@ -21,14 +22,22 @@ def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_thr
     '''
 
     overexposed_pixel_count_by_channel = (rgb_image > overexposed_threshold).sum(axis=(0, 1))
+    underexposed_pixel_count_by_channel = (rgb_image < underexposed_threshold).sum(axis=(0, 1))
     per_channel_pixel_count = rgb_image.size / COLOR_CHANNEL_COUNT
 
     return {
+        'overexposed_threshold': overexposed_threshold,
+        'underexposed_threshold': underexposed_threshold,
         'overexposed_percent': (rgb_image > overexposed_threshold).sum() / rgb_image.size,
         'underexposed_percent': (rgb_image < underexposed_threshold).sum() / rgb_image.size,
         ** {
             'overexposed_percent_{}'.format(color):
                 overexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
+            for color_index, color in enumerate(COLOR_CHANNELS)
+        },
+        ** {
+            'underexposed_percent_{}'.format(color):
+                underexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
             for color_index, color in enumerate(COLOR_CHANNELS)
         }
     }
