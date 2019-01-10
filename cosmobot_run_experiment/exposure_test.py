@@ -31,7 +31,7 @@ class TestGenerateStastics():
     def test_overexposed_percent_by_color_channel(
         self,
         name,
-        color_channel_index,
+        color_channel_key,
         expected_color_channel_overexposed_percent
     ):
         stats = module._generate_statistics(rgb_image)
@@ -46,7 +46,7 @@ class TestGenerateStastics():
     def test_underexposed_percent_by_color_channel(
         self,
         name,
-        color_channel_index,
+        color_channel_key,
         expected_color_channel_underexposed_percent
     ):
         stats = module._generate_statistics(rgb_image)
