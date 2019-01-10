@@ -87,6 +87,12 @@ def _parse_args(args):
     )
 
     arg_parser.add_argument(
+        '--erase-synced-files',
+        action='store_false',
+        help='If provided, uses s3 mv to erase files after sync is completed.'
+    )
+
+    arg_parser.add_argument(
         '--review-exposure',
         action='store_true',
         help='optionally review exposure at the end of the experiment'
@@ -162,6 +168,7 @@ def get_experiment_configuration(cli_args):
         mac=mac_address,
         variants=variants,
         skip_sync=args['skip_sync'],
+        erase_synced_files=args['erase_synced_files'],
         review_exposure=args['review_exposure']
     )
 
