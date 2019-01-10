@@ -7,6 +7,7 @@ from .file_structure import iso_datetime_for_filename
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
+from .exposure import review_exposure_statistics
 
 from datetime import datetime, timedelta
 
@@ -91,15 +92,20 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
     # remaining images. To that end, we end any existing sync process and start a new one
     logging.info(experiment_ended_message)
-    logging.info("Beginning final sync to s3 due to end of experiment...")
+
     if not experiment_configuration.skip_sync:
+        logging.info("Beginning final sync to s3 due to end of experiment...")
         end_syncing_process()
         sync_directory_in_separate_process(
             experiment_configuration.experiment_directory_path,
             wait_for_finish=True,
             exclude_log_files=False
         )
-    logging.info("Final sync to s3 completed!")
+        logging.info("Final sync to s3 completed!")
+
+    if experiment_configuration.review_exposure:
+        review_exposure_statistics(experiment_configuration.experiment_directory_path)
+
     quit()
 
 

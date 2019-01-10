@@ -38,6 +38,7 @@ class TestParseArgs:
             'exposures': [20, 30],
             'isos': [45, 55],
             'skip_sync': False,
+            'review_exposure': False,
         }
         assert module._parse_args(args_in) == expected_args_out
 
