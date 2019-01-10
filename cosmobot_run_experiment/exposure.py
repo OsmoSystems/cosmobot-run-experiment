@@ -27,8 +27,8 @@ def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_thr
     return {
         'overexposed_threshold': overexposed_threshold,
         'underexposed_threshold': underexposed_threshold,
-        'overexposed_percent': (rgb_image > overexposed_threshold).sum() / rgb_image.size,
-        'underexposed_percent': (rgb_image < underexposed_threshold).sum() / rgb_image.size,
+        'overexposed_percent': overexposed_pixel_count_by_channel.sum() / rgb_image.size,
+        'underexposed_percent': underexposed_pixel_count_by_channel.sum() / rgb_image.size,
         ** {
             'overexposed_percent_{}'.format(color):
                 overexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
