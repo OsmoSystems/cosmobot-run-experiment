@@ -35,7 +35,7 @@ class TestGenerateStastics():
         expected_color_channel_overexposed_percent
     ):
         stats = module._generate_statistics(rgb_image)
-        actual_color_channel_overexposed_percent = stats[color_channel_index]
+        actual_color_channel_overexposed_percent = stats[color_channel_key]
         assert actual_color_channel_overexposed_percent == expected_color_channel_overexposed_percent
 
     @pytest.mark.parametrize("name, color_channel_key, expected_color_channel_underexposed_percent", [
@@ -50,7 +50,7 @@ class TestGenerateStastics():
         expected_color_channel_underexposed_percent
     ):
         stats = module._generate_statistics(rgb_image)
-        actual_color_channel_underexposed_percent = stats[color_channel_index]
+        actual_color_channel_underexposed_percent = stats[color_channel_key]
         assert actual_color_channel_underexposed_percent == expected_color_channel_underexposed_percent
 
 
