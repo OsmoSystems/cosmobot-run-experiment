@@ -1,7 +1,6 @@
 import os
 import sys
 import argparse
-import numpy as np
 from .file_structure import get_files_with_extension
 from .open import as_rgb
 
