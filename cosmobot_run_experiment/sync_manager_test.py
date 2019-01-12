@@ -44,9 +44,10 @@ class TestIsSyncProcessRunning:
     def test_process_exists_and_is_running_and_excludes_logs(self, mock_multiprocess_process):
         module.sync_directory_in_separate_process('/tmp', wait_for_finish=False, exclude_log_files=True)
         expected_additional_sync_params = '--exclude *.log*'
+        expected_erase_synced_files = False
         mock_multiprocess_process.assert_called_with(
             target=s3.sync_to_s3,
-            args=('/tmp', expected_additional_sync_params,)
+            args=('/tmp', expected_additional_sync_params, expected_erase_synced_files)
         )
 
 

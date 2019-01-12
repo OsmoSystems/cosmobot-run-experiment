@@ -34,9 +34,12 @@ class TestSyncToS3:
                            '--exclude *.log*'
         mock_check_call.assert_called_with(expected_command, shell=True)
 
-    def test_mv_to_subdirectory_in_s3_bucket(
-        self, mocker, mock_check_call, mock_path_basename
+    @pytest.mark.parametrize("test_name, erase_synced_files, expected_command", [
+        ('mv command', True, 'aws s3 mv /output_dir/experiment_name s3://camera-sensor-experiments/experiment_name '),
+        ('sync command', False, 'aws s3 sync /output_dir/experiment_name s3://camera-sensor-experiments/experiment_name ')
+    ])
+    def test_s3_subcommand(
+        self, test_name, erase_synced_files, expected_command, mocker, mock_check_call, mock_path_basename
     ):
-        module.sync_to_s3(local_sync_dir='/output_dir/experiment_name', erase_synced_files=True)
-        expected_command = 'aws s3 mv /output_dir/experiment_name s3://camera-sensor-experiments/experiment_name '
+        module.sync_to_s3(local_sync_dir='/output_dir/experiment_name', erase_synced_files=erase_synced_files)
         mock_check_call.assert_called_with(expected_command, shell=True)

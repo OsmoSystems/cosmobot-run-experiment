@@ -30,6 +30,7 @@ ExperimentConfiguration = namedtuple(
         'hostname',  # hostname of the device the experient was executed on
         'mac',  # mac address
         'skip_sync',  # whether to skip syncing to s3
+        'erase_synced_files',  # whether to erase the local experiment folder after synced to s3
         'review_exposure',  # review exposure statistics after experiment finishes and do not sync to s3)
     ]
 )
@@ -88,7 +89,7 @@ def _parse_args(args):
 
     arg_parser.add_argument(
         '--erase-synced-files',
-        action='store_false',
+        action='store_true',
         help='If provided, uses s3 mv to erase files after sync is completed.'
     )
 
