@@ -100,7 +100,7 @@ def end_experiment(experiment_configuration, experiment_ended_message):
             experiment_configuration.experiment_directory_path,
             wait_for_finish=True,
             exclude_log_files=False,
-            erase_synced_files=configuration.erase_synced_files
+            erase_synced_files=experiment_configuration.erase_synced_files
         )
         logging.info("Final sync to s3 completed!")
 

@@ -34,7 +34,11 @@ def end_syncing_process():
         _SYNC_PROCESS = None
 
 
-def sync_directory_in_separate_process(directory, wait_for_finish=False, exclude_log_files=True, erase_synced_files=False):
+def sync_directory_in_separate_process(
+    directory, wait_for_finish=False,
+    exclude_log_files=True,
+    erase_synced_files=False
+):
     ''' Instantiates a separate process for syncing a directory to s3.  Stores a reference to the process to check
         later for subsequent syncs.
      Args:
