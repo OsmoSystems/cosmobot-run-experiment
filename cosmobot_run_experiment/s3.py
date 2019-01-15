@@ -23,7 +23,8 @@ def sync_to_s3(local_sync_dir, additional_sync_params='', erase_synced_files=Fal
     s3_subcommand = 'mv' if erase_synced_files else 'sync'
 
     # This argument pattern issues a uni-directional sync to S3 bucket
-    # https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html
+    # https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html or
+    # https://docs.aws.amazon.com/cli/latest/reference/s3/mv.html
     s3_sync_dir = 's3://camera-sensor-experiments/{experiment_dir_name}'.format(**locals())
     command = 'aws s3 {s3_subcommand} {local_sync_dir} {s3_sync_dir} {additional_sync_params}'.format(**locals())
     logging.info(command)
