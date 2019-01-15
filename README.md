@@ -42,7 +42,7 @@ pi@pi-cam-CF60:~/cosmobot-run-experiment $ git pull
 
 3. Install the python package. The `-e` makes it installed "editable", which means that if you later pull new changes in to the repo, they should be automatically picked up.
 ```
-sudo pip3 install -e .
+sudo pip3.6 install -e .
 ```
 
 ## Run
