@@ -8,7 +8,7 @@ COLOR_CHANNELS = 'rgb'
 COLOR_CHANNEL_COUNT = len(COLOR_CHANNELS)
 
 
-def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_threshold=0.01):
+def _generate_statistics(rgb_image, overexposed_threshold=0.99, underexposed_threshold=0.1):
     ''' Generate pixel percentage overexposure & underexposure of entire image and overexposure pixel percentage by
         color channel
 
