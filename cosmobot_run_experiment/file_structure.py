@@ -31,3 +31,18 @@ def get_files_with_extension(directory, extension):
     ]
 
     return sorted(file_paths)
+
+
+def remove_experiment_directory(experiment_directory):
+    ''' Remove experiment directory
+
+        Note: os.rmdir only removes an empty directory
+    Args:
+        experiment_directory: directory to remove
+
+    Returns:
+        None
+    '''
+
+    directory = os.path.join(get_base_output_path(), experiment_directory)
+    os.rmdir(directory)

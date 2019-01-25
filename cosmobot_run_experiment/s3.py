@@ -20,7 +20,7 @@ def sync_to_s3(local_sync_dir, additional_sync_params='', erase_synced_files=Fal
     # Work around is to use cli sync for now (requires aws cli to be installed)
     logging.info('Performing sync of experiments directory: {local_sync_dir}'.format(**locals()))
     experiment_dir_name = os.path.basename(os.path.normpath(local_sync_dir))
-    s3_subcommand = 'mv' if erase_synced_files else 'sync'
+    s3_subcommand = 'mv --recursive' if erase_synced_files else 'sync'
 
     # This argument pattern issues a uni-directional sync to S3 bucket
     # https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html or
