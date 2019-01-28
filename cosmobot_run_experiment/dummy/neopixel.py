@@ -1,9 +1,9 @@
 class Pixel():
     def show(self):
-        x = 0
+        return True
 
     def fill(self, color):
-        x = 0
+        return True
 
 
 class NeoPixel(object):
