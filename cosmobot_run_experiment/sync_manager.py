@@ -34,7 +34,11 @@ def end_syncing_process():
         _SYNC_PROCESS = None
 
 
-def sync_directory_in_separate_process(directory, wait_for_finish=False, exclude_log_files=True):
+def sync_directory_in_separate_process(
+    directory, wait_for_finish=False,
+    exclude_log_files=True,
+    erase_synced_files=False
+):
     ''' Instantiates a separate process for syncing a directory to s3.  Stores a reference to the process to check
         later for subsequent syncs.
      Args:
@@ -49,7 +53,10 @@ def sync_directory_in_separate_process(directory, wait_for_finish=False, exclude
 
     additional_sync_params = '--exclude *.log*' if exclude_log_files else ''
 
-    _SYNC_PROCESS = multiprocessing.Process(target=sync_to_s3, args=(directory, additional_sync_params,))
+    _SYNC_PROCESS = multiprocessing.Process(
+        target=sync_to_s3,
+        args=(directory, additional_sync_params, erase_synced_files,)
+    )
     _SYNC_PROCESS.start()
 
     if wait_for_finish:

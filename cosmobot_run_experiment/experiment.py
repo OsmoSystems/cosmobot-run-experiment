@@ -3,7 +3,7 @@ import sys
 import time
 import logging
 from .camera import capture
-from .file_structure import iso_datetime_for_filename
+from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
@@ -99,9 +99,14 @@ def end_experiment(experiment_configuration, experiment_ended_message):
         sync_directory_in_separate_process(
             experiment_configuration.experiment_directory_path,
             wait_for_finish=True,
-            exclude_log_files=False
+            exclude_log_files=False,
+            erase_synced_files=experiment_configuration.erase_synced_files
         )
         logging.info("Final sync to s3 completed!")
+
+        # s3 mv does not remove a directory so we have to do it here after mv is complete
+        if experiment_configuration.erase_synced_files:
+            remove_experiment_directory(experiment_configuration.experiment_directory_path)
 
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)

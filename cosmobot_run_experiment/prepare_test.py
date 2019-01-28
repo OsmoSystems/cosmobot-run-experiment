@@ -39,6 +39,7 @@ class TestParseArgs:
             'isos': [45, 55],
             'skip_sync': False,
             'review_exposure': False,
+            'erase_synced_files': False,
         }
         assert module._parse_args(args_in) == expected_args_out
 
