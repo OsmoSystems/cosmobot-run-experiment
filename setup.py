@@ -12,7 +12,8 @@ setup(
     entry_points={
         'console_scripts': [
             'run_experiment = cosmobot_run_experiment.experiment:run_experiment',
-            'review_exposure = cosmobot_run_experiment.exposure:review_exposure'
+            'review_exposure = cosmobot_run_experiment.exposure:review_exposure',
+            'set_led = cosmobot_run_experiment.led:set_led'
         ]
     },
     install_requires=[
