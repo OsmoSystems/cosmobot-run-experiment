@@ -10,15 +10,23 @@ def mock_show_pixels(mocker):
 
 
 class TestLed:
-    @pytest.mark.parametrize("name, args_in, expected_color, expected_intensity", [
-        ('only red color', ['--color', 'red'], (0, 0, 255, 0), 1.0),
+    @pytest.mark.parametrize("name, args_in, expected_color, expected_intensity, expected_pixel_indices", [
+        ('only red color', ['--color', 'red'], (0, 0, 255, 0), 1.0, module.ALL_PIXELS),
         (
             'red color and intensity',
             ['--color', 'red', '--intensity', '0.8'],
             (0, 0, 255, 0),
-            0.8
+            0.8,
+            module.ALL_PIXELS
+        ),
+        (
+            'one pixel',
+            ['--color', 'red', '--intensity', '0.8', '--use_one_led'],
+            (0, 0, 255, 0),
+            0.8,
+            module.ONE_PIXEL
         ),
     ])
-    def test_set_led(self, name, args_in, expected_color, expected_intensity, mock_show_pixels):
+    def test_set_led(self, name, args_in, expected_color, expected_intensity, expected_pixel_indices, mock_show_pixels):
         module.set_led(args_in)
-        mock_show_pixels.assert_called_with(expected_color, expected_intensity)
+        mock_show_pixels.assert_called_with(expected_color, expected_intensity, pixel_indices=expected_pixel_indices)

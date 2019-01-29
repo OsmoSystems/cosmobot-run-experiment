@@ -9,6 +9,7 @@ except ImportError:
 
 NUMBER_OF_LEDS = 16
 ALL_PIXELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 DEFAULT_PIXEL_ORDER = (1, 0, 2, 3)
 
 NAMED_COLORS_IN_RGB = {
@@ -26,8 +27,7 @@ def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
     )
 
     for pixel_index in pixel_indices:
-        pixels[pixel_index].fill(color)
-        pixels[pixel_index].show()
+        pixels[pixel_index] = color
 
 
 def set_led(cli_args=None):
@@ -45,6 +45,10 @@ def set_led(cli_args=None):
         '--color', required=False, type=str, default='white',
         help='Named color', choices=NAMED_COLORS_IN_RGB.keys()
     )
+    arg_parser.add_argument('--use_one_led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
 
     args = vars(arg_parser.parse_args(cli_args))
-    _show_pixels(NAMED_COLORS_IN_RGB[args['color']], args['intensity'])
+
+    pixel_indices = ONE_PIXEL if args['use_one_led'] else ALL_PIXELS
+
+    _show_pixels(NAMED_COLORS_IN_RGB[args['color']], args['intensity'], pixel_indices=pixel_indices)
