@@ -37,7 +37,9 @@ def set_led(cli_args=None):
 
     arg_parser = argparse.ArgumentParser(description='''
         Example Usage:
-        set_led --intensity 0.8 --color white
+        ALL LEDS:  set_led --intensity 0.8 --color white
+        ONE LED:   set_led --intensity 0.8 --color white --use_one_led
+        OFF:       set_led --intensity 0.0
     ''')
 
     arg_parser.add_argument('--intensity', required=False, type=float, default=1.0, help='led intensity (0.0 - 1.0)')
