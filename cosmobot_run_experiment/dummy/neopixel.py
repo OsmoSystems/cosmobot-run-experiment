@@ -20,5 +20,4 @@ class NeoPixel(object):
         ]
 
     def __getitem__(self, item):
-        print(item)
         return self.pixels[item]
