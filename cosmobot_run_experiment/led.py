@@ -13,7 +13,7 @@ ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 DEFAULT_PIXEL_ORDER = (1, 0, 2, 3)
 
 NAMED_COLORS_IN_RGB = {
-    'white': (0, 0, 0, 255), 'blue': (0, 0, 255, 0), 'red': (0, 0, 255, 0),
+    'white': (0, 0, 0, 255), 'blue': (0, 0, 255, 0), 'red': (255, 0, 0, 0),
     'purple': (255, 0, 255, 0), 'green': (0, 255, 0, 0)
 }
 
