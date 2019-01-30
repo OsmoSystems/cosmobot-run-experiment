@@ -21,3 +21,6 @@ class NeoPixel(object):
 
     def __getitem__(self, item):
         return self.pixels[item]
+
+    def __setitem__(self, key, item):
+        self.pixels[key] = item

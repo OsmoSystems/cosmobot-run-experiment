@@ -42,14 +42,15 @@ def set_led(cli_args=None):
         OFF:       set_led --intensity 0.0
     ''')
 
-    arg_parser.add_argument('--intensity', required=False, type=float, default=1.0, help='led intensity (0.0 - 1.0)')
+    arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
         '--color', required=False, type=str, default='white',
         help='Named color', choices=NAMED_COLORS_IN_RGB.keys()
     )
     arg_parser.add_argument('--one_led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
 
-    args = vars(arg_parser.parse_args(cli_args))
+    led_arg_namespace, _ = arg_parser.parse_known_args(cli_args)
+    args = vars(led_arg_namespace)
 
     pixel_indices = ONE_PIXEL if args['one_led'] else ALL_PIXELS
 
