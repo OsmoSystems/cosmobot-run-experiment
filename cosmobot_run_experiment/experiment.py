@@ -135,7 +135,7 @@ def run_experiment(cli_args=None):
     '''
     try:
         set_led(cli_args)
-        
+
         if cli_args is None:
             # First argument is the name of the command itself, not an "argument" we want to parse
             cli_args = sys.argv[1:]
