@@ -92,7 +92,8 @@ def _parse_args(args):
         help='optionally review exposure at the end of the experiment'
     )
 
-    return vars(arg_parser.parse_args(args))
+    experiment_arg_namespace, _ = arg_parser.parse_known_args(args)
+    return vars(experiment_arg_namespace)
 
 
 def get_experiment_variants(args):
