@@ -21,7 +21,7 @@ class TestLed:
         ),
         (
             'red, one pixel and intensity',
-            ['--color', 'red', '--intensity', '0.8', '--one_led'],
+            ['--color', 'red', '--intensity', '0.8', '--one-led'],
             (255, 0, 0, 0),
             0.8,
             module.ONE_PIXEL
