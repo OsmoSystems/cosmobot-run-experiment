@@ -38,7 +38,7 @@ def set_led(cli_args=None):
     arg_parser = argparse.ArgumentParser(description='''
         Example Usage:
         ALL LEDS:  set_led --intensity 0.8 --color white
-        ONE LED:   set_led --intensity 0.8 --color white --use_one_led
+        ONE LED:   set_led --intensity 0.8 --color white --one_led
         OFF:       set_led --intensity 0.0
     ''')
 
@@ -47,10 +47,10 @@ def set_led(cli_args=None):
         '--color', required=False, type=str, default='white',
         help='Named color', choices=NAMED_COLORS_IN_RGB.keys()
     )
-    arg_parser.add_argument('--use_one_led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
+    arg_parser.add_argument('--one_led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
 
     args = vars(arg_parser.parse_args(cli_args))
 
-    pixel_indices = ONE_PIXEL if args['use_one_led'] else ALL_PIXELS
+    pixel_indices = ONE_PIXEL if args['one_led'] else ALL_PIXELS
 
     _show_pixels(NAMED_COLORS_IN_RGB[args['color']], args['intensity'], pixel_indices=pixel_indices)
