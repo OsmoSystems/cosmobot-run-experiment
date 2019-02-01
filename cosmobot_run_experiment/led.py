@@ -1,11 +1,13 @@
 import sys
 import argparse
 
+#  Import pattern to support development without needing pi specific modules installed.
+#  board and neopixel modules have been stubbed out within "pi_stubs" folder
 try:
     import board  # noqa: E0401
     import neopixel  # noqa: E0401
 except ImportError:
-    from .dummy import board, neopixel
+    from .pi_stubs import board, neopixel
 
 NUMBER_OF_LEDS = 16
 ALL_PIXELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -19,6 +21,15 @@ NAMED_COLORS_IN_RGB = {
 
 
 def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
+    '''Update led pixel color & intensity
+     Args:
+        color: 4-tuple rgbw
+        intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
+        pixel_indices: list of pixel indices to update color and intensity
+     Returns:
+        None
+    '''
+
     pixels = neopixel.NeoPixel(
         board.D18,
         NUMBER_OF_LEDS,
@@ -31,6 +42,13 @@ def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
 
 
 def set_led(cli_args=None):
+    '''Extract and verify arguments passed in from the command line for controlling leds
+     Args:
+        args: list of command-line-like argument strings such as sys.argv
+     Returns:
+        dictionary of arguments parsed from the command line
+    '''
+
     if cli_args is None:
         # First argument is the name of the command itself, not an "argument" we want to parse
         cli_args = sys.argv[1:]
@@ -49,6 +67,8 @@ def set_led(cli_args=None):
     )
     arg_parser.add_argument('--one-led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
 
+    # In order to support usage of this function from another module (not directly from the console script),
+    # parse_known_args and arg namespace is used to only utilize args that we care about in the led module.
     led_arg_namespace, _ = arg_parser.parse_known_args(cli_args)
     args = vars(led_arg_namespace)
 
