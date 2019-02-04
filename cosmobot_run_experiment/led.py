@@ -7,6 +7,8 @@ try:
     import board  # noqa: E0401
     import neopixel  # noqa: E0401
 except ImportError:
+    print("Unable to import pi specific modules to control leds")
+    print("Using stubbed out board & neopixel modules instead")
     from .pi_stubs import board, neopixel
 
 NUMBER_OF_LEDS = 16
