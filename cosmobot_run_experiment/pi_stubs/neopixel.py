@@ -1,3 +1,5 @@
+
+
 class Pixel():
     def show(self):
         return True
@@ -12,12 +14,7 @@ class NeoPixel(object):
         self.number_of_leds = number_of_leds
         self.brightness = brightness
         self.pixel_order = pixel_order
-        self.pixels = [
-            Pixel(), Pixel(), Pixel(), Pixel(),
-            Pixel(), Pixel(), Pixel(), Pixel(),
-            Pixel(), Pixel(), Pixel(), Pixel(),
-            Pixel(), Pixel(), Pixel(), Pixel()
-        ]
+        self.pixels = [Pixel() for i in range(number_of_leds)]
 
     def __getitem__(self, item):
         return self.pixels[item]

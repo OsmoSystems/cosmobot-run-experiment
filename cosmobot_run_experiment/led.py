@@ -12,11 +12,17 @@ except ImportError:
 NUMBER_OF_LEDS = 16
 ALL_PIXELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
+
+# Specifies the order in which color values from a color tuple are applied
+# Default is GRBW, we explicitly set it to RGBW.
 DEFAULT_PIXEL_ORDER = (1, 0, 2, 3)
 
 NAMED_COLORS_IN_RGB = {
-    'white': (0, 0, 0, 255), 'blue': (0, 0, 255, 0), 'red': (255, 0, 0, 0),
-    'purple': (255, 0, 255, 0), 'green': (0, 255, 0, 0)
+    'white': (0, 0, 0, 255),
+    'blue': (0, 0, 255, 0),
+    'red': (255, 0, 0, 0),
+    'purple': (255, 0, 255, 0),
+    'green': (0, 255, 0, 0)
 }
 
 
@@ -46,7 +52,7 @@ def set_led(cli_args=None):
      Args:
         args: list of command-line-like argument strings such as sys.argv
      Returns:
-        dictionary of arguments parsed from the command line
+        None
     '''
 
     if cli_args is None:
