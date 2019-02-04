@@ -17,7 +17,7 @@ ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 # Default is GRBW, we explicitly set it to RGBW.
 DEFAULT_PIXEL_ORDER = (1, 0, 2, 3)
 
-NAMED_COLORS_IN_RGB = {
+NAMED_COLORS_IN_RGBW = {
     'white': (0, 0, 0, 255),
     'blue': (0, 0, 255, 0),
     'red': (255, 0, 0, 0),
@@ -69,7 +69,7 @@ def set_led(cli_args=None):
     arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
         '--color', required=False, type=str, default='white',
-        help='Named color', choices=NAMED_COLORS_IN_RGB.keys()
+        help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
     )
     arg_parser.add_argument('--one-led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
 
@@ -80,4 +80,4 @@ def set_led(cli_args=None):
 
     pixel_indices = ONE_PIXEL if args['one_led'] else ALL_PIXELS
 
-    _show_pixels(NAMED_COLORS_IN_RGB[args['color']], args['intensity'], pixel_indices=pixel_indices)
+    _show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], pixel_indices=pixel_indices)
