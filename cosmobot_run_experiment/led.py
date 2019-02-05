@@ -29,7 +29,7 @@ NAMED_COLORS_IN_RGBW = {
 
 
 def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
-    '''Update led pixel color & intensity
+    '''Update led pixel color & intensity of the pixel_indices that are passed in
      Args:
         color: 4-tuple rgbw
         intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
