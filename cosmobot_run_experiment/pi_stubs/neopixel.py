@@ -1,12 +1,12 @@
+'''
+Stubbed out NeoPixel and Pixel classes to support software development
+on a non raspberry pi as neopixel module can not be installed on a development
+machine.
 
-
-class Pixel():
-    def show(self):
-        return True
-
-    def fill(self, color):
-        return True
-
+See led.py for methods that are currently stubbed and
+https://circuitpython.readthedocs.io/projects/neopixel/en/latest/ for latest NeoPixel
+code.
+'''
 
 class NeoPixel(object):
     def __init__(self, gpiopin, number_of_leds, brightness, pixel_order):
@@ -14,7 +14,7 @@ class NeoPixel(object):
         self.number_of_leds = number_of_leds
         self.brightness = brightness
         self.pixel_order = pixel_order
-        self.pixels = [Pixel() for i in range(number_of_leds)]
+        self.pixels = [None for i in range(number_of_leds)]
 
     def __getitem__(self, item):
         return self.pixels[item]
