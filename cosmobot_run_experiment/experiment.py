@@ -134,6 +134,7 @@ def run_experiment(cli_args=None):
         None
     '''
     try:
+        # pass cli_args through to set_led that are specific to led control
         set_led(cli_args)
 
         if cli_args is None:
