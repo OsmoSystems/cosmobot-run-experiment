@@ -1,12 +1,14 @@
 '''
-Stubbed out NeoPixel and Pixel classes to support software development
-on a non raspberry pi as neopixel module can not be installed on a development
-machine.
+Stubbed out NeoPixel and Pixel module to support software development
+on a non raspberry pi - The neopixel module can not be installed on a
+development machine and this stubbed out module simulates the functionality
+we use on a pi.
 
 See led.py for methods that are currently stubbed and
 https://circuitpython.readthedocs.io/projects/neopixel/en/latest/ for latest NeoPixel
 code.
 '''
+
 
 class NeoPixel(object):
     def __init__(self, gpiopin, number_of_leds, brightness, pixel_order):
