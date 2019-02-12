@@ -16,15 +16,15 @@ ALL_PIXELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 
 # Specifies the order in which color values from a color tuple are applied
-# Default is GRBW, we explicitly set it to RGBW.
-DEFAULT_PIXEL_ORDER = (1, 0, 2, 3)
+# Default is GRB, we explicitly set it to RGB.
+DEFAULT_PIXEL_ORDER = neopixel.RGB
 
 NAMED_COLORS_IN_RGBW = {
-    'white': (0, 0, 0, 255),
-    'blue': (0, 0, 255, 0),
-    'red': (255, 0, 0, 0),
-    'purple': (255, 0, 255, 0),
-    'green': (0, 255, 0, 0)
+    'white': (255, 255, 255),
+    'blue': (0, 0, 255),
+    'red': (255, 0, 0),
+    'purple': (255, 0, 255),
+    'green': (0, 255, 0)
 }
 
 
