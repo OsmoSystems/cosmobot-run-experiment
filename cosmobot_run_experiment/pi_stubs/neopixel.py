@@ -9,6 +9,8 @@ https://circuitpython.readthedocs.io/projects/neopixel/en/latest/ for latest Neo
 code.
 '''
 
+RGB = (1, 0, 2)
+
 
 class NeoPixel(object):
     def __init__(self, gpiopin, number_of_leds, brightness, pixel_order):

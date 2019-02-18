@@ -17,7 +17,7 @@ ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 
 # Specifies the order in which color values from a color tuple are applied
 # Default is GRB, we explicitly set it to RGB.
-DEFAULT_PIXEL_ORDER = (1, 0, 2)
+RGB_PIXEL_ORDER = neopixel.RGB
 
 NAMED_COLORS_IN_RGBW = {
     'white': (255, 255, 255),
@@ -31,7 +31,7 @@ NAMED_COLORS_IN_RGBW = {
 def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
     '''Update led pixel color & intensity of the pixel_indices that are passed in
      Args:
-        color: 4-tuple rgbw
+        color: 3-tuple RGB
         intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
         pixel_indices: list of pixel indices to update color and intensity
      Returns:
@@ -42,11 +42,17 @@ def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
         board.D18,
         NUMBER_OF_LEDS,
         brightness=intensity,
-        pixel_order=DEFAULT_PIXEL_ORDER
+        pixel_order=RGB_PIXEL_ORDER
     )
 
     for pixel_index in pixel_indices:
         pixels[pixel_index] = color
+
+    # try to pass testing during local development
+    try:
+        pixels.show()
+    except AttributeError:
+        pass
 
 
 def set_led(cli_args=None):
