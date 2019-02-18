@@ -9,7 +9,7 @@ https://circuitpython.readthedocs.io/projects/neopixel/en/latest/ for latest Neo
 code.
 '''
 
-RGB = (1, 0, 2)
+GRB = (1, 0, 2)
 
 
 class NeoPixel(object):
