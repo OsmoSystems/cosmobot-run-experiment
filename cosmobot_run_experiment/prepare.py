@@ -99,7 +99,10 @@ def _parse_args(args):
         help='optionally review exposure at the end of the experiment'
     )
 
-    return vars(arg_parser.parse_args(args))
+    # There could be arguments passed in that we want to ignore (e.g. led color, intensity)
+    # parse_known_args and arg namespace is used to only utilize args that we care about in the prepare module.
+    experiment_arg_namespace, _ = arg_parser.parse_known_args(args)
+    return vars(experiment_arg_namespace)
 
 
 def get_experiment_variants(args):
