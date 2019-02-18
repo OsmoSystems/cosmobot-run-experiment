@@ -4,8 +4,8 @@ import argparse
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
 try:
-    import board  # noqa: E0401
-    import neopixel  # noqa: E0401
+    import board  # noqa: E0401  Unable to import
+    import neopixel  # noqa: E0401  Unable to import
 except ImportError:
     print("Unable to import pi specific modules to control leds")
     print("Using stubbed out board & neopixel modules instead")
