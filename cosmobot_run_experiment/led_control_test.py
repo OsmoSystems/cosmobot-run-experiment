@@ -1,5 +1,5 @@
 import pytest
-from . import led as module
+from . import led_control as module
 
 
 @pytest.fixture
