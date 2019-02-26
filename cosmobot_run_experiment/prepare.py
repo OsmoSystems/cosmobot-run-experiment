@@ -71,14 +71,13 @@ def _parse_args(args):
     )
     arg_parser.add_argument(
         '--variant', required=False, type=str, default=[], action='append',
-        help='variants of camera capture parameters to use during experiment.'
-        'Variants includes control for setting leds to a color and intensity'
-        'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200". '
-        'Variants can also be supplied arguments to control LEDs '
-        'Ex variant w/LED control: --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led"'
-        'colors that can be used: white, red, blue, green, purple"'
-        'intensity: range from 0.0 (off) to 1.0 (full intensity)"'
-        'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used'.format(**globals())
+        help='Variants of camera capture parameters to use during experiment.  '
+        'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200". ' +
+        'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used.  '.format(**globals()) +
+        'Variants can also be supplied arguments to control LEDs. '
+        'Ex variant w/LED control: --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led".'
+        ' colors that can be used: ' + ", ".join(NAMED_COLORS_IN_RGBW.keys()) +
+        ' intensity: range from 0.0 (off) to 1.0 (full intensity)"'
     )
 
     arg_parser.add_argument(
