@@ -60,6 +60,10 @@ def show_pixels(color, intensity, use_one_led=False):
         pass
 
 
+def turn_off_led():
+    show_pixels(NAMED_COLORS_IN_RGBW['white'], 0.0, use_one_led=False)
+
+
 def set_led(cli_args=None):
     '''Extract and verify arguments passed in from the command line for controlling leds
      Args:

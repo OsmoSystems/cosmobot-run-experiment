@@ -96,15 +96,19 @@ class TestGetExperimentVariants():
         expected = [
             module.ExperimentVariant(
                 capture_params=' -ss 100 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 200 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             )
         ]
 
@@ -123,27 +127,35 @@ class TestGetExperimentVariants():
         expected = [
             module.ExperimentVariant(
                 capture_params=' -ss 100 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 100 -ISO 200',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 200 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 200 -ISO 200',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             )
         ]
 
@@ -164,33 +176,43 @@ class TestGetExperimentVariants():
         expected = [
             module.ExperimentVariant(
                 capture_params=' -ss 4000000 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 100 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 100 -ISO 200',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 200 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 200 -ISO 200',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             )
         ]
 
@@ -209,15 +231,19 @@ class TestGetExperimentVariants():
         expected = [
             module.ExperimentVariant(
                 capture_params=' -ss 1000000 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             ),
             module.ExperimentVariant(
                 capture_params=' -ss 1100000 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             )
         ]
 
@@ -236,9 +262,11 @@ class TestGetExperimentVariants():
         expected = [
             module.ExperimentVariant(
                 capture_params=' -ss 1500000 -ISO 100',
+                led_warm_up=0.0,
                 led_color='white',
                 led_intensity=0.0,
-                use_one_led=False
+                use_one_led=False,
+                led_cool_down=0.0
             )
         ]
 

@@ -39,9 +39,11 @@ ExperimentVariant = namedtuple(
     'ExperimentVariant',
     [
         'capture_params',  # parameters to pass to raspistill binary through the command line
+        'led_warm_up',  # amount of time to wait for led to warm up
         'led_color',  # what color to set the led to (see NAMED_COLORS_IN_RGBW in led_control.py for options)
         'led_intensity',  # what intensity to set the led to (0.0, 1.0)
-        'use_one_led'  # whether to set all leds or one led to the led intensity and color provided
+        'use_one_led',  # whether to set all leds or one led to the led intensity and color provided
+        'led_cool_down',  # If set, LED is turned off between each variant for a time value (#.#s)
     ]
 )
 
@@ -117,6 +119,10 @@ def _parse_variant(variant):
     arg_parser = argparse.ArgumentParser(description='Variant parsing')
 
     arg_parser.add_argument(
+        '--led-warm-up', required=False, type=float, default=0.0,
+        help='time value (#.#s)'
+    )
+    arg_parser.add_argument(
         '--led-intensity', required=False, type=float, default=0.0,
         help='led intensity (0.0 - 1.0)'
     )
@@ -128,19 +134,27 @@ def _parse_variant(variant):
         '--use-one-led', required=False, action='store_true',
         help='If flag provided, only set one led'
     )
+    arg_parser.add_argument(
+        '--led-cool-down', required=False, type=float, default=0.0,
+        help='If set, LED is turned off between each variant for a time value (#.#s)'
+    )
 
     parsed_args, remaining_args_for_capture = arg_parser.parse_known_args(variant.split())
+    led_warm_up= parsed_args.led_warm_up
     led_color = parsed_args.led_color
     led_intensity = parsed_args.led_intensity
     use_one_led = parsed_args.use_one_led
+    led_cool_down= parsed_args.led_cool_down
 
     capture_params = ' ' + ' '.join(remaining_args_for_capture)
 
     return ExperimentVariant(
         capture_params=capture_params,
+        led_warm_up=led_warm_up,
         led_color=led_color,
         led_intensity=led_intensity,
-        use_one_led=use_one_led
+        use_one_led=use_one_led,
+        led_cool_down=led_cool_down
     )
 
 
