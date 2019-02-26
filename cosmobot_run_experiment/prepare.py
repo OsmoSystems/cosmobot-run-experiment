@@ -140,11 +140,11 @@ def _parse_variant(variant):
     )
 
     parsed_args, remaining_args_for_capture = arg_parser.parse_known_args(variant.split())
-    led_warm_up= parsed_args.led_warm_up
+    led_warm_up = parsed_args.led_warm_up
     led_color = parsed_args.led_color
     led_intensity = parsed_args.led_intensity
     use_one_led = parsed_args.use_one_led
-    led_cool_down= parsed_args.led_cool_down
+    led_cool_down = parsed_args.led_cool_down
 
     capture_params = ' ' + ' '.join(remaining_args_for_capture)
 
