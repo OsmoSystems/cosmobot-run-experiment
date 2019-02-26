@@ -28,7 +28,7 @@ NAMED_COLORS_IN_RGBW = {
 }
 
 
-def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
+def show_pixels(color, intensity, use_one_led=False):
     '''Update led pixel color & intensity of the pixel_indices that are passed in
      Args:
         color: 3-tuple RGB
@@ -37,6 +37,8 @@ def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
      Returns:
         None
     '''
+
+    pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
 
     pixels = neopixel.NeoPixel(
         board.D18,
@@ -70,22 +72,19 @@ def set_led(cli_args=None):
     arg_parser = argparse.ArgumentParser(description='''
         Example Usage:
         ALL LEDS:  set_led --intensity 0.8 --color white
-        ONE LED:   set_led --intensity 0.8 --color white --one_led
+        ONE LED:   set_led --intensity 0.8 --color white --use-one_led
         OFF:       set_led --intensity 0.0
     ''')
 
     arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
-        '--color', required=False, type=str, default='white',
+        '--color', required=True, type=str, default='white',
         help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
     )
-    arg_parser.add_argument('--one-led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
+    arg_parser.add_argument('--use-one-led', required=False, action='store_true', help='Change one or all LEDs')
 
     # In order to support usage of this function from another module (not directly from the console script),
     # parse_known_args and arg namespace is used to only utilize args that we care about in the led module.
-    led_arg_namespace, _ = arg_parser.parse_known_args(cli_args)
-    args = vars(led_arg_namespace)
+    args = vars(arg_parser.parse_args(cli_args))
 
-    pixel_indices = ONE_PIXEL if args['one_led'] else ALL_PIXELS
-
-    _show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], pixel_indices=pixel_indices)
+    show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], use_one_led=args['use_one_led'])
