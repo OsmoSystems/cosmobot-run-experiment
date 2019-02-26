@@ -11,16 +11,22 @@ def mock_show_pixels(mocker):
 
 class TestLed:
     @pytest.mark.parametrize("name, args_in, expected_color, expected_intensity, expected_use_one_led", [
-        ('only red color', ['--color', 'green', '--use-one-led'], (0, 255, 0), 0.0, True),
         (
-            'red color and intensity',
+            'only red color at 0.0 intensity for one pixel',
+            ['--color', 'green', '--use-one-led'],
+            (0, 255, 0),
+            0.0,
+            True
+        ),
+        (
+            'red color and intensity of 0.8 for one pixel',
             ['--color', 'red', '--intensity', '0.8', '--use-one-led'],
             (255, 0, 0),
             0.8,
             True
         ),
         (
-            'red, one pixel and intensity',
+            'red, intensity of 0.8 for all pixels',
             ['--color', 'blue', '--intensity', '0.8'],
             (0, 0, 255),
             0.8,
