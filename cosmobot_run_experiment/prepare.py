@@ -74,7 +74,7 @@ def _parse_args(args):
         help='variants of camera capture parameters to use during experiment.'
         'Variants includes control for setting leds to a color and intensity'
         'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200". '
-        'Variants can also be supplied arguments to control leds as well '
+        'Variants can also be supplied arguments to control LEDs '
         'Ex variant w/LED control: --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led"'
         'colors that can be used: white, red, blue, green, purple"'
         'intensity: range from 0.0 (off) to 1.0 (full intensity)"'

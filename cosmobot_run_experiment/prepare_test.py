@@ -39,7 +39,7 @@ class TestParseArgs:
             'isos': [45, 55],
             'skip_sync': False,
             'review_exposure': False,
-            'erase_synced_files': False
+            'erase_synced_files': False,
         }
         assert module._parse_args(args_in) == expected_args_out
 
@@ -160,8 +160,6 @@ class TestGetExperimentVariants():
         ]
 
         actual = module.get_experiment_variants(args)
-        print(actual)
-        print(expected)
         assert actual == expected
 
     def test_exposure_and_iso_and_variant_generate_correct_variants(self):
