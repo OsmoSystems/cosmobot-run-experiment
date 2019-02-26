@@ -1,5 +1,6 @@
 import sys
 import argparse
+import logging
 
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
@@ -50,11 +51,14 @@ def show_pixels(color, intensity, use_one_led=False):
     for pixel_index in pixel_indices:
         pixels[pixel_index] = color
 
-    # try to pass testing during local development
+    # guard setting led in case it is not connected to the pi and to pass testing during local development
     try:
         pixels.show()
-    except AttributeError:
+    except Exception as exception:
+        logging.error("Exception occured while setting led.  Is the led connected correctly?")
+        logging.error(exception)
         pass
+
 
 
 def set_led(cli_args=None):
@@ -72,7 +76,7 @@ def set_led(cli_args=None):
     arg_parser = argparse.ArgumentParser(description='''
         Example Usage:
         ALL LEDS:  set_led --intensity 0.8 --color white
-        ONE LED:   set_led --intensity 0.8 --color white --use-one_led
+        ONE LED:   set_led --intensity 0.8 --color white --use-one-led
         OFF:       set_led --intensity 0.0
     ''')
 
