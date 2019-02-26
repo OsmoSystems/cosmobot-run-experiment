@@ -87,7 +87,7 @@ def perform_experiment(configuration):
 
             if variant.led_cool_down:
                 turn_off_led()
-                time.sleep(variant.led_warm_up)
+                time.sleep(variant.led_cool_down)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
