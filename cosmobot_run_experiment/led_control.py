@@ -83,7 +83,7 @@ def set_led(cli_args=None):
         OFF:       set_led --intensity 0.0
     ''')
 
-    # Specify color to be required to trigger help display (no help is shown if no args are required) 
+    # Specify color to be required to trigger help display (no help is shown if no args are required)
     arg_parser.add_argument('--color', required=True, type=str, help='Named color', choices=NAMED_COLORS_IN_RGBW.keys())
     arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
@@ -91,8 +91,5 @@ def set_led(cli_args=None):
         help='If provided, change one LED (default: all LEDs)'
     )
 
-    # In order to support usage of this function from another module (not directly from the console script),
-    # parse_known_args and arg namespace is used to only utilize args that we care about in the led module.
     args = vars(arg_parser.parse_args(cli_args))
-
     show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], use_one_led=args['use_one_led'])
