@@ -88,7 +88,10 @@ def set_led(cli_args=None):
         '--color', required=True, type=str, default='white',
         help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
     )
-    arg_parser.add_argument('--use-one-led', required=False, action='store_true', help='Change one or all LEDs')
+    arg_parser.add_argument(
+        '--use-one-led', required=False, action='store_true',
+        help='If provided, change one LED (default: all LEDs)'
+    )
 
     # In order to support usage of this function from another module (not directly from the console script),
     # parse_known_args and arg namespace is used to only utilize args that we care about in the led module.
