@@ -8,7 +8,7 @@ from .prepare import create_file_structure_for_experiment, get_experiment_config
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import set_led
+from .led_control import show_pixels
 
 from datetime import datetime, timedelta
 
@@ -72,6 +72,8 @@ def perform_experiment(configuration):
                     configuration,
                     experiment_ended_message='Insufficient space to save the image. Quitting...'
                 )
+
+            show_pixels(variant.led_color, variant.led_intensity, use_one_led=variant.use_one_led)
 
             iso_ish_datetime = iso_datetime_for_filename(datetime.now())
             capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
@@ -139,9 +141,6 @@ def run_experiment(cli_args=None):
         None
     '''
     try:
-        # pass cli_args through to set_led that are specific to led control
-        set_led(cli_args)
-
         if cli_args is None:
             # First argument is the name of the command itself, not an "argument" we want to parse
             cli_args = sys.argv[1:]
