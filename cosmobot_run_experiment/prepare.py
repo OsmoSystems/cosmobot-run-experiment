@@ -116,12 +116,18 @@ def _parse_args(args):
 def _parse_variant(variant):
     arg_parser = argparse.ArgumentParser(description='Variant parsing')
 
-    arg_parser.add_argument('--led-intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
+    arg_parser.add_argument(
+        '--led-intensity', required=False, type=float, default=0.0,
+        help='led intensity (0.0 - 1.0)'
+    )
     arg_parser.add_argument(
         '--led-color', required=False, type=str, default='white',
         help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
     )
-    arg_parser.add_argument('--use-one-led', required=False, action='store_true', help='If flag provided, only set one led')
+    arg_parser.add_argument(
+        '--use-one-led', required=False, action='store_true',
+        help='If flag provided, only set one led'
+    )
 
     parsed_args, remaining_args_for_capture = arg_parser.parse_known_args(variant.split())
     led_color = parsed_args.led_color
