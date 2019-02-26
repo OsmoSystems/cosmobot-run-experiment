@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from subprocess import check_output, CalledProcessError
 from uuid import getnode as get_mac
 from collections import namedtuple
-
+from .led_control import NAMED_COLORS_IN_RGBW
 import yaml
 
 from .file_structure import iso_datetime_for_filename, get_base_output_path
@@ -39,6 +39,9 @@ ExperimentVariant = namedtuple(
     'ExperimentVariant',
     [
         'capture_params',  # parameters to pass to raspistill binary through the command line
+        'led_color',  # what color to set the led to (see NAMED_COLORS_IN_RGBW in led_control.py for options)
+        'led_intensity',  # what intensity to set the led to (0.0, 1.0)
+        'use_one_led'  # whether to set all leds or one led to the led intensity and color provided
     ]
 )
 
@@ -67,7 +70,12 @@ def _parse_args(args):
     arg_parser.add_argument(
         '--variant', required=False, type=str, default=[], action='append',
         help='variants of camera capture parameters to use during experiment.'
-        'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200" ...'
+        'Variants includes control for setting leds to a color and intensity'
+        'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200". '
+        'Variants can also be supplied arguments to control leds as well '
+        'Ex variant w/LED control: --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led"'
+        'colors that can be used: white, red, blue, green, purple"'
+        'intensity: range from 0.0 (off) to 1.0 (full intensity)"'
         'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used'.format(**globals())
     )
 
@@ -105,23 +113,48 @@ def _parse_args(args):
     return vars(experiment_arg_namespace)
 
 
+def _parse_variant(variant):
+    arg_parser = argparse.ArgumentParser(description='Variant parsing')
+
+    arg_parser.add_argument('--led_intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
+    arg_parser.add_argument(
+        '--led_color', required=False, type=str, default='white',
+        help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
+    )
+    arg_parser.add_argument('--use_one_led', required=False, action='store_true', help='If flag provided, only set one led')
+
+    parsed_args, remaining_args_for_capture = arg_parser.parse_known_args(variant.split())
+    led_color = parsed_args.led_color
+    led_intensity = parsed_args.led_intensity
+    use_one_led = parsed_args.use_one_led
+
+    capture_params = ' ' + ' '.join(remaining_args_for_capture)
+
+    return ExperimentVariant(
+        capture_params=capture_params,
+        led_color=led_color,
+        led_intensity=led_intensity,
+        use_one_led=use_one_led
+    )
+
+
 def get_experiment_variants(args):
     variants = [
-        ExperimentVariant(capture_params=capture_params)
-        for capture_params in args['variant']
+        _parse_variant(variant)
+        for variant in args['variant']
     ]
 
     # add variants of exposure and iso lists if provided
     if args['exposures']:
         isos = args['isos'] or [DEFAULT_ISO]
         variants.extend(
-            ExperimentVariant(capture_params=' -ss {exposure} -ISO {iso}'.format(**locals()))
+            _parse_variant(' -ss {exposure} -ISO {iso}'.format(**locals()))
             for exposure in args['exposures']
             for iso in isos
         )
 
     if not variants:
-        variants = [ExperimentVariant(capture_params=DEFAULT_CAPTURE_PARAMS)]
+        variants = [_parse_variant(DEFAULT_CAPTURE_PARAMS)]
 
     return variants
 

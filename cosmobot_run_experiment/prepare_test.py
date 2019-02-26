@@ -39,7 +39,7 @@ class TestParseArgs:
             'isos': [45, 55],
             'skip_sync': False,
             'review_exposure': False,
-            'erase_synced_files': False,
+            'erase_synced_files': False
         }
         assert module._parse_args(args_in) == expected_args_out
 
@@ -94,8 +94,18 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 100')
+            module.ExperimentVariant(
+                capture_params=' -ss 100 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 200 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            )
         ]
 
         actual = module.get_experiment_variants(args)
@@ -111,13 +121,35 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 200'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 200')
+            module.ExperimentVariant(
+                capture_params=' -ss 100 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 100 -ISO 200',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 200 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 200 -ISO 200',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            )
         ]
 
         actual = module.get_experiment_variants(args)
+        print(actual)
+        print(expected)
         assert actual == expected
 
     def test_exposure_and_iso_and_variant_generate_correct_variants(self):
@@ -130,11 +162,36 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 4000000 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 200'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 200')
+            module.ExperimentVariant(
+                capture_params=' -ss 4000000 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 100 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 100 -ISO 200',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 200 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 200 -ISO 200',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            )
         ]
 
         actual = module.get_experiment_variants(args)
@@ -150,8 +207,18 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 1000000 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 1100000 -ISO 100')
+            module.ExperimentVariant(
+                capture_params=' -ss 1000000 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            ),
+            module.ExperimentVariant(
+                capture_params=' -ss 1100000 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            )
         ]
 
         actual = module.get_experiment_variants(args)
@@ -167,7 +234,12 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 1500000 -ISO 100')
+            module.ExperimentVariant(
+                capture_params=' -ss 1500000 -ISO 100',
+                led_color='white',
+                led_intensity=0.0,
+                use_one_led=False
+            )
         ]
 
         actual = module.get_experiment_variants(args)
