@@ -4,9 +4,10 @@ import os
 from socket import gethostname
 from datetime import datetime, timedelta
 from subprocess import check_output, CalledProcessError
+from textwrap import dedent
 from uuid import getnode as get_mac
 from collections import namedtuple
-
+from .led_control import NAMED_COLORS_IN_RGBW
 import yaml
 
 from .file_structure import iso_datetime_for_filename, get_base_output_path
@@ -39,6 +40,11 @@ ExperimentVariant = namedtuple(
     'ExperimentVariant',
     [
         'capture_params',  # parameters to pass to raspistill binary through the command line
+        'led_warm_up',  # amount of time to wait for led to warm up
+        'led_color',  # what color to set the led to (see NAMED_COLORS_IN_RGBW in led_control.py for options)
+        'led_intensity',  # what intensity to set the led to (0.0, 1.0)
+        'use_one_led',  # whether to set all leds or one led to the led intensity and color provided
+        'led_cool_down',  # If set, LED is turned off between each variant for a time value (#.#s)
     ]
 )
 
@@ -50,13 +56,36 @@ def _parse_args(args):
      Returns:
         dictionary of arguments parsed from the command line
     '''
-    arg_parser = argparse.ArgumentParser(description='''
-        The --variant flag passes through parameters directly to raspistill. Some relevant parameters:
-            "-ISO" should be a value from 100-800, in increments of 100
-            "-ss" (Shutter Speed) is in microseconds, and is undefined above 6s (-ss 6000000)
-            "-q 100 -awb off -awbg 1.307,1.615" adding these Pagnutti parameters optimize the jpeg for visual inspection
+    arg_parser = argparse.ArgumentParser(
+        description=dedent('''\
+        Run an experiment, collecting images and setting LEDs at desired intervals.
 
-    ''')
+        The --variant flag can be used to take images with specified camera and LED settings.
+        If multiple --variant parameters are provided, each variant will be used once per interval.
+
+        Camera control:
+            camera parameters within each --variant flag are passed directly to raspistill.
+            Some relevant parameters:
+                "-ISO" should be a value from 100-800, in increments of 100
+                "-ss" (Shutter Speed) is in microseconds, and is undefined above 6s (-ss 6000000)
+                "-q 100 -awb off -awbg 1.307,1.615":
+                    adding these Pagnutti parameters optimize the jpeg for visual inspection.
+            Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200".
+            Default: "{DEFAULT_CAPTURE_PARAMS}".
+
+        LED control:
+            Each variant can also have its own settings for the LED array.
+            NOTE: these arguments will not be stored in the filename of any images taken.
+            Ex variant w/LED control:
+                --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led".
+            color options: {colors}.
+            intensity: range from 0.0 (off) to 1.0 (full intensity)
+        '''.format(
+            colors=', '.join(NAMED_COLORS_IN_RGBW.keys()),
+            **globals()
+        )),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
 
     arg_parser.add_argument('--name', required=True, type=str, help='name for experiment')
     arg_parser.add_argument('--interval', required=True, type=float, help='interval between image capture in seconds')
@@ -66,9 +95,7 @@ def _parse_args(args):
     )
     arg_parser.add_argument(
         '--variant', required=False, type=str, default=[], action='append',
-        help='variants of camera capture parameters to use during experiment.'
-        'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200" ...'
-        'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used'.format(**globals())
+        help='Variants of camera and LED parameters to use during experiment.'
     )
 
     arg_parser.add_argument(
@@ -78,7 +105,7 @@ def _parse_args(args):
     arg_parser.add_argument(
         '--isos', required=False, type=int, nargs='+', default=None,
         help='List of isos to iterate capture through ex. "--isos 100 200"\n'
-        'If not provided and --exposures is provided, ISO {DEFAULT_ISO}'
+        'If not provided and --exposures is provided, ISO {DEFAULT_ISO} '
         'will be used when iterating over exposures.'.format(**globals())
     )
     arg_parser.add_argument(
@@ -105,23 +132,66 @@ def _parse_args(args):
     return vars(experiment_arg_namespace)
 
 
+def _parse_variant(variant):
+    arg_parser = argparse.ArgumentParser(description='Variant parsing')
+
+    arg_parser.add_argument(
+        '--led-warm-up', required=False, type=float, default=0.0,
+        help='time value (#.#s)'
+    )
+    arg_parser.add_argument(
+        '--led-intensity', required=False, type=float, default=0.0,
+        help='led intensity (0.0 - 1.0)'
+    )
+    arg_parser.add_argument(
+        '--led-color', required=False, type=str, default='white',
+        help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
+    )
+    arg_parser.add_argument(
+        '--use-one-led', required=False, action='store_true',
+        help='If flag provided, only set one led'
+    )
+    arg_parser.add_argument(
+        '--led-cool-down', required=False, type=float, default=0.0,
+        help='If set, LED is turned off between each variant for a time value (#.#s)'
+    )
+
+    parsed_args, remaining_args_for_capture = arg_parser.parse_known_args(variant.split())
+    led_warm_up = parsed_args.led_warm_up
+    led_color = parsed_args.led_color
+    led_intensity = parsed_args.led_intensity
+    use_one_led = parsed_args.use_one_led
+    led_cool_down = parsed_args.led_cool_down
+
+    capture_params = ' '.join(remaining_args_for_capture)
+
+    return ExperimentVariant(
+        capture_params=capture_params,
+        led_warm_up=led_warm_up,
+        led_color=led_color,
+        led_intensity=led_intensity,
+        use_one_led=use_one_led,
+        led_cool_down=led_cool_down
+    )
+
+
 def get_experiment_variants(args):
     variants = [
-        ExperimentVariant(capture_params=capture_params)
-        for capture_params in args['variant']
+        _parse_variant(variant)
+        for variant in args['variant']
     ]
 
     # add variants of exposure and iso lists if provided
     if args['exposures']:
         isos = args['isos'] or [DEFAULT_ISO]
         variants.extend(
-            ExperimentVariant(capture_params=' -ss {exposure} -ISO {iso}'.format(**locals()))
+            _parse_variant(' -ss {exposure} -ISO {iso}'.format(**locals()))
             for exposure in args['exposures']
             for iso in isos
         )
 
     if not variants:
-        variants = [ExperimentVariant(capture_params=DEFAULT_CAPTURE_PARAMS)]
+        variants = [_parse_variant(DEFAULT_CAPTURE_PARAMS)]
 
     return variants
 
