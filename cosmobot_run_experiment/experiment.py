@@ -8,7 +8,7 @@ from .prepare import create_file_structure_for_experiment, get_experiment_config
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import show_pixels, turn_off_led
+from .led_control import show_pixels
 
 from datetime import datetime, timedelta
 
@@ -75,8 +75,7 @@ def perform_experiment(configuration):
 
             show_pixels(variant.led_color, variant.led_intensity, use_one_led=variant.use_one_led)
 
-            if variant.led_warm_up:
-                time.sleep(variant.led_warm_up)
+            time.sleep(variant.led_warm_up)
 
             iso_ish_datetime = iso_datetime_for_filename(datetime.now())
             capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
@@ -85,9 +84,7 @@ def perform_experiment(configuration):
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
-            if variant.led_cool_down:
-                turn_off_led()
-                time.sleep(variant.led_cool_down)
+            time.sleep(variant.led_cool_down)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
