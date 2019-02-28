@@ -4,6 +4,7 @@ import os
 from socket import gethostname
 from datetime import datetime, timedelta
 from subprocess import check_output, CalledProcessError
+from textwrap import dedent
 from uuid import getnode as get_mac
 from collections import namedtuple
 from .led_control import NAMED_COLORS_IN_RGBW
@@ -71,13 +72,17 @@ def _parse_args(args):
     )
     arg_parser.add_argument(
         '--variant', required=False, type=str, default=[], action='append',
-        help='Variants of camera capture parameters to use during experiment.  '
-        'Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200". ' +
-        'If not provided, "{DEFAULT_CAPTURE_PARAMS}" will be used.  '.format(**globals()) +
-        'Variants can also be supplied arguments to control LEDs. '
-        'Ex variant w/LED control: --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led".'
-        ' colors that can be used: ' + ", ".join(NAMED_COLORS_IN_RGBW.keys()) +
-        ' intensity: range from 0.0 (off) to 1.0 (full intensity)"'
+        help=dedent('''Variants of camera capture parameters to use during experiment.
+        Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200".
+        Default: "{DEFAULT_CAPTURE_PARAMS}".
+        Variants can also be supplied arguments to control LEDs.
+        Ex variant w/LED control: --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led".
+        color options: {colors}.
+        intensity: range from 0.0 (off) to 1.0 (full intensity)
+        ''').format(
+            colors=', '.join(NAMED_COLORS_IN_RGBW.keys()),
+            **globals()
+        )
     )
 
     arg_parser.add_argument(
@@ -145,7 +150,7 @@ def _parse_variant(variant):
     use_one_led = parsed_args.use_one_led
     led_cool_down = parsed_args.led_cool_down
 
-    capture_params = ' ' + ' '.join(remaining_args_for_capture)
+    capture_params = ' '.join(remaining_args_for_capture)
 
     return ExperimentVariant(
         capture_params=capture_params,
