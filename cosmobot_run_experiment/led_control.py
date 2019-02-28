@@ -29,7 +29,7 @@ NAMED_COLORS_IN_RGBW = {
 }
 
 
-def show_pixels(color, intensity, use_one_led=False):
+def show_pixels(color=NAMED_COLORS_IN_RGBW['white'], intensity=1, use_one_led=False):
     '''Update led pixel color & intensity of the pixel_indices that are passed in
      Args:
         color: 3-tuple RGB
@@ -51,20 +51,22 @@ def show_pixels(color, intensity, use_one_led=False):
     for pixel_index in pixel_indices:
         pixels[pixel_index] = color
 
-    # guard setting led in case it is not connected to the pi and to pass testing during local development
     try:
         pixels.show()
-    except Exception as exception:
-        logging.error("Exception occured while setting led.  Is the led connected correctly?")
+    except (
+        AttributeError,  # happens in local development without the picamera library installed
+        ValueError,  # happens on a pi when a board pin is misconfigured/seated
+    ) as exception:
+        logging.error("Exception occurred while setting led.  Is the led connected correctly?")
         logging.error(exception)
         pass
 
 
-def turn_off_led():
-    show_pixels(NAMED_COLORS_IN_RGBW['white'], 0.0, use_one_led=False)
+def turn_off_leds():
+    show_pixels(intensity=0)
 
 
-def set_led(cli_args=None):
+def set_led(cli_args=None, pass_through_unused_args=False):
     '''Extract and verify arguments passed in from the command line for controlling leds
      Args:
         args: list of command-line-like argument strings such as sys.argv
@@ -92,4 +94,7 @@ def set_led(cli_args=None):
     )
 
     args = vars(arg_parser.parse_args(cli_args))
+
+    # To avoid complicated states, always turn off LEDs before setting them
+    turn_off_leds()
     show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], use_one_led=args['use_one_led'])
