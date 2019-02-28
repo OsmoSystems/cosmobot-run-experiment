@@ -97,4 +97,8 @@ def set_led(cli_args=None, pass_through_unused_args=False):
 
     # To avoid complicated states, always turn off LEDs before setting them
     turn_off_leds()
-    show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], use_one_led=args['use_one_led'])
+    show_pixels(
+        color=NAMED_COLORS_IN_RGBW[args['color']],
+        intensity=args['intensity'],
+        use_one_led=args['use_one_led']
+    )

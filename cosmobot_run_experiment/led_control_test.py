@@ -31,7 +31,7 @@ class TestLed:
             True
         ),
         (
-            'red, intensity of 0.8 for all pixels',
+            'blue, intensity of 0.8 for all pixels',
             ['--color', 'blue', '--intensity', '0.8'],
             (0, 0, 255),
             0.8,
@@ -50,7 +50,11 @@ class TestLed:
     ):
         module.set_led(args_in)
         mock_turn_off_leds.assert_called_with()
-        mock_show_pixels.assert_called_with(expected_color, expected_intensity, use_one_led=expected_use_one_led)
+        mock_show_pixels.assert_called_with(
+            color=expected_color,
+            intensity=expected_intensity,
+            use_one_led=expected_use_one_led
+        )
 
     def test_turn_off_leds_turns_off_led(self, mock_show_pixels):
         module.turn_off_leds()
