@@ -42,6 +42,8 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     Returns:
         None
     '''
+    led_name = 'LED' if use_one_led else 'LEDs'
+    logging.info('Setting {led_name} to color {color}, intensity {intensity}'.format(**locals()))
 
     pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
 
@@ -69,7 +71,7 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
         logging.error(exception)
         pass
 
-    # The neopixel seems to require some time to respond. To make sure it has time, take a quick nap
+    # HACK: The neopixel seems to require some time to respond. To make sure it has time, take a quick nap
     time.sleep(1)
 
 
