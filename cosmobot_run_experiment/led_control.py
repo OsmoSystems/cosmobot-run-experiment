@@ -4,6 +4,8 @@ import logging
 
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
+import time
+
 try:
     import board  # noqa: E0401  Unable to import
     import neopixel  # noqa: E0401  Unable to import
@@ -66,6 +68,9 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
         logging.error("Exception occurred while setting led.  Is the led connected correctly?")
         logging.error(exception)
         pass
+
+    # The neopixel seems to require some time to respond. To make sure it has time, take a quick nap
+    time.sleep(1)
 
 
 def turn_off_leds():
