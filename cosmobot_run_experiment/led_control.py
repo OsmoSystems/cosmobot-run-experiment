@@ -55,6 +55,7 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
         board.D18,
         NUMBER_OF_LEDS,
         brightness=intensity,
+        auto_write=False,
         pixel_order=RGB_PIXEL_ORDER
     )
 
@@ -71,8 +72,8 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
         logging.error(exception)
         pass
 
-    # HACK: The neopixel seems to require some time to respond. To make sure it has time, take a quick nap
-    time.sleep(1)
+    # Deinitialize the pin to allow the next person to control the LEDs
+    pixels.pin.deinit()
 
 
 def turn_off_leds():
