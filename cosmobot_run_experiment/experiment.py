@@ -172,8 +172,8 @@ def run_experiment(cli_args=None):
     except Exception as exception:
         logging.error("Unexpected exception occurred")
         logging.error(exception)
-        logging.error(sys.exc_info())
-        logging.error('\n'.join(traceback.format_tb()))
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        logging.error('\n'.join(traceback.format_tb(exc_traceback)))
 
 
 if __name__ == '__main__':
