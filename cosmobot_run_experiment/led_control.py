@@ -20,7 +20,7 @@ ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 # Default is GRB, we explicitly set it to RGB.
 RGB_PIXEL_ORDER = neopixel.GRB
 
-NAMED_COLORS_IN_RGBW = {
+NAMED_COLORS_IN_RGB = {
     'white': (255, 255, 255),
     'blue': (0, 0, 255),
     'red': (255, 0, 0),
@@ -29,7 +29,7 @@ NAMED_COLORS_IN_RGBW = {
 }
 
 
-def show_pixels(color=NAMED_COLORS_IN_RGBW['white'], intensity=1, use_one_led=False):
+def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
     '''Update led pixel color & intensity of the pixel_indices that are passed in
 
     Args:
@@ -42,6 +42,9 @@ def show_pixels(color=NAMED_COLORS_IN_RGBW['white'], intensity=1, use_one_led=Fa
     '''
 
     pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
+
+    if not isinstance(color, tuple):
+        raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals))
 
     # Note: by default, all pixels are turned off when this is initialized.
     pixels = neopixel.NeoPixel(
@@ -89,7 +92,7 @@ def set_led(cli_args=None, pass_through_unused_args=False):
     ''')
 
     # Specify color to be required to trigger help display (no help is shown if no args are required)
-    arg_parser.add_argument('--color', required=True, type=str, help='Named color', choices=NAMED_COLORS_IN_RGBW.keys())
+    arg_parser.add_argument('--color', required=True, type=str, help='Named color', choices=NAMED_COLORS_IN_RGB.keys())
     arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
         '--use-one-led', required=False, action='store_true',
@@ -99,7 +102,7 @@ def set_led(cli_args=None, pass_through_unused_args=False):
     args = vars(arg_parser.parse_args(cli_args))
 
     show_pixels(
-        color=NAMED_COLORS_IN_RGBW[args['color']],
+        color=NAMED_COLORS_IN_RGB[args['color']],
         intensity=args['intensity'],
         use_one_led=args['use_one_led']
     )

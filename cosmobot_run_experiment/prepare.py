@@ -7,7 +7,7 @@ from subprocess import check_output, CalledProcessError
 from textwrap import dedent
 from uuid import getnode as get_mac
 from collections import namedtuple
-from .led_control import NAMED_COLORS_IN_RGBW
+from .led_control import NAMED_COLORS_IN_RGB
 import yaml
 
 from .file_structure import iso_datetime_for_filename, get_base_output_path
@@ -81,7 +81,7 @@ def _parse_args(args):
             color options: {colors}.
             intensity: range from 0.0 (off) to 1.0 (full intensity)
         '''.format(
-            colors=', '.join(NAMED_COLORS_IN_RGBW.keys()),
+            colors=', '.join(NAMED_COLORS_IN_RGB.keys()),
             **globals()
         )),
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -145,7 +145,7 @@ def _parse_variant(variant):
     )
     arg_parser.add_argument(
         '--led-color', required=False, type=str, default='white',
-        help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
+        help='Named color', choices=NAMED_COLORS_IN_RGB.keys()
     )
     arg_parser.add_argument(
         '--use-one-led', required=False, action='store_true',
