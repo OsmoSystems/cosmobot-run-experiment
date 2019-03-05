@@ -31,16 +31,19 @@ NAMED_COLORS_IN_RGBW = {
 
 def show_pixels(color=NAMED_COLORS_IN_RGBW['white'], intensity=1, use_one_led=False):
     '''Update led pixel color & intensity of the pixel_indices that are passed in
-     Args:
+
+    Args:
         color: 3-tuple RGB
         intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
-        pixel_indices: list of pixel indices to update color and intensity
-     Returns:
+        use_one_led: if True, only pixel index 1 (not 0!) will be used and all others will be turned off.
+            if False (default), the first 16 pixels will be turned on.
+    Returns:
         None
     '''
 
     pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
 
+    # Note: by default, all pixels are turned off when this is initialized.
     pixels = neopixel.NeoPixel(
         board.D18,
         NUMBER_OF_LEDS,
@@ -95,8 +98,6 @@ def set_led(cli_args=None, pass_through_unused_args=False):
 
     args = vars(arg_parser.parse_args(cli_args))
 
-    # To avoid complicated states, always turn off LEDs before setting them
-    turn_off_leds()
     show_pixels(
         color=NAMED_COLORS_IN_RGBW[args['color']],
         intensity=args['intensity'],

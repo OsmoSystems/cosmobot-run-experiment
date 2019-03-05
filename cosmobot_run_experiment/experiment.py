@@ -2,13 +2,15 @@ import os
 import sys
 import time
 import logging
+import traceback
+
 from .camera import capture
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import show_pixels
+from .led_control import show_pixels, turn_off_leds
 
 from datetime import datetime, timedelta
 
@@ -84,6 +86,7 @@ def perform_experiment(configuration):
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
+            turn_off_leds()
             time.sleep(variant.led_cool_down)
 
             # If a sync is currently occuring, this is a no-op.
@@ -170,6 +173,7 @@ def run_experiment(cli_args=None):
         logging.error("Unexpected exception occurred")
         logging.error(exception)
         logging.error(sys.exc_info())
+        logging.error('\n'.join(traceback.format_tb()))
 
 
 if __name__ == '__main__':
