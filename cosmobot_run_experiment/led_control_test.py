@@ -3,12 +3,6 @@ from . import led_control as module
 
 
 @pytest.fixture
-def mock_turn_off_leds(mocker):
-    mock_turn_off_leds = mocker.patch.object(module, 'turn_off_leds')
-    return mock_turn_off_leds
-
-
-@pytest.fixture
 def mock_show_pixels(mocker):
     mock_show_pixels = mocker.patch.object(module, 'show_pixels')
     return mock_show_pixels
@@ -45,11 +39,9 @@ class TestLed:
             expected_color,
             expected_intensity,
             expected_use_one_led,
-            mock_turn_off_leds,
             mock_show_pixels
     ):
         module.set_led(args_in)
-        mock_turn_off_leds.assert_called_with()
         mock_show_pixels.assert_called_with(
             color=expected_color,
             intensity=expected_intensity,
