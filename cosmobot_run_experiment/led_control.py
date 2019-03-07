@@ -64,11 +64,9 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
 
     try:
         pixels.show()
-    except (
-        AttributeError,  # happens in local development without the picamera library installed
-        ValueError,  # happens on a pi when a board pin is misconfigured/seated
-    ) as exception:
-        logging.error("Exception occurred while setting led.  Is the led connected correctly?")
+    except Exception as exception:
+        print(type(exception).__name__)
+        logging.error("Exception occured while setting led.  Is the led connected correctly?")
         logging.error(exception)
         pass
 
