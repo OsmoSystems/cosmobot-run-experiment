@@ -88,7 +88,7 @@ def perform_experiment(configuration):
             image_filename = '{iso_ish_datetime}_{capture_params_for_filename}_.jpeg'.format(**locals())
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
 
-            # capture(image_filepath, additional_capture_params=variant.capture_params)
+            capture(image_filepath, additional_capture_params=variant.capture_params)
 
             turn_off_leds()
             time.sleep(variant.led_cool_down)
