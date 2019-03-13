@@ -30,8 +30,7 @@ NAMED_COLORS_IN_RGB = {
     'green': (0, 255, 0)
 }
 
-
-pixels = neopixel.NeoPixel(
+PIXELS = neopixel.NeoPixel(
     board.D18,
     NUMBER_OF_LEDS,
     brightness=1.0,
@@ -68,10 +67,10 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     color = color_adjusted_for_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
-        pixels[pixel_index] = color
+        PIXELS[pixel_index] = color
 
     try:
-        pixels.show()
+        PIXELS.show()
     except (
         AttributeError,  # happens in local development without the picamera library installed
         ValueError,  # happens on a pi when a board pin is misconfigured/seated
