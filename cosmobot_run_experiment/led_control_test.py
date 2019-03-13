@@ -8,6 +8,17 @@ def mock_show_pixels(mocker):
     return mock_show_pixels
 
 
+class TestColorAdjustment:
+    @pytest.mark.parametrize('name, color_to_adjust, intensity, expected_color', [
+        ((125, 125, 0), 0.0, (0, 0, 0)),
+        ((255, 0, 255), 1.0, (255, 0, 255)),
+        ((0, 255, 0), 0.5, (0, 127, 0))
+    ])
+    def test_color_adjusted_for_intensity(self, color_tuple, intensity, expected_color):
+        actual_color = module.color_adjusted_for_intensity(color_tuple, intensity)
+        assert actual_color == expected_color
+
+
 class TestLed:
     @pytest.mark.parametrize('name, args_in, expected_color, expected_intensity, expected_use_one_led', [
         (
