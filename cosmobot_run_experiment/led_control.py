@@ -31,6 +31,19 @@ NAMED_COLORS_IN_RGB = {
 }
 
 
+pixels = neopixel.NeoPixel(
+    board.D18,
+    NUMBER_OF_LEDS,
+    brightness=1.0,
+    auto_write=False,
+    pixel_order=RGB_PIXEL_ORDER
+)
+
+
+def color_adjusted_for_intensity(color_tuple, intensity):
+    return tuple([int(intensity*color_channel) for color_channel in color_tuple])
+
+
 def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
     '''Update led pixel color & intensity of the pixel_indices that are passed in
 
@@ -50,28 +63,25 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     if not isinstance(color, tuple):
         raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals))
 
-    # Note: by default, all pixels are turned off when this is initialized.
-    pixels = neopixel.NeoPixel(
-        board.D18,
-        NUMBER_OF_LEDS,
-        brightness=intensity,
-        auto_write=False,
-        pixel_order=RGB_PIXEL_ORDER
-    )
+    # There is no method for setting intensity after initialization of a neopixel object
+    # so we adjust intensity within the tuple in our code
+    color = color_adjusted_for_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
         pixels[pixel_index] = color
 
     try:
         pixels.show()
-    except Exception as exception:
-        print(type(exception).__name__)
-        logging.error("Exception occured while setting led.  Is the led connected correctly?")
+    except (
+        AttributeError,  # happens in local development without the picamera library installed
+        ValueError,  # happens on a pi when a board pin is misconfigured/seated
+    ) as exception:
+        logging.error("Exception occurred while setting led.  Is the led connected correctly?")
         logging.error(exception)
         pass
 
-    # Deinitialize the pin to allow the next person to control the LEDs
-    pixels.pin.deinit()
+    # TODO: test code for development remove
+    time.sleep(1)
 
 
 def turn_off_leds():
