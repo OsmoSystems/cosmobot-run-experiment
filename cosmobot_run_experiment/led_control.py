@@ -60,8 +60,8 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
 
     pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
 
-    if not isinstance(color, tuple):
-        raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals))
+    if not isinstance(color, tuple) or len(color) != 3:
+        raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals()))
 
     color = color_adjusted_for_intensity(color, intensity)
 

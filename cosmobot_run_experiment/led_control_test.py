@@ -62,3 +62,7 @@ class TestLed:
     def test_turn_off_leds_turns_off_led(self, mock_show_pixels):
         module.turn_off_leds()
         mock_show_pixels.assert_called_with(intensity=0)
+
+    def test_show_pixels(self):
+        with pytest.raises(ValueError) as value_error:
+            module.show_pixels(color=(0,0))
