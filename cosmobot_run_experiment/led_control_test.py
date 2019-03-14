@@ -7,6 +7,7 @@ def mock_show_pixels(mocker):
     mock_show_pixels = mocker.patch.object(module, 'show_pixels')
     return mock_show_pixels
 
+
 @pytest.fixture
 def mock_color_adjusted_for_intensity(mocker):
     mock_color_adjusted_for_intensity = mocker.patch.object(module, 'color_adjusted_for_intensity')
@@ -61,16 +62,15 @@ class TestLed:
         module.show_pixels(color=color, intensity=intensity, use_one_led=use_one_led)
         mock_color_adjusted_for_intensity.assert_called_with(color, intensity)
 
-
-        assert True;
+        assert True
 
     def test_turn_off_leds_turns_off_led(self, mock_show_pixels):
         module.turn_off_leds()
         mock_show_pixels.assert_called_with(intensity=0)
 
     def test_show_pixels_raises_value_error(self):
-        with pytest.raises(ValueError) as value_error:
-            module.show_pixels(color=(0,0))
+        with pytest.raises(ValueError):
+            module.show_pixels(color=(0, 0))
 
 
 class TestColorAdjustment:
