@@ -4,8 +4,6 @@ import logging
 
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
-import time
-
 try:
     import board  # noqa: E0401  Unable to import
     import neopixel  # noqa: E0401  Unable to import
@@ -34,12 +32,15 @@ PIXELS = neopixel.NeoPixel(
     board.D18,
     NUMBER_OF_LEDS,
     brightness=1.0,
-    auto_write=False,
     pixel_order=RGB_PIXEL_ORDER
 )
 
 
 def color_adjusted_for_intensity(color_tuple, intensity):
+    # There is no method for setting led intensity after initialization of a neopixel object.
+    # Since there is resource/hardware management to consider when initializating/deinitializating a neopixel object
+    # that present edge cases, we use a more simple approach by adjusting the saturation of each
+    # color channel in the color_tuple.
     return tuple([int(intensity*color_channel) for color_channel in color_tuple])
 
 
@@ -62,8 +63,6 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     if not isinstance(color, tuple):
         raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals))
 
-    # There is no method for setting intensity after initialization of a neopixel object
-    # so we adjust intensity within the tuple in our code
     color = color_adjusted_for_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
@@ -78,9 +77,6 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
         logging.error("Exception occurred while setting led.  Is the led connected correctly?")
         logging.error(exception)
         pass
-
-    # TODO: test code for development remove
-    time.sleep(1)
 
 
 def turn_off_leds():
