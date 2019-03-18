@@ -30,7 +30,7 @@ NAMED_COLORS_IN_RGB = {
 
 # The NeoPixel library takes out a lock on the physical pin so we can't just generate more as needed.
 # Thus we use this singleton, global NeoPixel object
-PIXELS = neopixel.NeoPixel(
+pixels = neopixel.NeoPixel(
     board.D18,
     NUMBER_OF_LEDS,
     brightness=1.0,
@@ -68,10 +68,10 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     color = color_adjusted_for_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
-        PIXELS[pixel_index] = color
+        pixels[pixel_index] = color
 
     try:
-        PIXELS.show()
+        pixels.show()
     except (
         AttributeError,  # happens in local development without the picamera library installed
         ValueError,  # happens on a pi when a board pin is misconfigured/seated
