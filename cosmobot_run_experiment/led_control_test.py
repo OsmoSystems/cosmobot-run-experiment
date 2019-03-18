@@ -62,8 +62,6 @@ class TestLed:
         module.show_pixels(color=color, intensity=intensity, use_one_led=use_one_led)
         mock_adjust_color_intensity.assert_called_with(color, intensity)
 
-        assert True
-
     def test_turn_off_leds_turns_off_led(self, mock_show_pixels):
         module.turn_off_leds()
         mock_show_pixels.assert_called_with(intensity=0)
