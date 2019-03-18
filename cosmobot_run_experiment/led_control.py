@@ -38,7 +38,7 @@ pixels = neopixel.NeoPixel(
 )
 
 
-def _color_adjusted_for_intensity(color_tuple, intensity):
+def _adjust_color_intensity(color_tuple, intensity):
     '''Adjust color tuple values by an intensity value
         There is no method for setting led intensity after initialization of a neopixel object
         and since there is resource/hardware management to consider when initializating/deinitializating
@@ -50,7 +50,7 @@ def _color_adjusted_for_intensity(color_tuple, intensity):
     Returns:
         None
     '''
-    return tuple([int(intensity*color_channel) for color_channel in color_tuple])
+    return tuple(int(intensity*color_channel) for color_channel in color_tuple)
 
 
 def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
@@ -72,10 +72,10 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     if not isinstance(color, tuple) or len(color) != 3:
         raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals()))
 
-    color = _color_adjusted_for_intensity(color, intensity)
+    intensity_adjusted_color = _adjust_color_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
-        pixels[pixel_index] = color
+        pixels[pixel_index] = intensity_adjusted_color
 
     try:
         pixels.show()

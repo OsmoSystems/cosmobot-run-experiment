@@ -9,9 +9,9 @@ def mock_show_pixels(mocker):
 
 
 @pytest.fixture
-def mock_color_adjusted_for_intensity(mocker):
-    mock_color_adjusted_for_intensity = mocker.patch.object(module, '_color_adjusted_for_intensity')
-    return mock_color_adjusted_for_intensity
+def mock_adjust_color_intensity(mocker):
+    mock_adjust_color_intensity = mocker.patch.object(module, '_adjust_color_intensity')
+    return mock_adjust_color_intensity
 
 
 class TestLed:
@@ -54,13 +54,13 @@ class TestLed:
             use_one_led=expected_use_one_led
         )
 
-    def test_show_pixels(self, mock_color_adjusted_for_intensity):
+    def test_show_pixels(self, mock_adjust_color_intensity):
         color = (255, 0, 255)
         intensity = 0.5
         use_one_led = False
 
         module.show_pixels(color=color, intensity=intensity, use_one_led=use_one_led)
-        mock_color_adjusted_for_intensity.assert_called_with(color, intensity)
+        mock_adjust_color_intensity.assert_called_with(color, intensity)
 
         assert True
 
@@ -80,5 +80,5 @@ class TestColorAdjustment:
         ('color adjusted with 50% intensity', (0, 255, 0), 0.5, (0, 127, 0))
     ])
     def test_color_adjusted_for_intensity(self, name, color_to_adjust, intensity, expected_color):
-        actual_color = module._color_adjusted_for_intensity(color_to_adjust, intensity)
+        actual_color = module._adjust_color_intensity(color_to_adjust, intensity)
         assert actual_color == expected_color
