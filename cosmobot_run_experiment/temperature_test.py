@@ -1,5 +1,4 @@
-import csv
-import os
+import math
 
 try:
     from w1thermsensor import W1ThermSensor  # noqa: E0401  Unable to import
@@ -11,26 +10,8 @@ except ImportError:
 sensor = W1ThermSensor()
 
 
-def read_temperature():
+def read():
     return sensor.get_temperature()
-
-
-def create_temperature_log(experiment_directory):
-    headers = ['filename', 'temperature_before_capture', 'temperature_after_capture']
-    temperature_log_filepath = os.path.join(experiment_directory, 'temperature.csv')
-
-    with open(temperature_log_filepath, 'w') as file:
-        writer = csv.writer(file)
-        writer.writerow(headers)
-
-
-def log_temperature(experiment_directory, image_filename, temperature_before_capture, temperature_after_capture):
-    temperature_log_filepath = os.path.join(experiment_directory, 'temperature.csv')
-
-    with open(temperature_log_filepath, 'a') as file:
-        writer = csv.writer(file)
-        writer.writerow([image_filename, temperature_before_capture, temperature_after_capture])
-
 
 # def steinhart_temperature_in_celcius(r, Ro=10000.0, To=25.0, beta=3950.0):
 #     steinhart = math.log(r / Ro) / beta      # log(R/Ro) / beta

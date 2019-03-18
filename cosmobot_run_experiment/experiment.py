@@ -9,6 +9,7 @@ from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
 from .led_control import set_led
+from .temperature import read_temperature, create_temperature_log, log_temperature
 
 from datetime import datetime, timedelta
 
@@ -56,6 +57,8 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
+    create_temperature_log(configuration.experiment_directory)
+
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
             time.sleep(0.1)  # No need to totally peg the CPU
@@ -78,7 +81,16 @@ def perform_experiment(configuration):
             image_filename = '{iso_ish_datetime}_{capture_params_for_filename}_.jpeg'.format(**locals())
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
 
+            temperature_before_capture = read_temperature()
             capture(image_filepath, additional_capture_params=variant.capture_params)
+            temperature_after_capture = read_temperature()
+
+            log_temperature(
+                configuration.experiment_directory,
+                image_filepath,
+                temperature_before_capture,
+                temperature_after_capture
+            )
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
