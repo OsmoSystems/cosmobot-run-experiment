@@ -28,6 +28,8 @@ NAMED_COLORS_IN_RGB = {
     'green': (0, 255, 0)
 }
 
+# The NeoPixel library takes out a lock on the physical pin so we can't just generate more as needed.
+# Thus we use this singleton, global NeoPixel object
 PIXELS = neopixel.NeoPixel(
     board.D18,
     NUMBER_OF_LEDS,
