@@ -48,7 +48,7 @@ def _adjust_color_intensity(color_tuple, intensity):
         color: 3-tuple RGB
         intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
     Returns:
-        None
+        color_tuple with each value multiplied by intensity
     '''
     return tuple(int(intensity*color_channel) for color_channel in color_tuple)
 
