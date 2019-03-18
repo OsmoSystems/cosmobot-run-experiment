@@ -65,7 +65,7 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
         None
     '''
     global pixels
-    
+
     led_name = 'LED' if use_one_led else 'LEDs'
     logging.info('Setting {led_name} to color {color}, intensity {intensity}'.format(**locals()))
 
