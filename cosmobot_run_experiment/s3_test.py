@@ -40,13 +40,13 @@ class TestSyncToS3:
         (
             'mv',
             True,
-            'sudo -H -u pi /home/pi/.local/bin/aws s3 mv --recursive /output_dir/experiment_name ' \
+            'sudo -H -u pi /home/pi/.local/bin/aws s3 mv --recursive /output_dir/experiment_name '
             's3://camera-sensor-experiments/experiment_name '
         ),
         (
             'sync',
             False,
-            'sudo -H -u pi /home/pi/.local/bin/aws s3 sync /output_dir/experiment_name ' \
+            'sudo -H -u pi /home/pi/.local/bin/aws s3 sync /output_dir/experiment_name '
             's3://camera-sensor-experiments/experiment_name '
         )
     ])

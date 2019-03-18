@@ -29,6 +29,7 @@ def sync_to_s3(local_sync_dir, additional_sync_params='', erase_synced_files=Fal
     # aws-cli is installed and set up as the pi user, but this command has to be run as
     # sudo for now, so we have to manually specify some files.
     # followup: https://app.asana.com/0/819671808102776/1106347012732358/f
-    command = 'sudo -H -u pi /home/pi/.local/bin/aws s3 {s3_subcommand} {local_sync_dir} {s3_sync_dir} {additional_sync_params}'.format(**locals())
+    command = 'sudo -H -u pi /home/pi/.local/bin/aws s3 {s3_subcommand} {local_sync_dir} ' \
+              '{s3_sync_dir} {additional_sync_params}'.format(**locals())
     logging.info(command)
     check_call(command, shell=True)
