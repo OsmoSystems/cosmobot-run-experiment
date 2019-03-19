@@ -79,13 +79,13 @@ def perform_experiment(configuration):
                     experiment_ended_message='Insufficient space to save the image. Quitting...'
                 )
 
-            show_pixels(
-                NAMED_COLORS_IN_RGB[variant.led_color],
-                variant.led_intensity,
-                use_one_led=variant.use_one_led
-            )
+            # show_pixels(
+            #     NAMED_COLORS_IN_RGB[variant.led_color],
+            #     variant.led_intensity,
+            #     use_one_led=variant.use_one_led
+            # )
 
-            time.sleep(variant.led_warm_up)
+            # time.sleep(variant.led_warm_up)
 
             iso_ish_datetime = iso_datetime_for_filename(datetime.now())
             capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
