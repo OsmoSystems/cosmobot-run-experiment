@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import logging
-from .camera import capture
+from .camera import simulate_capture_with_copy as capture
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
