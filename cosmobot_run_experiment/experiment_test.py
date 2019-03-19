@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import pytest
 from . import experiment as module
+from . import temperature as temperature_module
 
 
 class TestRunExperiment:
@@ -12,6 +13,8 @@ class TestRunExperiment:
         mock_create_file_structure = mocker.patch.object(module, 'create_file_structure_for_experiment')
         mock_capture = mocker.patch.object(module, 'capture')
         mock_set_up_log_file_with_base_handler = mocker.patch.object(module, 'set_up_log_file_with_base_handler')
+        mock_create_temperature_log = mocker.patch.object(temperature_module, 'create_temperature_log')
+        mock_log_temperature = mocker.patch.object(temperature_module, 'log_temperature')
 
         # Long enough to do an actual loop; not long enough to make the test feel slow
         duration = 0.1
@@ -31,7 +34,8 @@ class TestRunExperiment:
         assert mock_create_file_structure.call_count == 1
         assert mock_hostname_is_correct.call_count == 1
         assert mock_set_up_log_file_with_base_handler.call_count == 1
-
+        assert mock_create_temperature_log.call_count == 1
+        assert mock_log_temperature.call_count == 1
         # Crude self-test that no major, slow side-effects are occurring:
         # For instance, if we are syncing to s3 we'd expect that to take a few seconds
         # and cause this to fail.

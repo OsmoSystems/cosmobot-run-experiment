@@ -9,7 +9,7 @@ from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
 from .led_control import set_led
-from .temperature import read_temperature, create_temperature_log, log_temperature
+from .temperature import read_temperature, create_temperature_log, log_temperature_at_capture
 
 from datetime import datetime, timedelta
 
@@ -57,7 +57,8 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
-    create_temperature_log(configuration.experiment_directory)
+    # create temperature.csv with headers in experiment directory
+    create_temperature_log(configuration.experiment_directory_path)
 
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
@@ -85,9 +86,9 @@ def perform_experiment(configuration):
             capture(image_filepath, additional_capture_params=variant.capture_params)
             temperature_after_capture = read_temperature()
 
-            log_temperature(
-                configuration.experiment_directory,
-                image_filepath,
+            log_temperature_at_capture(
+                configuration.experiment_directory_path,
+                image_filename,
                 temperature_before_capture,
                 temperature_after_capture
             )
