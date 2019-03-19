@@ -2,6 +2,7 @@ import os
 
 
 def get_base_output_path():
+    # Store output in pi user's home directory even if this command is run as root
     return '/home/pi/camera-sensor-output/'
 
 
