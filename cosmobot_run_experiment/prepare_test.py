@@ -83,6 +83,20 @@ def test_hostname_is_correct(mocker, test_name, mac_last_4, hostname, expected_i
     assert module.hostname_is_correct(hostname) == expected_is_correct
 
 
+def _default_variant_with(**kwargs):
+    ''' get an ExperimentVariant with overridable default settings '''
+    variant_kwargs = {
+        'capture_params': '',
+        'led_warm_up': 0.0,
+        'led_color': 'white',
+        'led_intensity': 0.0,
+        'use_one_led': False,
+        'led_cool_down': 0.0,
+        **kwargs
+    }
+    return module.ExperimentVariant(**variant_kwargs)
+
+
 class TestGetExperimentVariants():
     def test_exposure_no_iso_uses_default_iso(self):
         args = {
@@ -94,8 +108,8 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 100')
+            _default_variant_with(capture_params='-ss 100 -ISO 100'),
+            _default_variant_with(capture_params='-ss 200 -ISO 100')
         ]
 
         actual = module.get_experiment_variants(args)
@@ -111,10 +125,10 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 200'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 200')
+            _default_variant_with(capture_params='-ss 100 -ISO 100'),
+            _default_variant_with(capture_params='-ss 100 -ISO 200'),
+            _default_variant_with(capture_params='-ss 200 -ISO 100'),
+            _default_variant_with(capture_params='-ss 200 -ISO 200')
         ]
 
         actual = module.get_experiment_variants(args)
@@ -130,11 +144,11 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 4000000 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 100 -ISO 200'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 200 -ISO 200')
+            _default_variant_with(capture_params='-ss 4000000 -ISO 100'),
+            _default_variant_with(capture_params='-ss 100 -ISO 100'),
+            _default_variant_with(capture_params='-ss 100 -ISO 200'),
+            _default_variant_with(capture_params='-ss 200 -ISO 100'),
+            _default_variant_with(capture_params='-ss 200 -ISO 200')
         ]
 
         actual = module.get_experiment_variants(args)
@@ -150,8 +164,34 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 1000000 -ISO 100'),
-            module.ExperimentVariant(capture_params=' -ss 1100000 -ISO 100')
+            _default_variant_with(capture_params='-ss 1000000 -ISO 100'),
+            _default_variant_with(capture_params='-ss 1100000 -ISO 100')
+        ]
+
+        actual = module.get_experiment_variants(args)
+        assert actual == expected
+
+    def test_led_params_passed_through(self):
+        args = {
+            'name': 'test',
+            'interval': 10,
+            'variant': [
+                ' -ss 1000000 -ISO 100 --led-warm-up 1 --led-color red --led-intensity 0.5 \
+                --use-one-led --led-cool-down 4'
+            ],
+            'exposures': None,
+            'isos': None
+        }
+
+        expected = [
+            _default_variant_with(
+                capture_params='-ss 1000000 -ISO 100',
+                led_warm_up=1,
+                led_color='red',
+                led_intensity=0.5,
+                use_one_led=True,
+                led_cool_down=4
+            ),
         ]
 
         actual = module.get_experiment_variants(args)
@@ -167,7 +207,7 @@ class TestGetExperimentVariants():
         }
 
         expected = [
-            module.ExperimentVariant(capture_params=' -ss 1500000 -ISO 100')
+            _default_variant_with(capture_params='-ss 1500000 -ISO 100')
         ]
 
         actual = module.get_experiment_variants(args)

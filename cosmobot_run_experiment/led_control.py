@@ -1,5 +1,6 @@
 import sys
 import argparse
+import logging
 
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
@@ -19,7 +20,7 @@ ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
 # Default is GRB, we explicitly set it to RGB.
 RGB_PIXEL_ORDER = neopixel.GRB
 
-NAMED_COLORS_IN_RGBW = {
+NAMED_COLORS_IN_RGB = {
     'white': (255, 255, 255),
     'blue': (0, 0, 255),
     'red': (255, 0, 0),
@@ -27,35 +28,73 @@ NAMED_COLORS_IN_RGBW = {
     'green': (0, 255, 0)
 }
 
+# The NeoPixel library takes out a lock on the physical pin so we can't just generate more as needed.
+# Thus we use this singleton, global NeoPixel object
+pixels = neopixel.NeoPixel(
+    board.D18,
+    NUMBER_OF_LEDS,
+    brightness=1.0,
+    pixel_order=RGB_PIXEL_ORDER
+)
 
-def _show_pixels(color, intensity, pixel_indices=ALL_PIXELS):
-    '''Update led pixel color & intensity of the pixel_indices that are passed in
-     Args:
+
+def _adjust_color_intensity(color_tuple, intensity):
+    '''Adjust color tuple values by an intensity value
+        There is no method for setting led intensity after initialization of a neopixel object
+        and since there is resource/hardware management to consider when initializating/deinitializating
+        a neopixel object that present edge cases, we use a more simple approach by adjusting the intensity of each
+        color channel in the color_tuple.
+    Args:
         color: 3-tuple RGB
         intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
-        pixel_indices: list of pixel indices to update color and intensity
-     Returns:
+    Returns:
+        color_tuple with each value multiplied by intensity
+    '''
+    return tuple(int(intensity*color_channel) for color_channel in color_tuple)
+
+
+def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
+    '''Update led pixel color & intensity of the pixel_indices that are passed in
+
+    Args:
+        color: 3-tuple RGB
+        intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
+        use_one_led: if True, only pixel index 1 (not 0!) will be used and all others will be turned off.
+            if False (default), the first 16 pixels will be turned on.
+    Returns:
         None
     '''
+    global pixels
 
-    pixels = neopixel.NeoPixel(
-        board.D18,
-        NUMBER_OF_LEDS,
-        brightness=intensity,
-        pixel_order=RGB_PIXEL_ORDER
-    )
+    led_name = 'LED' if use_one_led else 'LEDs'
+    logging.info('Setting {led_name} to color {color}, intensity {intensity}'.format(**locals()))
+
+    pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
+
+    if not isinstance(color, tuple) or len(color) != 3:
+        raise ValueError('color should be a 3-tuple RGB but was {color}'.format(**locals()))
+
+    intensity_adjusted_color = _adjust_color_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
-        pixels[pixel_index] = color
+        pixels[pixel_index] = intensity_adjusted_color
 
-    # try to pass testing during local development
     try:
         pixels.show()
-    except AttributeError:
+    except (
+        AttributeError,  # happens in local development without the picamera library installed
+        ValueError,  # happens on a pi when a board pin is misconfigured/seated
+    ) as exception:
+        logging.error("Exception occurred while setting led.  Is the led connected correctly?")
+        logging.error(exception)
         pass
 
 
-def set_led(cli_args=None):
+def turn_off_leds():
+    show_pixels(intensity=0)
+
+
+def set_led(cli_args=None, pass_through_unused_args=False):
     '''Extract and verify arguments passed in from the command line for controlling leds
      Args:
         args: list of command-line-like argument strings such as sys.argv
@@ -70,22 +109,22 @@ def set_led(cli_args=None):
     arg_parser = argparse.ArgumentParser(description='''
         Example Usage:
         ALL LEDS:  set_led --intensity 0.8 --color white
-        ONE LED:   set_led --intensity 0.8 --color white --one_led
+        ONE LED:   set_led --intensity 0.8 --color white --use-one-led
         OFF:       set_led --intensity 0.0
     ''')
 
+    # Specify color to be required to trigger help display (no help is shown if no args are required)
+    arg_parser.add_argument('--color', required=True, type=str, help='Named color', choices=NAMED_COLORS_IN_RGB.keys())
     arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
-        '--color', required=False, type=str, default='white',
-        help='Named color', choices=NAMED_COLORS_IN_RGBW.keys()
+        '--use-one-led', required=False, action='store_true',
+        help='If provided, change one LED (default: all LEDs)'
     )
-    arg_parser.add_argument('--one-led', required=False, action='store_true', help='led intensity (0.0 - 1.0)')
 
-    # In order to support usage of this function from another module (not directly from the console script),
-    # parse_known_args and arg namespace is used to only utilize args that we care about in the led module.
-    led_arg_namespace, _ = arg_parser.parse_known_args(cli_args)
-    args = vars(led_arg_namespace)
+    args = vars(arg_parser.parse_args(cli_args))
 
-    pixel_indices = ONE_PIXEL if args['one_led'] else ALL_PIXELS
-
-    _show_pixels(NAMED_COLORS_IN_RGBW[args['color']], args['intensity'], pixel_indices=pixel_indices)
+    show_pixels(
+        color=NAMED_COLORS_IN_RGB[args['color']],
+        intensity=args['intensity'],
+        use_one_led=args['use_one_led']
+    )

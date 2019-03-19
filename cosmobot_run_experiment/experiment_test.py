@@ -34,8 +34,7 @@ class TestRunExperiment:
         assert mock_create_file_structure.call_count == 1
         assert mock_hostname_is_correct.call_count == 1
         assert mock_set_up_log_file_with_base_handler.call_count == 1
-        assert mock_create_temperature_log.call_count == 1
-        assert mock_log_temperature.call_count == 1
+
         # Crude self-test that no major, slow side-effects are occurring:
         # For instance, if we are syncing to s3 we'd expect that to take a few seconds
         # and cause this to fail.
