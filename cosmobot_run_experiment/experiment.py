@@ -4,7 +4,7 @@ import time
 import logging
 import traceback
 
-from .camera import simulate_capture_with_copy as capture
+from .camera import capture
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
@@ -79,13 +79,13 @@ def perform_experiment(configuration):
                     experiment_ended_message='Insufficient space to save the image. Quitting...'
                 )
 
-            # show_pixels(
-            #     NAMED_COLORS_IN_RGB[variant.led_color],
-            #     variant.led_intensity,
-            #     use_one_led=variant.use_one_led
-            # )
+            show_pixels(
+                NAMED_COLORS_IN_RGB[variant.led_color],
+                variant.led_intensity,
+                use_one_led=variant.use_one_led
+            )
 
-            # time.sleep(variant.led_warm_up)
+            time.sleep(variant.led_warm_up)
 
             iso_ish_datetime = iso_datetime_for_filename(datetime.now())
             capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
@@ -93,8 +93,12 @@ def perform_experiment(configuration):
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
 
             temperature_before_capture = read_temperature()
+            logging.info('Temperature before capture: {temperature_before_capture}'.format(**locals()))
+
             capture(image_filepath, additional_capture_params=variant.capture_params)
+
             temperature_after_capture = read_temperature()
+            logging.info('Temperature after capture: {temperature_after_capture}'.format(**locals()))
 
             log_temperature_at_capture(
                 configuration.experiment_directory_path,
