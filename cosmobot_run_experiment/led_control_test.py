@@ -8,6 +8,12 @@ def mock_show_pixels(mocker):
     return mock_show_pixels
 
 
+@pytest.fixture
+def mock_adjust_color_intensity(mocker):
+    mock_adjust_color_intensity = mocker.patch.object(module, '_adjust_color_intensity')
+    return mock_adjust_color_intensity
+
+
 class TestLed:
     @pytest.mark.parametrize('name, args_in, expected_color, expected_intensity, expected_use_one_led', [
         (
@@ -48,6 +54,29 @@ class TestLed:
             use_one_led=expected_use_one_led
         )
 
+    def test_show_pixels(self, mock_adjust_color_intensity):
+        color = (255, 0, 255)
+        intensity = 0.5
+        use_one_led = False
+
+        module.show_pixels(color=color, intensity=intensity, use_one_led=use_one_led)
+        mock_adjust_color_intensity.assert_called_with(color, intensity)
+
     def test_turn_off_leds_turns_off_led(self, mock_show_pixels):
         module.turn_off_leds()
         mock_show_pixels.assert_called_with(intensity=0)
+
+    def test_show_pixels_raises_value_error(self):
+        with pytest.raises(ValueError):
+            module.show_pixels(color=(0, 0))
+
+
+class TestColorAdjustment:
+    @pytest.mark.parametrize('name, color_to_adjust, intensity, expected_color', [
+        ('color adjusted with 0% intensity', (125, 125, 0), 0.0, (0, 0, 0)),
+        ('color adjusted with 100% intensity', (255, 0, 255), 1.0, (255, 0, 255)),
+        ('color adjusted with 50% intensity', (0, 255, 0), 0.5, (0, 127, 0))
+    ])
+    def test_color_adjusted_for_intensity(self, name, color_to_adjust, intensity, expected_color):
+        actual_color = module._adjust_color_intensity(color_to_adjust, intensity)
+        assert actual_color == expected_color

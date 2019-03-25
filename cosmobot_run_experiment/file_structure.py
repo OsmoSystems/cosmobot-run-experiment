@@ -2,7 +2,8 @@ import os
 
 
 def get_base_output_path():
-    return os.path.expanduser('~/camera-sensor-output/')
+    # Store output in pi user's home directory even if this command is run as root
+    return '/home/pi/camera-sensor-output/'
 
 
 def iso_datetime_for_filename(datetime):

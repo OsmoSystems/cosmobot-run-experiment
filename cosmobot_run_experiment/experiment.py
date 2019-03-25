@@ -2,14 +2,15 @@ import os
 import sys
 import time
 import logging
+import traceback
+
 from .camera import capture
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-# TODO: (https://app.asana.com/0/819671808102776/1101703248800725/f) uncomment when LEDs are working.
-# from .led_control import show_pixels
+from .led_control import show_pixels, turn_off_leds, NAMED_COLORS_IN_RGB
 
 from datetime import datetime, timedelta
 
@@ -74,8 +75,11 @@ def perform_experiment(configuration):
                     experiment_ended_message='Insufficient space to save the image. Quitting...'
                 )
 
-            # TODO: (https://app.asana.com/0/819671808102776/1101703248800725/f) Fix. Commented out for damage control.
-            # show_pixels(variant.led_color, variant.led_intensity, use_one_led=variant.use_one_led)
+            show_pixels(
+                NAMED_COLORS_IN_RGB[variant.led_color],
+                variant.led_intensity,
+                use_one_led=variant.use_one_led
+            )
 
             time.sleep(variant.led_warm_up)
 
@@ -86,6 +90,7 @@ def perform_experiment(configuration):
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
+            turn_off_leds()
             time.sleep(variant.led_cool_down)
 
             # If a sync is currently occuring, this is a no-op.
@@ -171,7 +176,8 @@ def run_experiment(cli_args=None):
     except Exception as exception:
         logging.error("Unexpected exception occurred")
         logging.error(exception)
-        logging.error(sys.exc_info())
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        logging.error('\n'.join(traceback.format_tb(exc_traceback)))
 
 
 if __name__ == '__main__':
