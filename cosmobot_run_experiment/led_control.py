@@ -115,10 +115,18 @@ def set_led(cli_args=None, pass_through_unused_args=False):
 
     # Specify color to be required to trigger help display (no help is shown if no args are required)
     arg_parser.add_argument('--color', required=True, type=str, help='Named color', choices=NAMED_COLORS_IN_RGB.keys())
-    arg_parser.add_argument('--intensity', required=False, type=float, default=0.0, help='led intensity (0.0 - 1.0)')
     arg_parser.add_argument(
-        '--use-one-led', required=False, action='store_true',
-        help='If provided, change one LED (default: all LEDs)'
+        '--intensity',
+        required=False,
+        type=float,
+        default=0.0,
+        help='LED intensity [0.0 - 1.0].  (Optional) Default is 0.0 (off)'
+    )
+    arg_parser.add_argument(
+        '--use-one-led',
+        required=False,
+        action='store_true',
+        help='If provided, change one LED. (Optional) Default changes all LEDs'
     )
 
     args = vars(arg_parser.parse_args(cli_args))
