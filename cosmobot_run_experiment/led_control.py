@@ -114,7 +114,13 @@ def set_led(cli_args=None, pass_through_unused_args=False):
     ''')
 
     # Specify color to be required to trigger help display (no help is shown if no args are required)
-    arg_parser.add_argument('--color', required=True, type=str, help='Named color', choices=NAMED_COLORS_IN_RGB.keys())
+    arg_parser.add_argument(
+        '--color',
+        required=True,
+        type=str,
+        help='Named color (Required)',
+        choices=NAMED_COLORS_IN_RGB.keys()
+    )
     arg_parser.add_argument(
         '--intensity',
         required=False,

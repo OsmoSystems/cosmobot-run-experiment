@@ -74,12 +74,13 @@ def _parse_args(args):
             Default: "{DEFAULT_CAPTURE_PARAMS}".
 
         LED control:
-            Each variant can also have its own settings for the LED array.
+            Each variant can also have its own settings to control an attached Neopixel LED ring.
             NOTE: these arguments will not be stored in the filename of any images taken.
             Ex variant w/LED control:
                 --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led".
-            color options: {colors}.
-            intensity: range from 0.0 (off) to 1.0 (full intensity)
+            color options: {colors}. (Required)
+            intensity: LED intensity [0.0 - 1.0].  (Optional) Default is 0.0 (off)
+            use-one-led: If provided, change one LED. (Optional) Default changes all LEDs
         '''.format(
             colors=', '.join(NAMED_COLORS_IN_RGB.keys()),
             **globals()
