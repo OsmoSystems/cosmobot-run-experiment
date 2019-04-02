@@ -1,5 +1,7 @@
 # Usage
 
+For full setup and usage details, see the [Cosmobot Instruction Manual](https://docs.google.com/document/d/1ZYK24QlmTyvdBJlXioD8hm90TbwAEc02sMYBzOlQnoU/edit)
+
 ## Pre-reqs
 This assumes you are ssh'd into a Raspberry Pi that already has the latest cosmobot image on it (with Python 3.6 already installed).
 
