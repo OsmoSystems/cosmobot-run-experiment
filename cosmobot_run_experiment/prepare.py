@@ -174,7 +174,7 @@ def _parse_variant(variant):
     use_one_led = parsed_args.use_one_led
     led_cool_down = parsed_args.led_cool_down
 
-    capture_params = ' '.join(remaining_args_for_capture)
+    capture_params = ' '.join(remaining_args_for_capture) or DEFAULT_CAPTURE_PARAMS
 
     return ExperimentVariant(
         capture_params=capture_params,

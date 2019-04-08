@@ -197,7 +197,7 @@ class TestGetExperimentVariants():
         actual = module.get_experiment_variants(args)
         assert actual == expected
 
-    def test_default_variants_generated(self):
+    def test_no_variant_args_produces_default_variant(self):
         args = {
             'name': 'test',
             'interval': 10,
@@ -261,3 +261,30 @@ class TestCreateFileStructureForExperiment:
         )
 
         assert os.listdir(mock_config.experiment_directory_path) == ['experiment_metadata.yml']
+
+
+class TestParseVariant:
+    def test_parse_variant_creates_variant_with_params(self):
+        variant = module._parse_variant(
+            '--iso 123 --ss 456 --led-warm-up 1 --led-color red --led-intensity 2 --use-one-led --led-cool-down 3'
+        )
+        expected_variant = module.ExperimentVariant(
+            capture_params='--iso 123 --ss 456',
+            led_warm_up=1,
+            led_color='red',
+            led_intensity=2,
+            use_one_led=True,
+            led_cool_down=3,
+        )
+        assert variant == expected_variant
+
+    def test_parse_variant_creates_variant_has_sane_defaults(self):
+        expected_variant = module.ExperimentVariant(
+            capture_params=module.DEFAULT_CAPTURE_PARAMS,
+            led_warm_up=0,
+            led_color='white',
+            led_intensity=0,
+            use_one_led=False,
+            led_cool_down=0,
+        )
+        assert module._parse_variant('') == expected_variant
