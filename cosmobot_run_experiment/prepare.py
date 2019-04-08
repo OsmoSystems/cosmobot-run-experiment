@@ -139,7 +139,7 @@ def _get_variant_parser():
                 Default: "{DEFAULT_CAPTURE_PARAMS}".
 
             LED control:
-            '''
+            '''.format(**globals())
         ),
     )
 
