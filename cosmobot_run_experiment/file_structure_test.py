@@ -25,7 +25,7 @@ class TestProcessParamStringsForFilename:
         assert module._process_param_for_filename(0.0) == '0.0'
 
     def test_handles_int(self):
-        assert module._process_param_for_filename(0.0) == '0.0'
+        assert module._process_param_for_filename(0) == '0'
 
     def test_blows_up_with_unhandled_type(self):
         with pytest.raises(TypeError):
@@ -44,7 +44,8 @@ class TestGetImageFilename:
     datetime_ = datetime(2019, 4, 8, 9, 52, 12)
 
     def test_get_image_filename_includes_datetime(self):
-        assert '2019' in module.get_image_filename(self.datetime_, self.example_variant)
+        iso_ish_datetime = module.iso_datetime_for_filename(self.datetime_)
+        assert iso_ish_datetime in module.get_image_filename(self.datetime_, self.example_variant)
 
     def test_get_image_filename_includes_capture_params_with_spaces_replaced(self):
         assert '_ss_1234_ISO_5678_' in module.get_image_filename(self.datetime_, self.example_variant)
