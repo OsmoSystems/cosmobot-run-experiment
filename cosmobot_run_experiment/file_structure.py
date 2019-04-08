@@ -40,7 +40,6 @@ def get_image_filename(current_datetime, variant):
         string - image filename including extension
     '''
     iso_ish_datetime = iso_datetime_for_filename(current_datetime)
-    capture_params_for_filename = _process_param_for_filename(variant.capture_params)
     variant_params_for_filename = '_'.join(
         '{}_{}'.format(_process_param_for_filename(key), _process_param_for_filename(value))
         for key, value in variant._asdict().items()
