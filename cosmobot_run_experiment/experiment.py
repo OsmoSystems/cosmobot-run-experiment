@@ -4,8 +4,9 @@ import time
 import logging
 import traceback
 
+from cosmobot_run_experiment.file_structure import get_image_filename
 from .camera import capture
-from .file_structure import iso_datetime_for_filename, remove_experiment_directory
+from .file_structure import remove_experiment_directory
 from .prepare import create_file_structure_for_experiment, get_experiment_configuration, hostname_is_correct
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
@@ -83,9 +84,7 @@ def perform_experiment(configuration):
 
             time.sleep(variant.led_warm_up)
 
-            iso_ish_datetime = iso_datetime_for_filename(datetime.now())
-            capture_params_for_filename = variant.capture_params.replace('-', '').replace(' ', '_')
-            image_filename = '{iso_ish_datetime}_{capture_params_for_filename}_.jpeg'.format(**locals())
+            image_filename = get_image_filename(datetime.now(), variant)
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
