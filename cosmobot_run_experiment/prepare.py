@@ -1,15 +1,16 @@
 import argparse
 import sys
 import os
-from socket import gethostname
+from collections import namedtuple
 from datetime import datetime, timedelta
+from socket import gethostname
 from subprocess import check_output, CalledProcessError
 from textwrap import dedent
 from uuid import getnode as get_mac
-from collections import namedtuple
-from .led_control import NAMED_COLORS_IN_RGB
+
 import yaml
 
+from .led_control import NAMED_COLORS_IN_RGB
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 
 DEFAULT_ISO = 100
@@ -60,32 +61,9 @@ def _parse_args(args):
         description=dedent('''\
         Run an experiment, collecting images and setting LEDs at desired intervals.
 
-        The --variant flag can be used to take images with specified camera and LED settings.
-        If multiple --variant parameters are provided, each variant will be used once per interval.
-
-        Camera control:
-            camera parameters within each --variant flag are passed directly to raspistill.
-            Some relevant parameters:
-                "-ISO" should be a value from 100-800, in increments of 100
-                "-ss" (Shutter Speed) is in microseconds, and is undefined above 6s (-ss 6000000)
-                "-q 100 -awb off -awbg 1.307,1.615":
-                    adding these Pagnutti parameters optimize the jpeg for visual inspection.
-            Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200".
-            Default: "{DEFAULT_CAPTURE_PARAMS}".
-
-        LED control:
-            Each variant can also have its own settings to control an attached Neopixel LED ring.
-            NOTE: these arguments will not be stored in the filename of any images taken.
-            Ex variant w/LED control:
-                --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led".
-            color options: {colors}. (Required)
-            intensity: LED intensity [0.0 - 1.0].  (Optional) Default is 0.0 (off)
-            use-one-led: If provided, change one LED. (Optional) Default changes all LEDs
-        '''.format(
-            colors=', '.join(NAMED_COLORS_IN_RGB.keys()),
-            **globals()
-        )),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        The --variant flag can be used to take images with multiple sets of specified camera and LED settings.
+        '''),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
 
     arg_parser.add_argument('--name', required=True, type=str, help='name for experiment')
@@ -96,7 +74,7 @@ def _parse_args(args):
     )
     arg_parser.add_argument(
         '--variant', required=False, type=str, default=[], action='append',
-        help='Variants of camera and LED parameters to use during experiment.'
+        help=_get_variant_arg_help(),
     )
 
     arg_parser.add_argument(
@@ -133,15 +111,44 @@ def _parse_args(args):
     return vars(experiment_arg_namespace)
 
 
-def _parse_variant(variant):
-    arg_parser = argparse.ArgumentParser(description='Variant parsing')
+def _get_variant_arg_help():
+    return _get_variant_parser().format_help()
+
+
+def _get_variant_parser():
+    ''' Get the argparse.ArgumentParser instance used to parse LED variants out of a --variant command-line parameter
+    '''
+    # Set this up so that _get_variant_parser().format_help() can be (roughly) used to describe
+    arg_parser = argparse.ArgumentParser(
+        # Hack: use "prog" for the whole intro since the .format_help() formatter places this nicely up front
+        # with the LED param details afterwards
+        prog=dedent(
+            '''
+            --variant "VARIANT_PARAMS".
+                VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
+                If multiple --variant parameters are provided, each variant will be used once per interval.
+
+            Camera control:
+                raspistill camera parameters within each --variant flag are passed directly to raspistill.
+                Some relevant parameters:
+                    "-ISO" should be a value from 100-800, in increments of 100
+                    "-ss" (Shutter Speed) is in microseconds, and is undefined above 6s (-ss 6000000)
+                    "-q 100 -awb off -awbg 1.307,1.615":
+                        adding these Pagnutti parameters optimize the jpeg for visual inspection.
+                Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200".
+                Default: "{DEFAULT_CAPTURE_PARAMS}".
+
+            LED control:
+            '''
+        ),
+    )
 
     arg_parser.add_argument(
-        '--led-warm-up', required=False, type=float, default=0.0,
-        help='time value (#.#s)'
+        '--led-warm-up', required=False, type=float, default=0,
+        help='If set, LED is turned on before initating catpure for a time value (#.#s)'
     )
     arg_parser.add_argument(
-        '--led-intensity', required=False, type=float, default=0.0,
+        '--led-intensity', required=False, type=float, default=0,
         help='led intensity (0.0 - 1.0)'
     )
     arg_parser.add_argument(
@@ -153,11 +160,14 @@ def _parse_variant(variant):
         help='If flag provided, only set one led'
     )
     arg_parser.add_argument(
-        '--led-cool-down', required=False, type=float, default=0.0,
+        '--led-cool-down', required=False, type=float, default=0,
         help='If set, LED is turned off between each variant for a time value (#.#s)'
     )
+    return arg_parser
 
-    parsed_args, remaining_args_for_capture = arg_parser.parse_known_args(variant.split())
+
+def _parse_variant(variant):
+    parsed_args, remaining_args_for_capture = _get_variant_parser().parse_known_args(variant.split())
     led_warm_up = parsed_args.led_warm_up
     led_color = parsed_args.led_color
     led_intensity = parsed_args.led_intensity
