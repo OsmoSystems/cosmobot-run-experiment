@@ -74,7 +74,7 @@ def _parse_args(args):
     )
     arg_parser.add_argument(
         '--variant', required=False, type=str, default=[], action='append',
-        help=_get_variant_arg_help(),
+        help=_get_variant_parser().format_help(),
     )
 
     arg_parser.add_argument(
@@ -111,10 +111,6 @@ def _parse_args(args):
     return vars(experiment_arg_namespace)
 
 
-def _get_variant_arg_help():
-    return _get_variant_parser().format_help()
-
-
 def _get_variant_parser():
     ''' Get the argparse.ArgumentParser instance used to parse LED variants out of a --variant command-line parameter
     '''
@@ -126,6 +122,8 @@ def _get_variant_parser():
             '''
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
+                Example:
+                    --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
@@ -168,21 +166,13 @@ def _get_variant_parser():
 
 def _parse_variant(variant):
     parsed_args, remaining_args_for_capture = _get_variant_parser().parse_known_args(variant.split())
-    led_warm_up = parsed_args.led_warm_up
-    led_color = parsed_args.led_color
-    led_intensity = parsed_args.led_intensity
-    use_one_led = parsed_args.use_one_led
-    led_cool_down = parsed_args.led_cool_down
 
+    # capture_params aren't parsed as regular args - they'll just be passed wholesale into raspistill
     capture_params = ' '.join(remaining_args_for_capture) or DEFAULT_CAPTURE_PARAMS
 
     return ExperimentVariant(
         capture_params=capture_params,
-        led_warm_up=led_warm_up,
-        led_color=led_color,
-        led_intensity=led_intensity,
-        use_one_led=use_one_led,
-        led_cool_down=led_cool_down
+        **dict(parsed_args._get_kwargs())
     )
 
 
