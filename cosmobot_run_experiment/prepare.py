@@ -172,7 +172,11 @@ def _parse_variant(variant):
 
     return ExperimentVariant(
         capture_params=capture_params,
-        **dict(parsed_args._get_kwargs())
+        led_warm_up=parsed_args.led_warm_up,
+        led_color=parsed_args.led_color,
+        led_intensity=parsed_args.led_intensity,
+        use_one_led=parsed_args.use_one_led,
+        led_cool_down=parsed_args.led_cool_down,
     )
 
 
