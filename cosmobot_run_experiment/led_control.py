@@ -105,10 +105,6 @@ def control_leds(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fa
     _control_digitalio_led(on=intensity > 0)
 
 
-def turn_off_leds():
-    control_leds(intensity=0)
-
-
 def set_led(cli_args=None, pass_through_unused_args=False):
     '''Extract and verify arguments passed in from the command line for controlling leds
      Args:

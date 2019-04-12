@@ -95,12 +95,6 @@ class TestControlNeoPixelLEDs:
         pass
 
 
-class TestTurnOffLeds:
-    def test_turn_off_leds_turns_off_led(self, mock_control_leds):
-        module.turn_off_leds()
-        mock_control_leds.assert_called_with(intensity=0)
-
-
 class TestAdjustColorIntensity:
     @pytest.mark.parametrize('name, color_to_adjust, intensity, expected_color', [
         ('color adjusted with 0% intensity', (125, 125, 0), 0.0, (0, 0, 0)),
