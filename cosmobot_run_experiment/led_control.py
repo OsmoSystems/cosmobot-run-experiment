@@ -16,7 +16,7 @@ except ImportError:
     from cosmobot_run_experiment.pi_stubs import board, neopixel, digitalio
 
 NUMBER_OF_LEDS = 16
-ALL_PIXELS = range(NUMBER_OF_LEDS)
+ALL_PIXELS = list(range(NUMBER_OF_LEDS))
 ONE_PIXEL = [0]
 
 DIGITAL_LED_PIN = board.D6

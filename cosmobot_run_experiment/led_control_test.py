@@ -20,8 +20,7 @@ def mock_control_digitalio_led(mocker):
 
 @pytest.fixture
 def mock_adjust_color_intensity(mocker):
-    mock_adjust_color_intensity = mocker.patch.object(module, '_adjust_color_intensity')
-    return mock_adjust_color_intensity
+    return mocker.patch.object(module, '_adjust_color_intensity')
 
 
 class TestSetLed:
@@ -91,8 +90,14 @@ class TestControlNeoPixelLEDs:
         mock_adjust_color_intensity.assert_called_with(color, sentinel.intensity)
 
     def test_sets_pixels(self):
-        # TODO: implement
-        pass
+        module._control_neopixel_leds(
+            color=module.NAMED_COLORS_IN_RGB['white'],
+            intensity=0.5,
+            use_one_led=False
+        )
+
+        expected_pixel_array = [(127, 127, 127)] * module.NUMBER_OF_LEDS
+        assert module.pixels == expected_pixel_array
 
 
 class TestAdjustColorIntensity:
