@@ -13,12 +13,13 @@ GRB = (1, 0, 2)
 
 
 class NeoPixel(object):
-    def __init__(self, gpiopin, number_of_leds, brightness, pixel_order):
-        self.gpiopin = gpiopin
-        self.number_of_leds = number_of_leds
+    def __init__(self, pin, n, brightness=1.0, pixel_order=GRB):
+        self.pin = pin
+        self.number_of_leds = n
         self.brightness = brightness
         self.pixel_order = pixel_order
-        self.pixels = [None for i in range(number_of_leds)]
+
+        self.pixels = [None for i in range(self.number_of_leds)]
 
     def __getitem__(self, item):
         return self.pixels[item]
