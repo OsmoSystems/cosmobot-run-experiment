@@ -12,8 +12,7 @@ class TestRunExperiment:
         mock_create_file_structure = mocker.patch.object(module, 'create_file_structure_for_experiment')
         mock_capture = mocker.patch.object(module, 'capture')
         mock_set_up_log_file_with_base_handler = mocker.patch.object(module, 'set_up_log_file_with_base_handler')
-        # TODO: (https://app.asana.com/0/819671808102776/1101703248800725/f) uncomment when LEDs are working.
-        # mock_control_leds = mocker.patch.object(module, 'control_leds')
+        mock_control_leds = mocker.patch.object(module, 'control_leds')
 
         # Long enough to do an actual loop; not long enough to make the test feel slow
         duration = 0.1
@@ -34,8 +33,8 @@ class TestRunExperiment:
         assert mock_hostname_is_correct.call_count == 1
         assert mock_set_up_log_file_with_base_handler.call_count == 1
 
-        # TODO: (https://app.asana.com/0/819671808102776/1101703248800725/f) uncomment when LEDs are working.
-        # assert mock_control_leds.call_count == 1
+        # Should be called twice: once to turn LEDs on before capture and once to turn them off after capture
+        assert mock_control_leds.call_count == 2
 
         # Crude self-test that no major, slow side-effects are occurring:
         # For instance, if we are syncing to s3 we'd expect that to take a few seconds
