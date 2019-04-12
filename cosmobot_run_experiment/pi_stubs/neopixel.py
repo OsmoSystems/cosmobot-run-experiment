@@ -21,8 +21,12 @@ class NeoPixel(object):
 
         self.pixels = [None for i in range(self.number_of_leds)]
 
+    # Override operators so that our stub NeoPixel() object acts like an array
     def __getitem__(self, item):
         return self.pixels[item]
 
     def __setitem__(self, key, item):
         self.pixels[key] = item
+
+    def __eq__(self, pixels):
+        return self.pixels == pixels
