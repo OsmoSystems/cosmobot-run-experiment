@@ -4,8 +4,8 @@ from . import led_control as module
 
 
 @pytest.fixture
-def mock_show_pixels(mocker):
-    return mocker.patch.object(module, 'show_pixels')
+def mock_control_leds(mocker):
+    return mocker.patch.object(module, 'control_leds')
 
 
 @pytest.fixture
@@ -48,55 +48,33 @@ class TestSetLed:
             False
         ),
     ])
-    def test_set_led(
-            self,
-            name,
-            args_in,
-            expected_color,
-            expected_intensity,
-            expected_use_one_led,
-            mock_show_pixels
-    ):
+    def test_set_led(self, name, args_in, expected_color, expected_intensity, expected_use_one_led, mock_control_leds):
         module.set_led(args_in)
-        mock_show_pixels.assert_called_with(
+        mock_control_leds.assert_called_with(
             color=expected_color,
             intensity=expected_intensity,
             use_one_led=expected_use_one_led
         )
 
 
-class TestShowPixels:
-    def test_show_pixels(self, mock_adjust_color_intensity):
-        color = (255, 0, 255)
-        intensity = 0.5
-        use_one_led = False
-
-        module.show_pixels(color=color, intensity=intensity, use_one_led=use_one_led)
-        mock_adjust_color_intensity.assert_called_with(color, intensity)
-
+class TestControlLeds:
     def test_controls_neopixel_leds(self, mock_control_neopixel_leds, mock_control_digitalio_led):
         color = module.NAMED_COLORS_IN_RGB['white']
         intensity = 0.5
-        module.show_pixels(color=color, intensity=intensity, use_one_led=sentinel.use_one_led)
 
-        mock_control_neopixel_leds.assert_called_with(color, 0.5, sentinel.use_one_led)
+        module.control_leds(color=color, intensity=intensity, use_one_led=sentinel.use_one_led)
 
-    @pytest.mark.parametrize('name, intensity, expected', [
+        mock_control_neopixel_leds.assert_called_with(color, intensity, sentinel.use_one_led)
+
+    @pytest.mark.parametrize('name, intensity, on', [
         ('intensity=0 turns off LED', 0, False),
         ('intensity>0 turns on LED', 0.5, True),
         ('intensity=1 turns on LED', 1, True),
-        # ('intensity=2 turns on LED', 2, False),
     ])
-    def test_controls_digital_LED_based_on_intensity(
-        self,
-        name,
-        intensity,
-        expected,
-        mock_control_neopixel_leds,
-        mock_control_digitalio_led
-    ):
-        module.show_pixels(intensity=intensity)
-        mock_control_digitalio_led.assert_called_with(on=expected)
+    def test_controls_digital_led(self, name, intensity, on, mock_control_neopixel_leds, mock_control_digitalio_led):
+        module.control_leds(intensity=intensity)
+
+        mock_control_digitalio_led.assert_called_with(on=on)
 
 
 class TestControlNeoPixelLEDs:
@@ -104,24 +82,26 @@ class TestControlNeoPixelLEDs:
         with pytest.raises(ValueError):
             module._control_neopixel_leds(color=(0, 0))
 
-    # def test_adjusts_color(self):
-    #     mock_adjust_color_intensity.assert_called_with(color, intensity)
-    #     TODO: implement
+    def test_does_not_raise_for_valid_color(self):
+        module._control_neopixel_leds(color=module.NAMED_COLORS_IN_RGB['white'])
 
+    def test_adjusts_color(self, mock_adjust_color_intensity):
+        color = module.NAMED_COLORS_IN_RGB['white']
+        module._control_neopixel_leds(color, sentinel.intensity)
+        mock_adjust_color_intensity.assert_called_with(color, sentinel.intensity)
 
-class TestControlDigitalIoLED:
-    def test_control_digitalio_led(self):
-        module._control_digitalio_led(on=True)
+    def test_sets_pixels(self):
         # TODO: implement
+        pass
 
 
 class TestTurnOffLeds:
-    def test_turn_off_leds_turns_off_led(self, mock_show_pixels):
+    def test_turn_off_leds_turns_off_led(self, mock_control_leds):
         module.turn_off_leds()
-        mock_show_pixels.assert_called_with(intensity=0)
+        mock_control_leds.assert_called_with(intensity=0)
 
 
-class TestColorAdjustment:
+class TestAdjustColorIntensity:
     @pytest.mark.parametrize('name, color_to_adjust, intensity, expected_color', [
         ('color adjusted with 0% intensity', (125, 125, 0), 0.0, (0, 0, 0)),
         ('color adjusted with 100% intensity', (255, 0, 255), 1.0, (255, 0, 255)),

@@ -1,6 +1,6 @@
-import sys
 import argparse
 import logging
+import sys
 
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
@@ -11,7 +11,7 @@ try:
 except ImportError:
     print('''
         Unable to import pi specific modules to control leds
-        Using stubbed out board & neopixel modules instead
+        Using stubbed out modules instead
     ''')
     from cosmobot_run_experiment.pi_stubs import board, neopixel, digitalio
 
@@ -39,7 +39,9 @@ pixels = neopixel.NeoPixel(
     pin=NEOPIXEL_PIN,
     n=NUMBER_OF_LEDS,
     brightness=1.0,
-    pixel_order=neopixel.GRB  # If your NeoPixel includes a white LED, set to neopixel.GRBW
+    # According to the docs, neopixel.GRBW should be the default, but in testing the default appears to be neopixel.GRB
+    # Explicitly set just to be sure. If NeoPixel includes a white LED, set to neopixel.GRBW
+    pixel_order=neopixel.GRB
 )
 
 
@@ -83,7 +85,7 @@ def _control_digitalio_led(on=True):
     led.value = on
 
 
-def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
+def control_leds(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
     '''
     Control 16-pixel NeoPixel LED array intensity and color.
     Simultaneously turn on/off Digital IO LED anytime intensity > 0. (No color control)
@@ -100,14 +102,11 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     logging.info('Setting {led_name} to color {color}, intensity {intensity}'.format(**locals()))
 
     _control_neopixel_leds(color, intensity, use_one_led)
-
-    _control_digitalio_led(
-        on=intensity > 0
-    )
+    _control_digitalio_led(on=intensity > 0)
 
 
 def turn_off_leds():
-    show_pixels(intensity=0)
+    control_leds(intensity=0)
 
 
 def set_led(cli_args=None, pass_through_unused_args=False):
@@ -153,7 +152,7 @@ def set_led(cli_args=None, pass_through_unused_args=False):
 
     args = vars(arg_parser.parse_args(cli_args))
 
-    show_pixels(
+    control_leds(
         color=NAMED_COLORS_IN_RGB[args['color']],
         intensity=args['intensity'],
         use_one_led=args['use_one_led']
