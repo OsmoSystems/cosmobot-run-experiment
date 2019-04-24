@@ -1,24 +1,27 @@
-import sys
 import argparse
 import logging
+import sys
 
 #  Import pattern to support development without needing pi specific modules installed.
 #  board and neopixel modules have been stubbed out within "pi_stubs" folder
 try:
     import board  # noqa: E0401  Unable to import
+    import digitalio  # noqa: E0401  Unable to import
     import neopixel  # noqa: E0401  Unable to import
 except ImportError:
-    print("Unable to import pi specific modules to control leds")
-    print("Using stubbed out board & neopixel modules instead")
-    from .pi_stubs import board, neopixel
+    print('''
+        Unable to import pi specific modules to control leds
+        Using stubbed out modules instead
+    ''')
+    from cosmobot_run_experiment.pi_stubs import board, neopixel, digitalio
 
 NUMBER_OF_LEDS = 16
-ALL_PIXELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
-ONE_PIXEL = [1]  # By request of Jacob, legacy data used this index
+ALL_PIXELS = list(range(NUMBER_OF_LEDS))
+ONE_PIXEL = [0]
 
-# Specifies the order in which color values from a color tuple are applied
-# Default is GRB, we explicitly set it to RGB.
-RGB_PIXEL_ORDER = neopixel.GRB
+DIGITAL_LED_PIN = board.D6
+NEOPIXEL_PIN = board.D18
+
 
 NAMED_COLORS_IN_RGB = {
     'white': (255, 255, 255),
@@ -30,11 +33,15 @@ NAMED_COLORS_IN_RGB = {
 
 # The NeoPixel library takes out a lock on the physical pin so we can't just generate more as needed.
 # Thus we use this singleton, global NeoPixel object
+# See Section 5.2 of these docs for more detail on the NeoPixel class:
+# https://buildmedia.readthedocs.org/media/pdf/adafruit-circuitpython-neopixel/latest/adafruit-circuitpython-neopixel.pdf
 pixels = neopixel.NeoPixel(
-    board.D18,
-    NUMBER_OF_LEDS,
+    pin=NEOPIXEL_PIN,
+    n=NUMBER_OF_LEDS,
     brightness=1.0,
-    pixel_order=RGB_PIXEL_ORDER
+    # According to the docs, neopixel.GRBW should be the default, but in testing the default appears to be neopixel.GRB
+    # Explicitly set just to be sure. If NeoPixel includes a white LED, set to neopixel.GRBW
+    pixel_order=neopixel.GRB
 )
 
 
@@ -53,21 +60,10 @@ def _adjust_color_intensity(color_tuple, intensity):
     return tuple(int(intensity*color_channel) for color_channel in color_tuple)
 
 
-def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
-    '''Update led pixel color & intensity of the pixel_indices that are passed in
-
-    Args:
-        color: 3-tuple RGB
-        intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
-        use_one_led: if True, only pixel index 1 (not 0!) will be used and all others will be turned off.
-            if False (default), the first 16 pixels will be turned on.
-    Returns:
-        None
+def _control_neopixel_leds(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
+    '''Control 16-pixel NeoPixel LED array intensity and color.
     '''
     global pixels
-
-    led_name = 'LED' if use_one_led else 'LEDs'
-    logging.info('Setting {led_name} to color {color}, intensity {intensity}'.format(**locals()))
 
     pixel_indices = ONE_PIXEL if use_one_led else ALL_PIXELS
 
@@ -77,21 +73,36 @@ def show_pixels(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=Fal
     intensity_adjusted_color = _adjust_color_intensity(color, intensity)
 
     for pixel_index in pixel_indices:
+        # Since the default is auto_write=True, LEDs get updated immediately
         pixels[pixel_index] = intensity_adjusted_color
 
-    try:
-        pixels.show()
-    except (
-        AttributeError,  # happens in local development without the picamera library installed
-        ValueError,  # happens on a pi when a board pin is misconfigured/seated
-    ) as exception:
-        logging.error("Exception occurred while setting led.  Is the led connected correctly?")
-        logging.error(exception)
-        pass
+
+def _control_digitalio_led(on=True):
+    '''Turn on/off Digital IO LED.
+    '''
+    led = digitalio.DigitalInOut(pin=DIGITAL_LED_PIN)
+    led.direction = digitalio.Direction.OUTPUT
+    led.value = on
 
 
-def turn_off_leds():
-    show_pixels(intensity=0)
+def control_leds(color=NAMED_COLORS_IN_RGB['white'], intensity=1, use_one_led=False):
+    '''
+    Control 16-pixel NeoPixel LED array intensity and color.
+    Simultaneously turn on/off Digital IO LED anytime intensity > 0. (No color control)
+
+    Args:
+        color: 3-tuple RGB
+        intensity: led intensity within the range 0.0 (off) to 1.0 (full intensity)
+        use_one_led: Optional (default=False). If True, only NeoPixel LED at index 0 will be used and all other
+            NeoPixels will be turned off. If False, all 16 NeoPixels will be controlled.
+    Returns:
+        None
+    '''
+    led_name = 'LED' if use_one_led else 'LEDs'
+    logging.info('Setting {led_name} to color {color}, intensity {intensity}'.format(**locals()))
+
+    _control_neopixel_leds(color, intensity, use_one_led)
+    _control_digitalio_led(on=intensity > 0)
 
 
 def set_led(cli_args=None, pass_through_unused_args=False):
@@ -137,7 +148,7 @@ def set_led(cli_args=None, pass_through_unused_args=False):
 
     args = vars(arg_parser.parse_args(cli_args))
 
-    show_pixels(
+    control_leds(
         color=NAMED_COLORS_IN_RGB[args['color']],
         intensity=args['intensity'],
         use_one_led=args['use_one_led']

@@ -11,7 +11,7 @@ from .prepare import create_file_structure_for_experiment, get_experiment_config
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import show_pixels, turn_off_leds, NAMED_COLORS_IN_RGB
+from .led_control import control_leds, NAMED_COLORS_IN_RGB
 
 from datetime import datetime, timedelta
 
@@ -76,9 +76,9 @@ def perform_experiment(configuration):
                     experiment_ended_message='Insufficient space to save the image. Quitting...'
                 )
 
-            show_pixels(
-                NAMED_COLORS_IN_RGB[variant.led_color],
-                variant.led_intensity,
+            control_leds(
+                color=NAMED_COLORS_IN_RGB[variant.led_color],
+                intensity=variant.led_intensity,
                 use_one_led=variant.use_one_led
             )
 
@@ -89,7 +89,8 @@ def perform_experiment(configuration):
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
-            turn_off_leds()
+            # Turn off LEDs after capture
+            control_leds(intensity=0)
             time.sleep(variant.led_cool_down)
 
             # If a sync is currently occuring, this is a no-op.
