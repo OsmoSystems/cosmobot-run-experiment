@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
+# Raspberry Pi's "platform machine" is 'armv7l', which should broadly distinguish it from dev machines
+RASPBERRY_PI_ONLY_FILTER = ';platform_machine==armv7l'
+
 setup(
     name='cosmobot_run_experiment',
     version='0.0.1',
@@ -17,15 +20,17 @@ setup(
         ]
     },
     install_requires=[
-        'adafruit-blinka',
-        'adafruit-circuitpython-ads1x15',
-        'adafruit-circuitpython-neopixel',
+        # These deps should install on any system
         'numpy',
         'picamraw',
         'psutil',
         'pyyaml',
-        'rpi_ws281x',
-        'RPI.GPIO',
+        # These deps are only relevant on a raspberry pi (I/O stuff)
+        'adafruit-blinka{}'.format(RASPBERRY_PI_ONLY_FILTER),
+        'adafruit-circuitpython-ads1x15{}'.format(RASPBERRY_PI_ONLY_FILTER),
+        'adafruit-circuitpython-neopixel{}'.format(RASPBERRY_PI_ONLY_FILTER),
+        'rpi_ws281x{}'.format(RASPBERRY_PI_ONLY_FILTER),
+        'RPI.GPIO{}'.format(RASPBERRY_PI_ONLY_FILTER),
     ],
     include_package_data=True
 )
