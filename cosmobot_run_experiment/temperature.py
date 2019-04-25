@@ -37,7 +37,7 @@ def log_temperature(experiment_directory, image_filename):
         raw_temperature_voltage=channel.voltage
     )
 
-    with open('temps.csv', 'a') as f:
+    with open(temperature_log_filepath, 'a') as f:
         writer = csv.DictWriter(f, fieldnames=TemperatureReading._fields)
 
         if not log_file_exists:
