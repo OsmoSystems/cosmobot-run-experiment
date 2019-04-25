@@ -4,4 +4,4 @@ installed on a development machine.
 '''
 
 D6 = 6
-D18 = 18
+D10 = 10
