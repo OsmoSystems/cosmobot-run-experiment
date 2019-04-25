@@ -44,3 +44,11 @@ def log_temperature(experiment_directory, image_filename):
             writer.writeheader()
 
         writer.writerow(temperature_reading._asdict())
+
+    return temperature_log_filepath
+
+
+# TODO: remove
+if __name__ == '__main__':
+    temperature_log_filepath = log_temperature(experiment_directory='.', image_filename='img.jpg')
+    print(temperature_log_filepath)
