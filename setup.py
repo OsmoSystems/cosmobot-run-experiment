@@ -17,10 +17,13 @@ setup(
         ]
     },
     install_requires=[
-        'pyyaml',
-        'psutil',
+        'adafruit-blinka',
+        'adafruit-circuitpython-ads1x15',
         'numpy',
-        'picamraw'
+        'picamraw',
+        'psutil',
+        'pyyaml',
+        'RPI.GPIO',
     ],
     include_package_data=True
 )
