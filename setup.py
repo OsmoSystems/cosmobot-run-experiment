@@ -19,10 +19,12 @@ setup(
     install_requires=[
         'adafruit-blinka',
         'adafruit-circuitpython-ads1x15',
+        'adafruit-circuitpython-neopixel',
         'numpy',
         'picamraw',
         'psutil',
         'pyyaml',
+        'rpi_ws281x',
         'RPI.GPIO',
     ],
     include_package_data=True
