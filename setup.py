@@ -25,12 +25,17 @@ setup(
         'picamraw',
         'psutil',
         'pyyaml',
-        # These deps are only relevant on a raspberry pi (I/O stuff)
-        'adafruit-blinka{}'.format(RASPBERRY_PI_ONLY_FILTER),
-        'adafruit-circuitpython-ads1x15{}'.format(RASPBERRY_PI_ONLY_FILTER),
-        'adafruit-circuitpython-neopixel{}'.format(RASPBERRY_PI_ONLY_FILTER),
-        'rpi_ws281x{}'.format(RASPBERRY_PI_ONLY_FILTER),
-        'RPI.GPIO{}'.format(RASPBERRY_PI_ONLY_FILTER),
     ],
+    extras_require={
+        # These deps are only relevant on a raspberry pi (I/O stuff)
+        # To install editable (local): pip install -e .[io]
+        'io': [
+            'adafruit-blinka',
+            'adafruit-circuitpython-ads1x15',
+            'adafruit-circuitpython-neopixel',
+            'rpi_ws281x',
+            'RPI.GPIO',
+        ]
+    },
     include_package_data=True
 )
