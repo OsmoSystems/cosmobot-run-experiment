@@ -9,7 +9,7 @@ if platform.machine() == 'armv7l':
     import board
     import busio
 else:
-    print('Using module stubs for non-raspberry-pi machine')
+    print('Using library stubs for non-raspberry-pi machine')
     from cosmobot_run_experiment.pi_stubs import board, busio
     from cosmobot_run_experiment.pi_stubs.adafruit_ads1x15 import ads1115, analog_in
 
@@ -23,7 +23,7 @@ temperature_adc_channel = analog_in.AnalogIn(ads, ads1115.P0)
 
 
 TemperatureReading = namedtuple('TemperatureReading', [
-    'capture_timestamp'
+    'capture_timestamp',
     'raw_temperature_value',
     'raw_temperature_voltage'
 ])
@@ -33,9 +33,9 @@ def read_temperature(capture_timestamp):
     global temperature_adc_channel
 
     return TemperatureReading(
-        capture_timestamp,
-        temperature_adc_channel.value,
-        temperature_adc_channel.voltage
+        capture_timestamp=capture_timestamp,
+        raw_temperature_value=temperature_adc_channel.value,
+        raw_temperature_voltage=temperature_adc_channel.voltage
     )
 
 
