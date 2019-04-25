@@ -85,15 +85,17 @@ def perform_experiment(configuration):
 
             time.sleep(variant.led_warm_up)
 
-            image_filename = get_image_filename(datetime.now(), variant)
-            image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
-
-            capture(image_filepath, additional_capture_params=variant.capture_params)
+            capture_timestamp = datetime.now()
 
             log_temperature(
                 configuration.experiment_directory_path,
-                image_filename,
+                capture_timestamp,
             )
+
+            image_filename = get_image_filename(capture_timestamp, variant)
+            image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)
+
+            capture(image_filepath, additional_capture_params=variant.capture_params)
 
             # Turn off LEDs after capture
             control_leds(intensity=0)

@@ -13,6 +13,7 @@ class TestRunExperiment:
         mock_capture = mocker.patch.object(module, 'capture')
         mock_set_up_log_file_with_base_handler = mocker.patch.object(module, 'set_up_log_file_with_base_handler')
         mock_control_leds = mocker.patch.object(module, 'control_leds')
+        mocker.patch.object(module, 'log_temperature')
 
         # Long enough to do an actual loop; not long enough to make the test feel slow
         duration = 0.1
