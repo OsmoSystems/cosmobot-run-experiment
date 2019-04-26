@@ -1,7 +1,9 @@
 '''
-Stubbed out board GPIO pin values to support software development on a non raspberry pi as board module can not be
-installed on a development machine.
+Stubbed out board GPIO pin values.
 '''
 
 D6 = 6
-D18 = 18
+D10 = 10
+
+SCL = 'SCL'
+SDA = 'SDA'

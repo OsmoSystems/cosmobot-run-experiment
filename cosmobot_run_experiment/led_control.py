@@ -1,17 +1,14 @@
 import argparse
 import logging
+import platform
 import sys
 
-#  Import pattern to support development without needing pi specific modules installed.
-#  board module has been stubbed out within "pi_stubs" folder
-try:
+# Support development without needing pi specific modules installed.
+if platform.machine() == 'armv7l':
     import board  # noqa: E0401  Unable to import
     import digitalio  # noqa: E0401  Unable to import
-except ImportError:
-    print('''
-        Unable to import pi specific modules to control leds
-        Using stubbed out modules instead
-    ''')
+else:
+    logging.warning('Using library stubs for non-raspberry-pi machine')
     from cosmobot_run_experiment.pi_stubs import board, digitalio
 
 

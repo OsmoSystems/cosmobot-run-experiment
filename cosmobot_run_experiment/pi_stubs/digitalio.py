@@ -1,8 +1,5 @@
 '''
-Stubbed out DigitalIO module to support software development
-on a non raspberry pi - The digitalio module can not be installed on a
-development machine and this stubbed out module simulates the functionality
-we use on a pi.
+Stubbed out DigitalIO module
 '''
 from enum import Enum
 
