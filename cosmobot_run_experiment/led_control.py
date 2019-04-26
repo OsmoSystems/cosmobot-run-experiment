@@ -45,11 +45,11 @@ def main(cli_args=None):
     arg_parser = argparse.ArgumentParser(description='Turn on or off LED on digital pin {}'.format(DIGITAL_LED_PIN))
 
     arg_parser.add_argument(
-        '--on',
-        action='store_true',
-        help='If provided, turn LED on (otherwise, turn it off)',
+        'state',
+        choices=['on', 'off'],
+        help='LED state to set: "on" to turn LED on; "off" to turn it off.',
     )
 
     args = arg_parser.parse_args(cli_args)
 
-    control_led(on=args.on)
+    control_led(on=args.state == 'on')
