@@ -13,7 +13,7 @@ class TestRunExperiment:
         mock_capture = mocker.patch.object(module, 'capture')
         mock_set_up_log_file_with_base_handler = mocker.patch.object(module, 'set_up_log_file_with_base_handler')
         mock_control_leds = mocker.patch.object(module, 'control_leds')
-        mocker.patch.object(module, 'log_temperature')
+        mock_log_temperature = mocker.patch.object(module, 'log_temperature')
 
         # Long enough to do an actual loop; not long enough to make the test feel slow
         duration = 0.1
@@ -29,6 +29,7 @@ class TestRunExperiment:
         end_time = datetime.now()
         elapsed_time = end_time - start_time
 
+        assert mock_log_temperature.call_count == 1
         assert mock_capture.call_count == 1
         assert mock_create_file_structure.call_count == 1
         assert mock_hostname_is_correct.call_count == 1
