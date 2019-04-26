@@ -85,6 +85,7 @@ def perform_experiment(configuration):
 
             time.sleep(variant.led_warm_up)
 
+            # Share timestamp between image and temperature reading, to make them easy to align
             capture_timestamp = datetime.now()
 
             log_temperature(

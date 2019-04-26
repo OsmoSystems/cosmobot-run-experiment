@@ -9,7 +9,7 @@ if platform.machine() == 'armv7l':
     import digitalio  # noqa: E0401  Unable to import
     import neopixel  # noqa: E0401  Unable to import
 else:
-    print('Using library stubs for non-raspberry-pi machine')
+    logging.warning('Using library stubs for non-raspberry-pi machine')
     from cosmobot_run_experiment.pi_stubs import board, neopixel, digitalio
 
 NUMBER_OF_LEDS = 16

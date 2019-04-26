@@ -1,5 +1,6 @@
 from collections import namedtuple
 import csv
+import logging
 import os
 import platform
 
@@ -9,7 +10,7 @@ if platform.machine() == 'armv7l':
     import board
     import busio
 else:
-    print('Using library stubs for non-raspberry-pi machine')
+    logging.warning('Using library stubs for non-raspberry-pi machine')
     from cosmobot_run_experiment.pi_stubs import board, busio
     from cosmobot_run_experiment.pi_stubs.adafruit_ads1x15 import ads1115, analog_in
 
@@ -20,14 +21,14 @@ TEMPERATURE_LOG_FILENAME = 'temperature.csv'
 i2c = busio.I2C(board.SCL, board.SDA)
 ads = ads1115.ADS1115(i2c)
 
-# Our thermister is set up singled-ended on the P0 channel of the ADC
+# Our thermistor is set up singled-ended on the P0 channel of the ADC
 temperature_adc_channel = analog_in.AnalogIn(ads, ads1115.P0)
 
 
 TemperatureReading = namedtuple('TemperatureReading', [
     'capture_timestamp',
-    'raw_temperature_value',
-    'raw_temperature_voltage'
+    'digital_count',
+    'voltage'
 ])
 
 
@@ -36,8 +37,8 @@ def read_temperature(capture_timestamp):
 
     return TemperatureReading(
         capture_timestamp=capture_timestamp,
-        raw_temperature_value=temperature_adc_channel.value,
-        raw_temperature_voltage=temperature_adc_channel.voltage
+        digital_count=temperature_adc_channel.value,
+        voltage=temperature_adc_channel.voltage
     )
 
 

@@ -10,7 +10,7 @@ from . import temperature as module
 class TestReadTemperature:
     def test_returns_temperature_reading(self, mocker):
         mocker.patch.object(module, 'temperature_adc_channel', Mock(
-            value=sentinel.value,
+            value=sentinel.digital_count,
             voltage=sentinel.voltage,
         ))
 
@@ -18,8 +18,8 @@ class TestReadTemperature:
 
         expected = module.TemperatureReading(
             capture_timestamp=sentinel.capture_timestamp,
-            raw_temperature_value=sentinel.value,
-            raw_temperature_voltage=sentinel.voltage
+            digital_count=sentinel.digital_count,
+            voltage=sentinel.voltage
         )
 
         assert actual == expected
@@ -54,15 +54,15 @@ class TestGetOrCreateTemperatureLog:
             assert reader.fieldnames == list(module.TemperatureReading._fields)
 
 
-MOCK_TEMPERATURE_VALUE = '12345'
-MOCK_TEMPERATURE_VOLTAGE = '0.12345'
+MOCK_DIGITAL_COUNT = 12345
+MOCK_VOLTAGE = 0.12345
 
 
 def _mock_read_temperature(capture_timestamp):
     return module.TemperatureReading(
         capture_timestamp=capture_timestamp,
-        raw_temperature_value=MOCK_TEMPERATURE_VALUE,
-        raw_temperature_voltage=MOCK_TEMPERATURE_VOLTAGE
+        digital_count=MOCK_DIGITAL_COUNT,
+        voltage=MOCK_VOLTAGE
     )
 
 
@@ -89,10 +89,17 @@ class TestLogTemperature:
             capture_time='2019-01-02'
         )
 
-        expected_reading_0 = _mock_read_temperature('2019-01-01')
-        expected_reading_1 = _mock_read_temperature('2019-01-02')
-
         with open(actual_log_filepath, 'r') as f:
             readings = list(csv.DictReader(f))
-            assert readings[0] == expected_reading_0._asdict()
-            assert readings[1] == expected_reading_1._asdict()
+
+            assert dict(readings[0]) == {
+                'capture_timestamp': '2019-01-01',
+                'digital_count': str(MOCK_DIGITAL_COUNT),
+                'voltage': str(MOCK_VOLTAGE),
+            }
+
+            assert dict(readings[1]) == {
+                'capture_timestamp': '2019-01-02',
+                'digital_count': str(MOCK_DIGITAL_COUNT),
+                'voltage': str(MOCK_VOLTAGE),
+            }

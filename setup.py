@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-# Raspberry Pi's "platform machine" is 'armv7l', which should broadly distinguish it from dev machines
-RASPBERRY_PI_ONLY_FILTER = ';platform_machine==armv7l'
 
 setup(
     name='cosmobot_run_experiment',
