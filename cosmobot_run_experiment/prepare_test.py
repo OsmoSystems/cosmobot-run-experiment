@@ -227,7 +227,7 @@ class TestCreateFileStructureForExperiment:
 
     def _create_mock_configuration(self, mocker, tmp_path):
         experiment_directory_path = os.path.join(
-            str(tmp_path),  # tmp_path is a PosixPath instance. python 2.5's os.path.join doesn't know how to handle it.
+            str(tmp_path),  # tmp_path is a PosixPath instance. python 3.5's os.path.join doesn't know how to handle it.
             self.subdir_name
         )
 

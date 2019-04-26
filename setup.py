@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
+
 setup(
     name='cosmobot_run_experiment',
     version='0.0.1',
@@ -17,10 +18,22 @@ setup(
         ]
     },
     install_requires=[
-        'pyyaml',
-        'psutil',
+        # These deps should install on any system
         'numpy',
-        'picamraw'
+        'picamraw',
+        'psutil',
+        'pyyaml',
     ],
+    extras_require={
+        # These deps are only relevant on a raspberry pi (I/O stuff)
+        # To install editable (local): pip install -e .[io]
+        'io': [
+            'adafruit-blinka',
+            'adafruit-circuitpython-ads1x15',
+            'adafruit-circuitpython-neopixel',
+            'rpi_ws281x',
+            'RPI.GPIO',
+        ]
+    },
     include_package_data=True
 )

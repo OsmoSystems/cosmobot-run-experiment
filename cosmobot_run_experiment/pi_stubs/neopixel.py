@@ -1,10 +1,7 @@
 '''
-Stubbed out NeoPixel and Pixel module to support software development
-on a non raspberry pi - The neopixel module can not be installed on a
-development machine and this stubbed out module simulates the functionality
-we use on a pi.
+Stubbed out NeoPixel and Pixel
 
-See led.py for methods that are currently stubbed and
+See led_control.py for methods that are currently stubbed and
 https://circuitpython.readthedocs.io/projects/neopixel/en/latest/ for latest NeoPixel
 code.
 '''
