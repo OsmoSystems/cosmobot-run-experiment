@@ -10,7 +10,6 @@ from uuid import getnode as get_mac
 
 import yaml
 
-from .led_control import NAMED_COLORS_IN_RGB
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 
 DEFAULT_ISO = 100
@@ -41,10 +40,8 @@ ExperimentVariant = namedtuple(
     'ExperimentVariant',
     [
         'capture_params',  # parameters to pass to raspistill binary through the command line
+        'led_on',  # Whether LED should be on or off
         'led_warm_up',  # amount of time to wait for led to warm up
-        'led_color',  # what color to set the led to (see NAMED_COLORS_IN_RGBW in led_control.py for options)
-        'led_intensity',  # what intensity to set the led to (0.0, 1.0)
-        'use_one_led',  # whether to set all leds or one led to the led intensity and color provided
         'led_cool_down',  # If set, LED is turned off between each variant for a time value (#.#s)
     ]
 )
@@ -123,7 +120,7 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant "-ss 500000 -ISO 100 --led-color white --led-intensity 0.5 --use-one-led"
+                    --variant "-ss 500000 -ISO 100 --led-on --led-warm-up 3 --led-cool-down 1"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
@@ -142,24 +139,16 @@ def _get_variant_parser():
     )
 
     arg_parser.add_argument(
+        '--led-on', action='store_true',
+        help='If set, LED will be turned on for this variant'
+    )
+    arg_parser.add_argument(
         '--led-warm-up', required=False, type=float, default=0,
-        help='If set, LED is turned on before initating catpure for a time value (#.#s)'
-    )
-    arg_parser.add_argument(
-        '--led-intensity', required=False, type=float, default=0,
-        help='led intensity (0.0 - 1.0)'
-    )
-    arg_parser.add_argument(
-        '--led-color', required=False, type=str, default='white',
-        help='Named color', choices=NAMED_COLORS_IN_RGB.keys()
-    )
-    arg_parser.add_argument(
-        '--use-one-led', required=False, action='store_true',
-        help='If flag provided, only set one led'
+        help='If set, LED is turned on before initiating capture for a time value in seconds'
     )
     arg_parser.add_argument(
         '--led-cool-down', required=False, type=float, default=0,
-        help='If set, LED is turned off between each variant for a time value (#.#s)'
+        help='If set, LED is turned off between each variant for a time value in seconds'
     )
     return arg_parser
 
@@ -172,10 +161,8 @@ def _parse_variant(variant):
 
     return ExperimentVariant(
         capture_params=capture_params,
+        led_on=parsed_args.led_on,
         led_warm_up=parsed_args.led_warm_up,
-        led_color=parsed_args.led_color,
-        led_intensity=parsed_args.led_intensity,
-        use_one_led=parsed_args.use_one_led,
         led_cool_down=parsed_args.led_cool_down,
     )
 
