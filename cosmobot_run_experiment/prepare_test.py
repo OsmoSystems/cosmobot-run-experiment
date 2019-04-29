@@ -87,11 +87,9 @@ def _default_variant_with(**kwargs):
     ''' get an ExperimentVariant with overridable default settings '''
     variant_kwargs = {
         'capture_params': '',
-        'led_warm_up': 0.0,
-        'led_color': 'white',
-        'led_intensity': 0.0,
-        'use_one_led': False,
-        'led_cool_down': 0.0,
+        'led_on': False,
+        'led_warm_up': 0,
+        'led_cool_down': 0,
         **kwargs
     }
     return module.ExperimentVariant(**variant_kwargs)
@@ -176,8 +174,7 @@ class TestGetExperimentVariants():
             'name': 'test',
             'interval': 10,
             'variant': [
-                ' -ss 1000000 -ISO 100 --led-warm-up 1 --led-color red --led-intensity 0.5 \
-                --use-one-led --led-cool-down 4'
+                ' -ss 1000000 -ISO 100 --led-on --led-warm-up 1 --led-cool-down 4'
             ],
             'exposures': None,
             'isos': None
@@ -186,10 +183,8 @@ class TestGetExperimentVariants():
         expected = [
             _default_variant_with(
                 capture_params='-ss 1000000 -ISO 100',
+                led_on=True,
                 led_warm_up=1,
-                led_color='red',
-                led_intensity=0.5,
-                use_one_led=True,
                 led_cool_down=4
             ),
         ]
@@ -266,14 +261,12 @@ class TestCreateFileStructureForExperiment:
 class TestParseVariant:
     def test_parse_variant_creates_variant_with_params(self):
         variant = module._parse_variant(
-            '--iso 123 --ss 456 --led-warm-up 1 --led-color red --led-intensity 2 --use-one-led --led-cool-down 3'
+            '--iso 123 --ss 456 --led-on --led-warm-up 1 --led-cool-down 3'
         )
         expected_variant = module.ExperimentVariant(
             capture_params='--iso 123 --ss 456',
+            led_on=True,
             led_warm_up=1,
-            led_color='red',
-            led_intensity=2,
-            use_one_led=True,
             led_cool_down=3,
         )
         assert variant == expected_variant
@@ -281,10 +274,8 @@ class TestParseVariant:
     def test_parse_variant_creates_variant_has_sane_defaults(self):
         expected_variant = module.ExperimentVariant(
             capture_params=module.DEFAULT_CAPTURE_PARAMS,
+            led_on=False,
             led_warm_up=0,
-            led_color='white',
-            led_intensity=0,
-            use_one_led=False,
             led_cool_down=0,
         )
         assert module._parse_variant('') == expected_variant

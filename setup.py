@@ -14,7 +14,7 @@ setup(
         'console_scripts': [
             'run_experiment = cosmobot_run_experiment.experiment:run_experiment',
             'review_exposure = cosmobot_run_experiment.exposure:review_exposure',
-            'set_led = cosmobot_run_experiment.led_control:set_led',
+            'set_led = cosmobot_run_experiment.led_control:main',
         ]
     },
     install_requires=[
