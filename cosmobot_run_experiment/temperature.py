@@ -17,12 +17,28 @@ else:
 
 TEMPERATURE_LOG_FILENAME = 'temperature.csv'
 
-# Initialize the I2C bus and the ADC (ADS1115)
-i2c = busio.I2C(board.SCL, board.SDA)
-ads = ads1115.ADS1115(i2c)
 
-# Our thermistor is set up singled-ended on the P0 channel of the ADC
-temperature_adc_channel = analog_in.AnalogIn(ads, ads1115.P0)
+# In the past, we've seen issues with opening the same I/O channels with multiple objects
+# Use a global variable for the temperature ADC object so that it is only initialized once
+_temperature_adc_channel = None
+
+
+def _initialize_temperature_adc():
+    # Initialize the I2C bus and the ADC (ADS1115)
+    i2c = busio.I2C(board.SCL, board.SDA)
+    ads = ads1115.ADS1115(i2c)
+
+    # Our thermistor is set up singled-ended on the P0 channel of the ADC
+    return analog_in.AnalogIn(ads, ads1115.P0)
+
+
+def _get_or_initialize_temperature_adc():
+    global _temperature_adc_channel
+
+    if _temperature_adc_channel is None:
+        _temperature_adc_channel = _initialize_temperature_adc()
+
+    return _temperature_adc_channel
 
 
 TemperatureReading = namedtuple('TemperatureReading', [
@@ -33,7 +49,7 @@ TemperatureReading = namedtuple('TemperatureReading', [
 
 
 def read_temperature(capture_timestamp):
-    global temperature_adc_channel
+    temperature_adc_channel = _get_or_initialize_temperature_adc()
 
     return TemperatureReading(
         capture_timestamp=capture_timestamp,
