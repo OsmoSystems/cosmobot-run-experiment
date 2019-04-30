@@ -28,7 +28,7 @@ def _initialize_temperature_adc():
     i2c = busio.I2C(board.SCL, board.SDA)
     ads = ads1115.ADS1115(i2c)
 
-    # Our thermistor is set up singled-ended on the P0 channel of the ADC
+    # Our thermistor is set up single-ended on the P0 channel of the ADC
     return analog_in.AnalogIn(ads, ads1115.P0)
 
 
