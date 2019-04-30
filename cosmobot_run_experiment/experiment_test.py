@@ -105,6 +105,20 @@ class TestPerformExperiment:
 
         assert mock_capture.call_count == 0
 
+    def test_skips_temperature_if_flagged(
+        self,
+        mock_control_led,
+        mock_log_temperature,
+        mock_capture,
+        mock_free_space_for_one_image
+    ):
+        mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS + ['--skip-temperature'])
+
+        with pytest.raises(SystemExit):
+            module.perform_experiment(mock_configuration)
+
+        assert mock_log_temperature.call_count == 0
+
 
 class TestRunExperiment:
     def test_experiment_dry_run_with_basic_parameters(

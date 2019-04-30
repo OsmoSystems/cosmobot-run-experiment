@@ -30,6 +30,7 @@ ExperimentConfiguration = namedtuple(
         'git_hash',  # git hash of camera-sensor-prototype repo
         'hostname',  # hostname of the device the experient was executed on
         'mac',  # mac address
+        'skip_temperature',  # whether to skip recording temperature
         'skip_sync',  # whether to skip syncing to s3
         'erase_synced_files',  # whether to erase the local experiment folder after synced to s3
         'review_exposure',  # review exposure statistics after experiment finishes and do not sync to s3)
@@ -84,6 +85,12 @@ def _parse_args(args):
         'If not provided and --exposures is provided, ISO {DEFAULT_ISO} '
         'will be used when iterating over exposures.'.format(**globals())
     )
+    arg_parser.add_argument(
+        '--skip-temperature',
+        action='store_true',
+        help='If provided, skips recording temperature.'
+    )
+
     arg_parser.add_argument(
         '--skip-sync',
         action='store_true',
@@ -233,6 +240,7 @@ def get_experiment_configuration(cli_args):
         hostname=gethostname(),
         mac=mac_address,
         variants=variants,
+        skip_temperature=args['skip_temperature'],
         skip_sync=args['skip_sync'],
         erase_synced_files=args['erase_synced_files'],
         review_exposure=args['review_exposure']
