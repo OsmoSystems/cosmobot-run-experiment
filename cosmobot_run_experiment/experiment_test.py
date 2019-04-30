@@ -3,43 +3,150 @@ import pytest
 from . import experiment as module
 
 
-class TestRunExperiment:
-    def test_experiment_dry_run_with_basic_parameters(self, mocker):
-        # This isn't a super-hard-core full-stack integration test;
-        # mock out inconvenient side-effects
-        mock_hostname_is_correct = mocker.patch.object(module, 'hostname_is_correct')
-        mock_hostname_is_correct.return_value = True
-        mock_create_file_structure = mocker.patch.object(module, 'create_file_structure_for_experiment')
-        mock_capture = mocker.patch.object(module, 'capture')
-        mock_set_up_log_file_with_base_handler = mocker.patch.object(module, 'set_up_log_file_with_base_handler')
-        mock_control_led = mocker.patch.object(module, 'control_led')
-        mock_log_temperature = mocker.patch.object(module, 'log_temperature')
+@pytest.fixture
+def mock_hostname_is_correct(mocker):
+    return mocker.patch.object(module, 'hostname_is_correct')
 
-        # Long enough to do an actual loop; not long enough to make the test feel slow
-        duration = 0.1
+
+@pytest.fixture
+def mock_create_file_structure_for_experiment(mocker):
+    return mocker.patch.object(module, 'create_file_structure_for_experiment')
+
+
+@pytest.fixture
+def mock_perform_experiment(mocker):
+    return mocker.patch.object(module, 'perform_experiment')
+
+
+@pytest.fixture
+def mock_capture(mocker):
+    return mocker.patch.object(module, 'capture')
+
+
+@pytest.fixture
+def mock_set_up_log_file_with_base_handler(mocker):
+    return mocker.patch.object(module, 'set_up_log_file_with_base_handler')
+
+
+@pytest.fixture
+def mock_free_space_for_one_image(mocker):
+    mock_free_space_for_one_image = mocker.patch.object(module, 'free_space_for_one_image')
+    mock_free_space_for_one_image.return_value = True
+    return mock_free_space_for_one_image
+
+
+@pytest.fixture
+def mock_control_led(mocker):
+    return mocker.patch.object(module, 'control_led')
+
+
+@pytest.fixture
+def mock_log_temperature(mocker):
+    return mocker.patch.object(module, 'log_temperature')
+
+
+@pytest.fixture
+def mock_end_experiment(mocker):
+    return mocker.patch.object(module, 'end_experiment')
+
+
+MOCK_BASIC_PARAMETERS = [
+    '--name', 'automated_integration_test',
+    '--interval', '0.1',  # Long enough to do an actual loop; not long enough to make the test feel slow
+    '--duration', '0.1',  # Match duration to interval to force exactly one iteration
+    '--skip-sync'
+]
+
+
+# A slightly unfortunate combination of integration and unit tests
+class TestPerformExperiment:
+    def test_perform_experiment_dry_run_with_basic_parameters(
+        self,
+        mock_control_led,
+        mock_log_temperature,
+        mock_capture,
+        mock_free_space_for_one_image
+    ):
+        # Shortcut: use `get_experiment_configuration` to create the configuration (aka. make this an integration test)
+        # Since `get_experiment_configuration` generates the start_date and end_date of the experiment,
+        # the configuration must be used immediately
+        mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS)
 
         start_time = datetime.now()
+
         with pytest.raises(SystemExit):
-            module.run_experiment([
-                '--name', 'automated_integration_test',
-                '--interval', str(duration),
-                '--duration', str(duration),
-                '--skip-sync'
-            ])
+            module.perform_experiment(mock_configuration)
+
         end_time = datetime.now()
         elapsed_time = end_time - start_time
-
-        assert mock_log_temperature.call_count == 1
-        assert mock_capture.call_count == 1
-        assert mock_create_file_structure.call_count == 1
-        assert mock_hostname_is_correct.call_count == 1
-        assert mock_set_up_log_file_with_base_handler.call_count == 1
-
-        # Should be called twice: once to turn LEDs on before capture and once to turn them off after capture
-        assert mock_control_led.call_count == 2
 
         # Crude self-test that no major, slow side-effects are occurring:
         # For instance, if we are syncing to s3 we'd expect that to take a few seconds
         # and cause this to fail.
         max_test_time = timedelta(seconds=0.5)
         assert elapsed_time < max_test_time
+
+        assert mock_capture.call_count == 1
+        assert mock_control_led.call_count == 2  # Called twice: to turn on at start and off at end
+        assert mock_log_temperature.call_count == 1
+
+    def test_ends_experiment_without_capture_if_no_free_space(
+        self,
+        mock_control_led,
+        mock_log_temperature,
+        mock_capture,
+        mock_free_space_for_one_image
+    ):
+        mock_free_space_for_one_image.return_value = False
+        mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS)
+
+        with pytest.raises(SystemExit):
+            module.perform_experiment(mock_configuration)
+
+        assert mock_capture.call_count == 0
+
+    def test_skips_temperature_if_flagged(
+        self,
+        mock_control_led,
+        mock_log_temperature,
+        mock_capture,
+        mock_free_space_for_one_image
+    ):
+        mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS + ['--skip-temperature'])
+
+        with pytest.raises(SystemExit):
+            module.perform_experiment(mock_configuration)
+
+        assert mock_log_temperature.call_count == 0
+
+
+class TestRunExperiment:
+    def test_experiment_dry_run_with_basic_parameters(
+        self,
+        mock_hostname_is_correct,
+        mock_create_file_structure_for_experiment,
+        mock_set_up_log_file_with_base_handler,
+        mock_perform_experiment
+    ):
+        mock_hostname_is_correct.return_value = True
+
+        module.run_experiment(MOCK_BASIC_PARAMETERS)
+
+        assert mock_create_file_structure_for_experiment.call_count == 1
+        assert mock_hostname_is_correct.call_count == 1
+        assert mock_set_up_log_file_with_base_handler.call_count == 1
+        assert mock_perform_experiment.call_count == 1
+
+    def test_exits_early_if_hostname_is_incorrect(
+        self,
+        mock_hostname_is_correct,
+        mock_create_file_structure_for_experiment,
+        mock_set_up_log_file_with_base_handler,
+        mock_perform_experiment
+    ):
+        mock_hostname_is_correct.return_value = False
+
+        with pytest.raises(SystemExit):
+            module.run_experiment(MOCK_BASIC_PARAMETERS)
+
+        assert mock_perform_experiment.call_count == 0

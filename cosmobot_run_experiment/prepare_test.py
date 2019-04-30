@@ -37,6 +37,7 @@ class TestParseArgs:
             'variant': ['-ISO 100 -ss 50000', 'variant2'],
             'exposures': [20, 30],
             'isos': [45, 55],
+            'skip_temperature': False,
             'skip_sync': False,
             'review_exposure': False,
             'erase_synced_files': False,

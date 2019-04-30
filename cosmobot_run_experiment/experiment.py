@@ -70,7 +70,6 @@ def perform_experiment(configuration):
 
         # iterate through each capture variant and capture an image with it's settings
         for variant in configuration.variants:
-
             if not free_space_for_one_image():
                 end_experiment(
                     configuration,
@@ -84,10 +83,11 @@ def perform_experiment(configuration):
             # Share timestamp between image and temperature reading, to make them easy to align
             capture_timestamp = datetime.now()
 
-            log_temperature(
-                configuration.experiment_directory_path,
-                capture_timestamp,
-            )
+            if not configuration.skip_temperature:
+                log_temperature(
+                    configuration.experiment_directory_path,
+                    capture_timestamp,
+                )
 
             image_filename = get_image_filename(capture_timestamp, variant)
             image_filepath = os.path.join(configuration.experiment_directory_path, image_filename)

@@ -7,12 +7,42 @@ import pytest
 from . import temperature as module
 
 
+@pytest.fixture
+def mock_initialize_temperature_adc(mocker):
+    return mocker.patch.object(module, '_initialize_temperature_adc')
+
+
+class TestGetOrInitializeTemperatureAdc:
+    def teardown(self):
+        # Reset global variable between tests
+        module._temperature_adc_channel = None
+
+    def test_initilizes_on_first_call(self, mock_initialize_temperature_adc):
+        assert module._temperature_adc_channel is None
+
+        actual_temperature_adc_channel = module._get_or_initialize_temperature_adc()
+
+        assert mock_initialize_temperature_adc.call_count == 1
+        assert module._temperature_adc_channel is not None
+        assert module._temperature_adc_channel == actual_temperature_adc_channel
+
+    def test_does_not_initialize_on_second_call(self, mock_initialize_temperature_adc):
+        assert module._temperature_adc_channel is None
+
+        module._get_or_initialize_temperature_adc()
+        actual_temperature_adc_channel = module._get_or_initialize_temperature_adc()
+
+        assert mock_initialize_temperature_adc.call_count == 1
+        assert module._temperature_adc_channel is not None
+        assert module._temperature_adc_channel == actual_temperature_adc_channel
+
+
 class TestReadTemperature:
     def test_returns_temperature_reading(self, mocker):
-        mocker.patch.object(module, 'temperature_adc_channel', Mock(
+        mocker.patch.object(module, '_get_or_initialize_temperature_adc').side_effect = lambda: Mock(
             value=sentinel.digital_count,
             voltage=sentinel.voltage,
-        ))
+        )
 
         actual = module.read_temperature(sentinel.capture_timestamp)
 
