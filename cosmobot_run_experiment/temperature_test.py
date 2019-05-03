@@ -51,17 +51,12 @@ class TestGetTemperatureAdc:
 
 class TestReadTemperature:
     def test_returns_temperature_reading(self, mocker, mock_get_temperature_adc):
-        # mocker.patch.object(module, '_get_temperature_adc').side_effect = lambda: Mock(
-        #     value=sentinel.digital_count,
-        #     voltage=sentinel.voltage,
-        # )
-
-        mocker.patch.object(module, 'datetime', Mock(now=lambda: sentinel.capture_timestamp))
+        mocker.patch.object(module, 'datetime', Mock(now=lambda: sentinel.datetime_now))
 
         actual = module.read_temperature()
 
         expected = module.TemperatureReading(
-            capture_timestamp=sentinel.capture_timestamp,
+            capture_timestamp=sentinel.datetime_now,
             digital_count=sentinel.digital_count,
             voltage=sentinel.voltage
         )
@@ -71,11 +66,6 @@ class TestReadTemperature:
 
 class TestReadTemperatures:
     def test_returns_n_temperature_readings(self, mocker, mock_get_temperature_adc):
-        # mocker.patch.object(module, '_get_temperature_adc').side_effect = lambda: Mock(
-        #     value=sentinel.digital_count,
-        #     voltage=sentinel.voltage,
-        # )
-
         number_of_readings_to_collect = 10
         actual_readings = module.read_temperatures(number_of_readings_to_collect)
 
