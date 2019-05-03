@@ -87,6 +87,7 @@ def perform_experiment(configuration):
                 log_temperature(
                     configuration.experiment_directory_path,
                     capture_timestamp,
+                    number_of_readings_to_average=20,
                 )
 
             image_filename = get_image_filename(capture_timestamp, variant)
