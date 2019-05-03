@@ -62,7 +62,7 @@ def read_temperature():
     )
 
 
-def read_temperatures(number_of_readings_to_collect):
+def _read_temperatures(number_of_readings_to_collect):
     return [
         read_temperature()
         for i in range(number_of_readings_to_collect)
@@ -95,7 +95,7 @@ def _log_temperature(experiment_directory, temperature_log_filename, temperature
 
 
 def log_temperature(experiment_directory, capture_time, number_of_readings_to_average):
-    temperature_readings = read_temperatures(number_of_readings_to_average)
+    temperature_readings = _read_temperatures(number_of_readings_to_average)
 
     averaged_reading = TemperatureReading(
         capture_timestamp=capture_time,
