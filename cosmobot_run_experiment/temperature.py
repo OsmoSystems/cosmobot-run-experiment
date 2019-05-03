@@ -101,7 +101,7 @@ def _log_temperature(experiment_directory, temperature_log_filename, temperature
 
 def log_temperature(experiment_directory, capture_time, number_of_readings_to_average):
     ''' Collects multiple temperature readings, and logs the average to one file and all of the raw readings to a
-        separate file. The averaged reading get logged with the provided capture_time, but the raw readings get
+        separate file. The averaged reading gets logged with the provided capture_time, but the raw readings get
         logged with the actual datetimes they were recorded
 
     Args:
