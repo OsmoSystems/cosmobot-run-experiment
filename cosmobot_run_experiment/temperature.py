@@ -94,7 +94,7 @@ def _log_temperature(experiment_directory, temperature_log_filename, temperature
     return temperature_log_filepath
 
 
-def log_temperature(experiment_directory, capture_time, number_of_readings_to_average=1):
+def log_temperature(experiment_directory, capture_time, number_of_readings_to_average):
     temperature_readings = read_temperatures(number_of_readings_to_average)
 
     averaged_reading = TemperatureReading(

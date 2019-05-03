@@ -67,11 +67,18 @@ class TestReadTemperature:
 class TestReadTemperatures:
     def test_returns_n_temperature_readings(self, mocker, mock_get_temperature_adc):
         number_of_readings_to_collect = 10
-        actual_readings = module.read_temperatures(number_of_readings_to_collect)
+        actual_readings = module._read_temperatures(number_of_readings_to_collect)
 
         assert len(actual_readings) == number_of_readings_to_collect
 
-        unique_timestamps = set([reading.capture_timestamp for reading in actual_readings])
+        unique_timestamps = {reading.capture_timestamp for reading in actual_readings}
+        assert len(unique_timestamps) == number_of_readings_to_collect
+
+    def test_records_actual_datetimes(self, mocker, mock_get_temperature_adc):
+        number_of_readings_to_collect = 10
+        actual_readings = module._read_temperatures(number_of_readings_to_collect)
+
+        unique_timestamps = {reading.capture_timestamp for reading in actual_readings}
         assert len(unique_timestamps) == number_of_readings_to_collect
 
 
@@ -113,7 +120,6 @@ class TestGetOrCreateTemperatureLog:
             assert reader.fieldnames == list(module.TemperatureReading._fields)
 
 
-MOCK_CAPTURE_DATETIME = datetime(2019, 1, 1, 12, 13, 14)
 MOCK_DIGITAL_COUNT = 12345.0
 MOCK_VOLTAGE = 0.12345
 
@@ -143,6 +149,8 @@ def _get_log_readings(log_filepath):
 
 class TestLogTemperature:
     def test_appends_temperature_reading_rows(self, tmp_path, mock_get_temperature_adc):
+        number_of_readings_to_average = 1
+
         mock_get_temperature_adc.return_value = Mock(
             value=MOCK_DIGITAL_COUNT,
             voltage=MOCK_VOLTAGE,
@@ -150,8 +158,10 @@ class TestLogTemperature:
 
         mock_experiment_directory = str(tmp_path)  # Python 3.5 os.path.join can't handle tmp_path as PosixPath
 
-        module.log_temperature(experiment_directory=mock_experiment_directory, capture_time='2019-01-01')
-        module.log_temperature(experiment_directory=mock_experiment_directory, capture_time='2019-01-02')
+        capture_time_1 = datetime(2019, 1, 1, 12, 13, 14)
+        capture_time_2 = datetime(2019, 1, 2, 1, 2, 3)
+        module.log_temperature(mock_experiment_directory, capture_time_1, number_of_readings_to_average)
+        module.log_temperature(mock_experiment_directory, capture_time_2, number_of_readings_to_average)
 
         expected_log_filepath = os.path.join(
             mock_experiment_directory,
@@ -160,12 +170,12 @@ class TestLogTemperature:
 
         assert _get_log_readings(expected_log_filepath) == [
             {
-                'capture_timestamp': '2019-01-01',
+                'capture_timestamp': '2019-01-01 12:13:14',
                 'digital_count': str(MOCK_DIGITAL_COUNT),
                 'voltage': str(MOCK_VOLTAGE),
             },
             {
-                'capture_timestamp': '2019-01-02',
+                'capture_timestamp': '2019-01-02 01:02:03',
                 'digital_count': str(MOCK_DIGITAL_COUNT),
                 'voltage': str(MOCK_VOLTAGE),
             }
@@ -182,12 +192,14 @@ class TestLogTemperature:
             )
             for i in range(number_of_readings_to_average)
         ]
+        expected_average = 4.5
 
         mock_experiment_directory = str(tmp_path)  # Python 3.5 os.path.join can't handle tmp_path as PosixPath
 
+        capture_time = datetime(2019, 1, 1, 12, 13, 14)
         module.log_temperature(
             experiment_directory=mock_experiment_directory,
-            capture_time='2019-01-01',
+            capture_time=capture_time,
             number_of_readings_to_average=number_of_readings_to_average
         )
 
@@ -198,9 +210,9 @@ class TestLogTemperature:
 
         assert _get_log_readings(expected_log_filepath) == [
             {
-                'capture_timestamp': '2019-01-01',
-                'digital_count': str(4.5),
-                'voltage': str(4.5),
+                'capture_timestamp': '2019-01-01 12:13:14',
+                'digital_count': str(expected_average),
+                'voltage': str(expected_average),
             },
         ]
 
@@ -215,7 +227,7 @@ class TestLogTemperature:
         number_of_readings_to_average = 10
         module.log_temperature(
             experiment_directory=mock_experiment_directory,
-            capture_time='2019-01-01',
+            capture_time=datetime(2019, 1, 1, 12, 13, 14),
             number_of_readings_to_average=number_of_readings_to_average
         )
 
@@ -226,6 +238,6 @@ class TestLogTemperature:
 
         actual_readings = _get_log_readings(expected_unaveraged_log_filepath)
 
-        unique_timestamps = set([reading['capture_timestamp'] for reading in actual_readings])
+        unique_timestamps = {reading['capture_timestamp'] for reading in actual_readings}
         assert len(unique_timestamps) == number_of_readings_to_average
         assert len(actual_readings) == number_of_readings_to_average
