@@ -53,6 +53,11 @@ TemperatureReading = namedtuple('TemperatureReading', [
 
 
 def read_temperature():
+    ''' Collects a temperature measurement from the ADC channel (on the I2C bus)
+
+    Returns:
+        A TemperatureReading
+    '''
     temperature_adc_channel = _get_temperature_adc()
 
     return TemperatureReading(
@@ -95,6 +100,18 @@ def _log_temperature(experiment_directory, temperature_log_filename, temperature
 
 
 def log_temperature(experiment_directory, capture_time, number_of_readings_to_average):
+    ''' Collects multiple temperature readings, and logs the average to one file and all of the raw readings to a
+        separate file. The averaged reading get logged with the provided capture_time, but the raw readings get
+        logged with the actual datetimes they were recorded
+
+    Args:
+        experiment_directory: The full path of the directory where the logs will be created
+        capture_time: A datetime which will be used in the averaged temperature log
+        number_of_readings_to_average: The number of readings to collect and average over
+
+    Returns:
+        None, but has the side-effect of creating and/or updating two csv logs
+    '''
     temperature_readings = _read_temperatures(number_of_readings_to_average)
 
     averaged_reading = TemperatureReading(
