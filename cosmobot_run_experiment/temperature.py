@@ -1,8 +1,11 @@
 from collections import namedtuple
 import csv
+from datetime import datetime
 import logging
 import os
 import platform
+
+import numpy as np
 
 # Support development without needing pi specific modules installed.
 if platform.machine() == 'armv7l':
@@ -16,6 +19,7 @@ else:
 
 
 TEMPERATURE_LOG_FILENAME = 'temperature.csv'
+UNAVERAGED_TEMPERATURE_LOG_FILENAME = 'unaveraged_temperature.csv'
 
 
 # In the past, we've seen issues with opening the same I/O channels with multiple objects
@@ -32,7 +36,7 @@ def _initialize_temperature_adc():
     return analog_in.AnalogIn(ads, ads1115.P0)
 
 
-def _get_or_initialize_temperature_adc():
+def _get_temperature_adc():
     global _temperature_adc_channel
 
     if _temperature_adc_channel is None:
@@ -48,18 +52,31 @@ TemperatureReading = namedtuple('TemperatureReading', [
 ])
 
 
-def read_temperature(capture_timestamp):
-    temperature_adc_channel = _get_or_initialize_temperature_adc()
+def read_temperature():
+    ''' Collects a temperature measurement from the ADC channel (on the I2C bus)
+
+    Returns:
+        A TemperatureReading
+    '''
+    temperature_adc_channel = _get_temperature_adc()
 
     return TemperatureReading(
-        capture_timestamp=capture_timestamp,
+        capture_timestamp=datetime.now(),
         digital_count=temperature_adc_channel.value,
         voltage=temperature_adc_channel.voltage
     )
 
 
-def _get_or_create_temperature_log(experiment_directory):
-    temperature_log_filepath = os.path.join(experiment_directory, TEMPERATURE_LOG_FILENAME)
+def _read_temperatures(number_of_readings_to_collect):
+    return [
+        read_temperature()
+        for i in range(number_of_readings_to_collect)
+    ]
+
+
+def _get_or_create_temperature_log(experiment_directory, temperature_log_filename):
+    temperature_log_filepath = os.path.join(experiment_directory, temperature_log_filename)
+
     log_file_exists = os.path.isfile(temperature_log_filepath)
 
     if not log_file_exists:
@@ -70,13 +87,38 @@ def _get_or_create_temperature_log(experiment_directory):
     return temperature_log_filepath
 
 
-def log_temperature(experiment_directory, capture_time):
-    temperature_log_filepath = _get_or_create_temperature_log(experiment_directory)
-
-    temperature_reading = read_temperature(capture_time)
+def _log_temperature(experiment_directory, temperature_log_filename, temperature_readings):
+    temperature_log_filepath = _get_or_create_temperature_log(experiment_directory, temperature_log_filename)
 
     with open(temperature_log_filepath, 'a') as f:
         writer = csv.DictWriter(f, fieldnames=TemperatureReading._fields)
-        writer.writerow(temperature_reading._asdict())
+
+        for temperature_reading in temperature_readings:
+            writer.writerow(temperature_reading._asdict())
 
     return temperature_log_filepath
+
+
+def log_temperature(experiment_directory, capture_time, number_of_readings_to_average):
+    ''' Collects multiple temperature readings, and logs the average to one file and all of the raw readings to a
+        separate file. The averaged reading gets logged with the provided capture_time, but the raw readings get
+        logged with the actual datetimes they were recorded
+
+    Args:
+        experiment_directory: The full path of the directory where the logs will be created
+        capture_time: A datetime which will be used in the averaged temperature log
+        number_of_readings_to_average: The number of readings to collect and average over
+
+    Returns:
+        None, but has the side-effect of creating and/or updating two csv logs
+    '''
+    temperature_readings = _read_temperatures(number_of_readings_to_average)
+
+    averaged_reading = TemperatureReading(
+        capture_timestamp=capture_time,
+        digital_count=np.average([reading.digital_count for reading in temperature_readings]),
+        voltage=np.average([reading.voltage for reading in temperature_readings])
+    )
+
+    _log_temperature(experiment_directory, UNAVERAGED_TEMPERATURE_LOG_FILENAME, temperature_readings)
+    _log_temperature(experiment_directory, TEMPERATURE_LOG_FILENAME, [averaged_reading])
