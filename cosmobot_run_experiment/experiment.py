@@ -131,6 +131,8 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
 
+    control_led(on=False)
+
     quit()
 
 
