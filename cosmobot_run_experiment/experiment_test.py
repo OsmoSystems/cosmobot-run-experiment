@@ -87,7 +87,7 @@ class TestPerformExperiment:
         assert elapsed_time < max_test_time
 
         assert mock_capture.call_count == 1
-        # Called to turn on at start and off at end, and again in end_experiment
+        # Called twice in perform_experiment and once in end_experiment
         assert mock_control_led.call_count == 3
         assert mock_log_temperature.call_count == 1
 
