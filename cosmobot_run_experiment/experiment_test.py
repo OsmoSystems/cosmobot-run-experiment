@@ -87,7 +87,8 @@ class TestPerformExperiment:
         assert elapsed_time < max_test_time
 
         assert mock_capture.call_count == 1
-        assert mock_control_led.call_count == 2  # Called twice: to turn on at start and off at end
+        # Called twice in perform_experiment and once in end_experiment
+        assert mock_control_led.call_count == 3
         assert mock_log_temperature.call_count == 1
 
     def test_ends_experiment_without_capture_if_no_free_space(
