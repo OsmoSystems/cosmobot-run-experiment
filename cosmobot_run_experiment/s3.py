@@ -27,12 +27,7 @@ def sync_to_s3(local_sync_dir, additional_sync_params='', erase_synced_files=Fal
     # https://docs.aws.amazon.com/cli/latest/reference/s3/mv.html
     s3_sync_dir = 's3://camera-sensor-experiments/{experiment_dir_name}'.format(**locals())
 
-    # Since LEDs currently require being controlled by a program using sudo, run_experiment
-    # is issued using sudo which does not have a profile or a PATH variable to the aws binary.
-    # We use 'sudo -H -u pi...' to provide access to the aws credentials within
-    # the pi users .aws folder and specify the direct path to the binary.
-    # followup: https://app.asana.com/0/819671808102776/1106347012732358/f
-    command = 'sudo -H -u pi /home/pi/.local/bin/aws s3 {s3_subcommand} {local_sync_dir} ' \
+    command = '/home/pi/.local/bin/aws s3 {s3_subcommand} {local_sync_dir} ' \
               '{s3_sync_dir} {additional_sync_params}'.format(**locals())
     logging.info(command)
     check_call(command, shell=True)

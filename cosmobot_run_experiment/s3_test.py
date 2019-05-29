@@ -23,7 +23,7 @@ class TestSyncToS3:
     def test_syncs_to_subdirectory_in_s3_bucket(self, mocker, mock_check_call, mock_path_basename):
         module.sync_to_s3(local_sync_dir='/output_dir/experiment_name')
 
-        expected_command = 'sudo -H -u pi /home/pi/.local/bin/aws s3 sync /output_dir/experiment_name ' \
+        expected_command = '/home/pi/.local/bin/aws s3 sync /output_dir/experiment_name ' \
                            's3://camera-sensor-experiments/experiment_name '
         mock_check_call.assert_called_with(expected_command, shell=True)
 
@@ -32,7 +32,7 @@ class TestSyncToS3:
     ):
         module.sync_to_s3(local_sync_dir='/output_dir/experiment_name', additional_sync_params='--exclude *.log*')
 
-        expected_command = 'sudo -H -u pi /home/pi/.local/bin/aws s3 sync /output_dir/experiment_name ' \
+        expected_command = '/home/pi/.local/bin/aws s3 sync /output_dir/experiment_name ' \
                            's3://camera-sensor-experiments/experiment_name --exclude *.log*'
         mock_check_call.assert_called_with(expected_command, shell=True)
 
@@ -40,13 +40,13 @@ class TestSyncToS3:
         (
             'mv',
             True,
-            'sudo -H -u pi /home/pi/.local/bin/aws s3 mv --recursive /output_dir/experiment_name '
+            '/home/pi/.local/bin/aws s3 mv --recursive /output_dir/experiment_name '
             's3://camera-sensor-experiments/experiment_name '
         ),
         (
             'sync',
             False,
-            'sudo -H -u pi /home/pi/.local/bin/aws s3 sync /output_dir/experiment_name '
+            '/home/pi/.local/bin/aws s3 sync /output_dir/experiment_name '
             's3://camera-sensor-experiments/experiment_name '
         )
     ])
