@@ -2,9 +2,8 @@ import pkg_resources
 import logging
 from subprocess import check_call
 
-AWB_QUALITY_CAPTURE_PARAMS = (
-    "-q 100 -awb off -awbg 1.307,1.615"
-)  # defaults recommended by Pagnutti
+# defaults recommended by Pagnutti. These only affect the .jpegs
+AWB_QUALITY_CAPTURE_PARAMS = "-q 100 -awb off -awbg 1.307,1.615"
 
 
 def capture(filename, additional_capture_params=""):

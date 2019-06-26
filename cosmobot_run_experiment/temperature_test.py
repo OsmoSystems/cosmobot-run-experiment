@@ -158,9 +158,8 @@ class TestLogTemperature:
             value=MOCK_DIGITAL_COUNT, voltage=MOCK_VOLTAGE
         )
 
-        mock_experiment_directory = str(
-            tmp_path
-        )  # Python 3.5 os.path.join can't handle tmp_path as PosixPath
+        # Python 3.5 os.path.join can't handle tmp_path as PosixPath
+        mock_experiment_directory = str(tmp_path)
 
         capture_time_1 = datetime(2019, 1, 1, 12, 13, 14)
         capture_time_2 = datetime(2019, 1, 2, 1, 2, 3)
@@ -227,9 +226,8 @@ class TestLogTemperature:
             value=MOCK_DIGITAL_COUNT, voltage=MOCK_VOLTAGE
         )
 
-        mock_experiment_directory = str(
-            tmp_path
-        )  # Python 3.5 os.path.join can't handle tmp_path as PosixPath
+        # Python 3.5 os.path.join can't handle tmp_path as PosixPath
+        mock_experiment_directory = str(tmp_path)
 
         number_of_readings_to_average = 10
         module.log_temperature(

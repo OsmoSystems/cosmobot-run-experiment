@@ -178,11 +178,11 @@ def run_experiment(cli_args=None):
         configuration = get_experiment_configuration(cli_args)
 
         if not hostname_is_correct(configuration.hostname):
-            quit_message = '"{configuration.hostname}" is not a valid hostname.'.format(
-                **locals()
-            )
-            quit_message += (
-                " Contact your local dev for instructions on setting a valid hostname."
+            quit_message = (
+                '"{configuration.hostname}" is not a valid hostname.'
+                " Contact your local dev for instructions on setting a valid hostname.".format(
+                    **locals()
+                )
             )
             logging.error(quit_message)
             quit()
