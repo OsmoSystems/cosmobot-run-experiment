@@ -5,56 +5,61 @@ from . import experiment as module
 
 @pytest.fixture
 def mock_hostname_is_correct(mocker):
-    return mocker.patch.object(module, 'hostname_is_correct')
+    return mocker.patch.object(module, "hostname_is_correct")
 
 
 @pytest.fixture
 def mock_create_file_structure_for_experiment(mocker):
-    return mocker.patch.object(module, 'create_file_structure_for_experiment')
+    return mocker.patch.object(module, "create_file_structure_for_experiment")
 
 
 @pytest.fixture
 def mock_perform_experiment(mocker):
-    return mocker.patch.object(module, 'perform_experiment')
+    return mocker.patch.object(module, "perform_experiment")
 
 
 @pytest.fixture
 def mock_capture(mocker):
-    return mocker.patch.object(module, 'capture')
+    return mocker.patch.object(module, "capture")
 
 
 @pytest.fixture
 def mock_set_up_log_file_with_base_handler(mocker):
-    return mocker.patch.object(module, 'set_up_log_file_with_base_handler')
+    return mocker.patch.object(module, "set_up_log_file_with_base_handler")
 
 
 @pytest.fixture
 def mock_free_space_for_one_image(mocker):
-    mock_free_space_for_one_image = mocker.patch.object(module, 'free_space_for_one_image')
+    mock_free_space_for_one_image = mocker.patch.object(
+        module, "free_space_for_one_image"
+    )
     mock_free_space_for_one_image.return_value = True
     return mock_free_space_for_one_image
 
 
 @pytest.fixture
 def mock_control_led(mocker):
-    return mocker.patch.object(module, 'control_led')
+    return mocker.patch.object(module, "control_led")
 
 
 @pytest.fixture
 def mock_log_temperature(mocker):
-    return mocker.patch.object(module, 'log_temperature')
+    return mocker.patch.object(module, "log_temperature")
 
 
 @pytest.fixture
 def mock_end_experiment(mocker):
-    return mocker.patch.object(module, 'end_experiment')
+    return mocker.patch.object(module, "end_experiment")
 
 
 MOCK_BASIC_PARAMETERS = [
-    '--name', 'automated_integration_test',
-    '--interval', '0.1',  # Long enough to do an actual loop; not long enough to make the test feel slow
-    '--duration', '0.1',  # Match duration to interval to force exactly one iteration
-    '--skip-sync'
+    "--name",
+    "automated_integration_test",
+    "--interval",
+    "0.1",  # Long enough to do an actual loop; not long enough to make the test feel slow
+    "--duration",
+    "0.1",  # Match duration to interval to force exactly one iteration
+    "--skip-sync",
 ]
 
 
@@ -65,7 +70,7 @@ class TestPerformExperiment:
         mock_control_led,
         mock_log_temperature,
         mock_capture,
-        mock_free_space_for_one_image
+        mock_free_space_for_one_image,
     ):
         # Shortcut: use `get_experiment_configuration` to create the configuration (aka. make this an integration test)
         # Since `get_experiment_configuration` generates the start_date and end_date of the experiment,
@@ -96,7 +101,7 @@ class TestPerformExperiment:
         mock_control_led,
         mock_log_temperature,
         mock_capture,
-        mock_free_space_for_one_image
+        mock_free_space_for_one_image,
     ):
         mock_free_space_for_one_image.return_value = False
         mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS)
@@ -111,9 +116,11 @@ class TestPerformExperiment:
         mock_control_led,
         mock_log_temperature,
         mock_capture,
-        mock_free_space_for_one_image
+        mock_free_space_for_one_image,
     ):
-        mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS + ['--skip-temperature'])
+        mock_configuration = module.get_experiment_configuration(
+            MOCK_BASIC_PARAMETERS + ["--skip-temperature"]
+        )
 
         with pytest.raises(SystemExit):
             module.perform_experiment(mock_configuration)
@@ -127,7 +134,7 @@ class TestRunExperiment:
         mock_hostname_is_correct,
         mock_create_file_structure_for_experiment,
         mock_set_up_log_file_with_base_handler,
-        mock_perform_experiment
+        mock_perform_experiment,
     ):
         mock_hostname_is_correct.return_value = True
 
@@ -143,7 +150,7 @@ class TestRunExperiment:
         mock_hostname_is_correct,
         mock_create_file_structure_for_experiment,
         mock_set_up_log_file_with_base_handler,
-        mock_perform_experiment
+        mock_perform_experiment,
     ):
         mock_hostname_is_correct.return_value = False
 

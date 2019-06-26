@@ -59,3 +59,4 @@ target/
 
 /output/
 \.pytest_cache/
+\.mypy_cache/

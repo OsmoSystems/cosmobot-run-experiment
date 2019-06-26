@@ -1,12 +1,12 @@
-'''
+"""
 Stubbed out DigitalIO module
-'''
+"""
 from enum import Enum
 
 
 class Direction(Enum):
-    OUTPUT = 'OUTPUT'
-    INPUT = 'INPUT'
+    OUTPUT = "OUTPUT"
+    INPUT = "INPUT"
 
 
 class DigitalInOut(object):

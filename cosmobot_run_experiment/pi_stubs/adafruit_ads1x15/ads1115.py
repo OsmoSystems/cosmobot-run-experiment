@@ -3,4 +3,4 @@ class ADS1115(object):
         self.i2c = i2c
 
 
-P0 = 'P0'
+P0 = "P0"
