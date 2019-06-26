@@ -8,18 +8,18 @@ import platform
 import numpy as np
 
 # Support development without needing pi specific modules installed.
-if platform.machine() == 'armv7l':
+if platform.machine() == "armv7l":
     from adafruit_ads1x15 import ads1115, analog_in
     import board
     import busio
 else:
-    logging.warning('Using library stubs for non-raspberry-pi machine')
+    logging.warning("Using library stubs for non-raspberry-pi machine")
     from cosmobot_run_experiment.pi_stubs import board, busio
     from cosmobot_run_experiment.pi_stubs.adafruit_ads1x15 import ads1115, analog_in
 
 
-TEMPERATURE_LOG_FILENAME = 'temperature.csv'
-UNAVERAGED_TEMPERATURE_LOG_FILENAME = 'unaveraged_temperature.csv'
+TEMPERATURE_LOG_FILENAME = "temperature.csv"
+UNAVERAGED_TEMPERATURE_LOG_FILENAME = "unaveraged_temperature.csv"
 
 
 # In the past, we've seen issues with opening the same I/O channels with multiple objects
@@ -45,52 +45,53 @@ def _get_temperature_adc():
     return _temperature_adc_channel
 
 
-TemperatureReading = namedtuple('TemperatureReading', [
-    'capture_timestamp',
-    'digital_count',
-    'voltage'
-])
+TemperatureReading = namedtuple(
+    "TemperatureReading", ["capture_timestamp", "digital_count", "voltage"]
+)
 
 
 def read_temperature():
-    ''' Collects a temperature measurement from the ADC channel (on the I2C bus)
+    """ Collects a temperature measurement from the ADC channel (on the I2C bus)
 
     Returns:
         A TemperatureReading
-    '''
+    """
     temperature_adc_channel = _get_temperature_adc()
 
     return TemperatureReading(
         capture_timestamp=datetime.now(),
         digital_count=temperature_adc_channel.value,
-        voltage=temperature_adc_channel.voltage
+        voltage=temperature_adc_channel.voltage,
     )
 
 
 def _read_temperatures(number_of_readings_to_collect):
-    return [
-        read_temperature()
-        for i in range(number_of_readings_to_collect)
-    ]
+    return [read_temperature() for i in range(number_of_readings_to_collect)]
 
 
 def _get_or_create_temperature_log(experiment_directory, temperature_log_filename):
-    temperature_log_filepath = os.path.join(experiment_directory, temperature_log_filename)
+    temperature_log_filepath = os.path.join(
+        experiment_directory, temperature_log_filename
+    )
 
     log_file_exists = os.path.isfile(temperature_log_filepath)
 
     if not log_file_exists:
-        with open(temperature_log_filepath, 'w') as f:
+        with open(temperature_log_filepath, "w") as f:
             writer = csv.DictWriter(f, fieldnames=TemperatureReading._fields)
             writer.writeheader()
 
     return temperature_log_filepath
 
 
-def _log_temperature(experiment_directory, temperature_log_filename, temperature_readings):
-    temperature_log_filepath = _get_or_create_temperature_log(experiment_directory, temperature_log_filename)
+def _log_temperature(
+    experiment_directory, temperature_log_filename, temperature_readings
+):
+    temperature_log_filepath = _get_or_create_temperature_log(
+        experiment_directory, temperature_log_filename
+    )
 
-    with open(temperature_log_filepath, 'a') as f:
+    with open(temperature_log_filepath, "a") as f:
         writer = csv.DictWriter(f, fieldnames=TemperatureReading._fields)
 
         for temperature_reading in temperature_readings:
@@ -100,7 +101,7 @@ def _log_temperature(experiment_directory, temperature_log_filename, temperature
 
 
 def log_temperature(experiment_directory, capture_time, number_of_readings_to_average):
-    ''' Collects multiple temperature readings, and logs the average to one file and all of the raw readings to a
+    """ Collects multiple temperature readings, and logs the average to one file and all of the raw readings to a
         separate file. The averaged reading gets logged with the provided capture_time, but the raw readings get
         logged with the actual datetimes they were recorded
 
@@ -111,14 +112,18 @@ def log_temperature(experiment_directory, capture_time, number_of_readings_to_av
 
     Returns:
         None, but has the side-effect of creating and/or updating two csv logs
-    '''
+    """
     temperature_readings = _read_temperatures(number_of_readings_to_average)
 
     averaged_reading = TemperatureReading(
         capture_timestamp=capture_time,
-        digital_count=np.average([reading.digital_count for reading in temperature_readings]),
-        voltage=np.average([reading.voltage for reading in temperature_readings])
+        digital_count=np.average(
+            [reading.digital_count for reading in temperature_readings]
+        ),
+        voltage=np.average([reading.voltage for reading in temperature_readings]),
     )
 
-    _log_temperature(experiment_directory, UNAVERAGED_TEMPERATURE_LOG_FILENAME, temperature_readings)
+    _log_temperature(
+        experiment_directory, UNAVERAGED_TEMPERATURE_LOG_FILENAME, temperature_readings
+    )
     _log_temperature(experiment_directory, TEMPERATURE_LOG_FILENAME, [averaged_reading])

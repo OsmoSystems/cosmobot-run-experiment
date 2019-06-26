@@ -1,10 +1,10 @@
 from picamraw import PiRawBayer, PiCameraVersion
 
-RAW_BIT_DEPTH = 2**10
+RAW_BIT_DEPTH = 2 ** 10
 
 
 def as_rgb(raw_image_path):
-    ''' Extracts the raw bayer data from a JPEG+RAW file and converts it to an
+    """ Extracts the raw bayer data from a JPEG+RAW file and converts it to an
         `RGB Image` (see definition in README).
 
         NOTE: Duplicated from process_experiment
@@ -14,11 +14,9 @@ def as_rgb(raw_image_path):
 
     Returns:
         An `RGB Image`
-    '''
+    """
     raw_bayer = PiRawBayer(
-        filepath=raw_image_path,
-        camera_version=PiCameraVersion.V2,
-        sensor_mode=0
+        filepath=raw_image_path, camera_version=PiCameraVersion.V2, sensor_mode=0
     )
 
     # Divide by the bit-depth of the raw data to normalize into the (0,1) range

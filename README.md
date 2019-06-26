@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+
 # Usage
 
 For full setup and usage details, see the [Cosmobot Instruction Manual](https://docs.google.com/document/d/1ZYK24QlmTyvdBJlXioD8hm90TbwAEc02sMYBzOlQnoU/edit)
