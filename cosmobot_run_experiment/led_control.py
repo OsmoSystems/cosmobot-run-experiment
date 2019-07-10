@@ -15,19 +15,21 @@ else:
 DIGITAL_LED_PIN = board.D6
 
 
-def control_led(on=True):
+def control_led(led_on=True):
     """ turn on/off Digital IO LED
+    Note that the LED is connected through a relay such that setting the DIO pin *low* will turn the LED *on*,
+    and vice versa.
 
     Args:
-        on: boolean; if True, turn LED on. if False, turn off
+        led_on: boolean; if True, turn LED on by setting the DIO pin low. if False, turn off LED by setting DIO pin high
     Returns:
         None
     """
-    logging.info("Turning LED {}".format("on" if on else "off"))
+    logging.info("Turning LED {}".format("led_on" if led_on else "off"))
 
     led = digitalio.DigitalInOut(pin=DIGITAL_LED_PIN)
     led.direction = digitalio.Direction.OUTPUT
-    led.value = on
+    led.value = not led_on
 
 
 def main(cli_args=None):
@@ -54,4 +56,4 @@ def main(cli_args=None):
 
     args = arg_parser.parse_args(cli_args)
 
-    control_led(on=args.state == "on")
+    control_led(led_on=args.state == "on")
