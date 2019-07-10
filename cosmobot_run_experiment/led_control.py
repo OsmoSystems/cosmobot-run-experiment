@@ -25,7 +25,7 @@ def control_led(led_on=True):
     Returns:
         None
     """
-    logging.info("Turning LED {}".format("led_on" if led_on else "off"))
+    logging.info("Turning LED {}".format("on" if led_on else "off"))
 
     led = digitalio.DigitalInOut(pin=DIGITAL_LED_PIN)
     led.direction = digitalio.Direction.OUTPUT
