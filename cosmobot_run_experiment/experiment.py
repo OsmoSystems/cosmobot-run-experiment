@@ -80,7 +80,7 @@ def perform_experiment(configuration):
                     experiment_ended_message="Insufficient space to save the image. Quitting...",
                 )
 
-            control_led(on=variant.led_on)
+            control_led(led_on=variant.led_on)
 
             time.sleep(variant.led_warm_up)
 
@@ -102,7 +102,7 @@ def perform_experiment(configuration):
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
             # Turn off LEDs after capture
-            control_led(on=False)
+            control_led(led_on=False)
             time.sleep(variant.led_cool_down)
 
             # If a sync is currently occuring, this is a no-op.
@@ -143,7 +143,7 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
 
-    control_led(on=False)
+    control_led(led_on=False)
 
     quit()
 
