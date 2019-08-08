@@ -148,8 +148,12 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     quit()
 
 
-def set_up_log_file_with_base_handler(experiment_directory):
-    log_filepath = os.path.join(experiment_directory, "experiment.log")
+def set_up_log_file_with_base_handler(experiment_directory, run_number=None):
+    run_number_suffix = f"_run-{run_number:04}" if run_number else ""
+
+    log_filepath = os.path.join(
+        experiment_directory, f"experiment{run_number_suffix}.log"
+    )
     log_file_handler = logging.FileHandler(log_filepath)
     formatter = logging.Formatter(logging_format)
     log_file_handler.setFormatter(formatter)
@@ -188,7 +192,9 @@ def run_experiment(cli_args=None):
             quit()
 
         create_file_structure_for_experiment(configuration)
-        set_up_log_file_with_base_handler(configuration.experiment_directory_path)
+        set_up_log_file_with_base_handler(
+            configuration.experiment_directory_path, configuration.run_number
+        )
 
         try:
             perform_experiment(configuration)

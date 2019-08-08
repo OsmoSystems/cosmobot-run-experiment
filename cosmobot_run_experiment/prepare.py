@@ -66,9 +66,19 @@ def _parse_args(args):
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    arg_parser.add_argument(
-        "--name", required=True, type=str, help="name for experiment"
+    output_directory_group = argparse.add_mutually_exclusive_group(required=True)
+    output_directory_group.add_argument(
+        "--name",
+        type=str,
+        help="name for experiment to use in generated output directory name",
     )
+    output_directory_group.add_argument(
+        "--output-directory-name",
+        type=str,
+        help="full name of output directory to use for multiple runs (i.e. for calibration software)",
+    )
+    arg_parser.add_argument(output_directory_group)
+
     arg_parser.add_argument(
         "--interval",
         required=True,
@@ -227,6 +237,15 @@ def get_experiment_variants(args):
     return variants
 
 
+def _determine_run_number(experiment_directory_name):
+    """
+    TODO list the directory on S3 and find existing experiment_run-NNNN files to determine next run number
+    if directory or experiment files don't exist, return 1
+    else return highest run + 1
+    """
+    return 1
+
+
 def _get_mac_address():
     integer_mac_address = get_mac()  # Returns as an integer
     hex_mac_address = hex(integer_mac_address).upper()
@@ -257,9 +276,16 @@ def get_experiment_configuration(cli_args):
 
     iso_ish_datetime = iso_datetime_for_filename(start_date)
     name = args["name"]
-    experiment_directory_name = "{iso_ish_datetime}-Pi{mac_last_4}-{name}".format(
-        **locals()
-    )
+
+    if name:
+        experiment_directory_name = "{iso_ish_datetime}-Pi{mac_last_4}-{name}".format(
+            **locals()
+        )
+        run_number = None
+    else:
+        experiment_directory_name = args["output_directory_name"]
+        run_number = _determine_run_number(experiment_directory_name)
+
     experiment_directory_path = os.path.join(
         get_base_output_path(), experiment_directory_name
     )
@@ -268,6 +294,7 @@ def get_experiment_configuration(cli_args):
 
     experiment_configuration = ExperimentConfiguration(
         name=args["name"],
+        run_number=run_number,
         interval=args["interval"],
         duration=duration,
         start_date=start_date,
@@ -295,8 +322,12 @@ def create_file_structure_for_experiment(configuration):
     )
     os.makedirs(configuration.experiment_directory_path, exist_ok=True)
 
+    # TODO DRY this with experiment.set_up_log_file_with_base_handler
+    run_number_suffix = f"_run-{run_number:04}" if run_number else ""
+
     metadata_path = os.path.join(
-        configuration.experiment_directory_path, "experiment_metadata.yml"
+        configuration.experiment_directory_path,
+        f"experiment_metadata{run_number_suffix}.yml",
     )
     with open(metadata_path, "w") as metadata_file:
         yaml.dump(configuration._asdict(), metadata_file, default_flow_style=False)
