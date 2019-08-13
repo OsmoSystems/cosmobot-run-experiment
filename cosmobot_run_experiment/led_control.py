@@ -4,6 +4,8 @@ import platform
 import sys
 
 # Support development without needing pi specific modules installed.
+from time import sleep
+
 if platform.machine() == "armv7l":
     import board  # noqa: E0401  Unable to import
     import digitalio  # noqa: E0401  Unable to import
@@ -39,8 +41,8 @@ def control_led(led_on=True):
     led_pin.value = pin_setpoint
 
 
-def main(cli_args=None):
-    """ Control LEDs based on command-line parameters
+def set_led_cli(cli_args=None):
+    """ Turn on or off the LED based on command-line parameters
      Args:
         args: list of command-line-like argument strings such as sys.argv. if not provided, sys.argv[1:] will be used
      Returns:
@@ -64,3 +66,50 @@ def main(cli_args=None):
     args = arg_parser.parse_args(cli_args)
 
     control_led(led_on=args.state == "on")
+
+
+def flash_led_once(wait_time_s, on_time_s):
+    """ Wait a predetermined amount of time and then turn the LED on for a predetermined amount of time
+
+    Args:
+        wait_time_s: amount of time (s) to wait before turning the LED on
+        on_time_s: amount of time (s) to leave the LED on
+
+    Returns: None
+
+    """
+    sleep(wait_time_s)
+    control_led(True)
+    sleep(on_time_s)
+    control_led(False)
+
+
+def flash_led_cli(cli_args=None):
+    """ flash the LED once based on command-line parameters
+     Args:
+        args: list of command-line-like argument strings such as sys.argv. if not provided, sys.argv[1:] will be used
+     Returns:
+        None
+    """
+
+    if cli_args is None:
+        # First argument is the name of the command itself, not an "argument" we want to parse
+        cli_args = sys.argv[1:]
+
+    arg_parser = argparse.ArgumentParser(
+        description="Flash LED on digital pin {}".format(DIGITAL_LED_PIN)
+    )
+
+    arg_parser.add_argument(
+        "on_time", type=float, help="Amount of time (s) to leave the LED on"
+    )
+
+    arg_parser.add_argument(
+        "--wait_time",
+        type=float,
+        help="Amount of time (s) to wait before turning the LED on",
+    )
+
+    args = arg_parser.parse_args(cli_args)
+
+    flash_led_once(wait_time_s=args.wait_time, on_time_s=args.on_time)

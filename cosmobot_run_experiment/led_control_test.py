@@ -7,12 +7,12 @@ def mock_control_led(mocker):
     return mocker.patch.object(module, "control_led")
 
 
-class TestMain:
+class TestSetLedCli:
     @pytest.mark.parametrize(
         "args_in, expected_led_on", [(["on"], True), (["off"], False)]
     )
     def test_sets_led_appropriately(self, args_in, expected_led_on, mock_control_led):
-        module.main(args_in)
+        module.set_led_cli(args_in)
         mock_control_led.assert_called_with(led_on=expected_led_on)
 
     @pytest.mark.parametrize(["args_in"], [([],), ([""],), (["blue"],)])
@@ -20,7 +20,7 @@ class TestMain:
         self, args_in, mock_control_led
     ):
         with pytest.raises(SystemExit):
-            module.main(args_in)
+            module.set_led_cli(args_in)
 
 
 class TestControlLed:
