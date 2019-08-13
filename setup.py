@@ -19,6 +19,7 @@ setup(
     },
     install_requires=[
         # These deps should install on any system
+        "boto",
         "numpy",
         "picamraw",
         "psutil",

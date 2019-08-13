@@ -11,6 +11,7 @@ from uuid import getnode as get_mac
 import yaml
 
 from .file_structure import iso_datetime_for_filename, get_base_output_path
+from .s3 import list_experiments
 
 DEFAULT_ISO = 100
 DEFAULT_EXPOSURE = 1500000
@@ -19,12 +20,13 @@ DEFAULT_CAPTURE_PARAMS = " -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO}".format(**l
 ExperimentConfiguration = namedtuple(
     "ExperimentConfiguration",
     [
-        "name",  # The Name of the experiment.  Used for naming directories for output.
-        "interval",  # The interval in seconds between the capture of images.
-        "duration",  # How long in seconds should the experiment run for.
+        "name",  # the Name of the experiment.  Used for naming directories for output
+        "interval",  # the interval in seconds between the capture of images
+        "duration",  # how long in seconds should the experiment run for
         "variants",  # array of ExperimentVariants that define different capture settings to be run each iteration
         "start_date",  # date the experiment was started
         "end_date",  # date at which to end the experiment.  If duration is not set then this is effectively indefinite
+        "group_results",  # store results in the same directory as the previous run with this experiment name
         "experiment_directory_path",  # directory/path to write files to
         "command",  # full command with arguments issued to start the experiment from the command line
         "git_hash",  # git hash of camera-sensor-prototype repo
@@ -41,9 +43,9 @@ ExperimentVariant = namedtuple(
     "ExperimentVariant",
     [
         "capture_params",  # parameters to pass to raspistill binary through the command line
-        "led_on",  # Whether LED should be on or off
+        "led_on",  # whether LED should be on or off
         "led_warm_up",  # amount of time to wait for led to warm up
-        "led_cool_down",  # If set, LED is turned off between each variant for a time value (#.#s)
+        "led_cool_down",  # if set, LED is turned off between each variant for a time value (#.#s)
     ],
 )
 
@@ -115,7 +117,15 @@ def _parse_args(args):
         help="If provided, skips recording temperature.",
     )
 
-    arg_parser.add_argument(
+    # --group-results should only be used when syncing to S3
+    mutually_exclusive_group = arg_parser.add_mutually_exclusive_group()
+    mutually_exclusive_group.add_argument(
+        "--group-results",
+        action="store_true",
+        help="Store results in same directory as the most recent run with the given experiment name. "
+        "If none exists, a new experiment directory will be created.",
+    )
+    mutually_exclusive_group.add_argument(
         "--skip-sync",
         action="store_true",
         help="If provided, skips syncing files to s3.",
@@ -237,6 +247,31 @@ def _get_mac_last_4():
     return _get_mac_address()[-4:]
 
 
+def _is_current_experiment(directory, experiment_name, mac_last_4):
+    return directory.endswith(
+        "-Pi{mac_last_4}-{experiment_name}".format(
+            mac_last_4=mac_last_4, experiment_name=experiment_name
+        )
+    )
+
+
+def _get_matching_directories(directories, experiment_name, mac_last_4):
+    return [
+        directory
+        for directory in directories
+        if _is_current_experiment(directory, experiment_name, mac_last_4)
+    ]
+
+
+def _get_most_recent_experiment_directory_path(experiment_name, mac_last_4):
+    directories = list_experiments()
+    matching_directories = _get_matching_directories(
+        directories, experiment_name, mac_last_4
+    )
+
+    return None if not matching_directories else matching_directories[0]
+
+
 def get_experiment_configuration(cli_args):
     """Return a constructed named experimental configuration in a namedtuple.
      Args:
@@ -257,12 +292,22 @@ def get_experiment_configuration(cli_args):
 
     iso_ish_datetime = iso_datetime_for_filename(start_date)
     name = args["name"]
-    experiment_directory_name = "{iso_ish_datetime}-Pi{mac_last_4}-{name}".format(
-        **locals()
-    )
-    experiment_directory_path = os.path.join(
-        get_base_output_path(), experiment_directory_name
-    )
+    group_results = args["group_results"]
+
+    experiment_directory_path = None
+
+    if group_results:
+        experiment_directory_path = _get_most_recent_experiment_directory_path(
+            name, mac_last_4
+        )
+
+    if experiment_directory_path is None:
+        experiment_directory_name = "{iso_ish_datetime}-Pi{mac_last_4}-{name}".format(
+            **locals()
+        )
+        experiment_directory_path = os.path.join(
+            get_base_output_path(), experiment_directory_name
+        )
 
     variants = get_experiment_variants(args)
 
@@ -272,6 +317,7 @@ def get_experiment_configuration(cli_args):
         duration=duration,
         start_date=start_date,
         end_date=end_date,
+        group_results=group_results,
         experiment_directory_path=experiment_directory_path,
         command=" ".join(sys.argv),
         git_hash=_git_hash(),
@@ -295,8 +341,13 @@ def create_file_structure_for_experiment(configuration):
     )
     os.makedirs(configuration.experiment_directory_path, exist_ok=True)
 
+    iso_ish_datetime = iso_datetime_for_filename(configuration.start_date)
+    metadata_filename = "{iso_ish_datetime}_experiment_metadata.yml".format(
+        iso_ish_datetime=iso_ish_datetime
+    )
+
     metadata_path = os.path.join(
-        configuration.experiment_directory_path, "experiment_metadata.yml"
+        configuration.experiment_directory_path, metadata_filename
     )
     with open(metadata_path, "w") as metadata_file:
         yaml.dump(configuration._asdict(), metadata_file, default_flow_style=False)
