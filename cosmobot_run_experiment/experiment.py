@@ -1,5 +1,6 @@
 import os
 import sys
+import threading
 import time
 import logging
 import traceback
@@ -15,7 +16,7 @@ from .prepare import (
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import control_led
+from .led_control import control_led, flash_led_once
 from .temperature import log_temperature
 
 from datetime import datetime, timedelta
@@ -80,9 +81,14 @@ def perform_experiment(configuration):
                     experiment_ended_message="Insufficient space to save the image. Quitting...",
                 )
 
-            control_led(led_on=variant.led_on)
-
-            time.sleep(variant.led_warm_up)
+            led_thread = threading.Thread(
+                target=flash_led_once,
+                kwargs={
+                    "wait_time_s": max(variant.camera_warm_up - variant.led_warm_up, 0),
+                    "on_time_s": variant.led_warm_up + variant.exposure_time + 0.1,
+                },
+            )
+            led_thread.start()
 
             # Share timestamp between image and temperature reading, to make them easy to align
             capture_timestamp = datetime.now()
@@ -101,9 +107,8 @@ def perform_experiment(configuration):
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
-            # Turn off LEDs after capture
-            control_led(led_on=False)
-            time.sleep(variant.led_cool_down)
+            # Make sure LED thread is ended
+            # led_thread_response = led_thread.join(10)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:

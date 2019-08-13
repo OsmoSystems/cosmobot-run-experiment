@@ -14,7 +14,7 @@ from .file_structure import iso_datetime_for_filename, get_base_output_path
 
 DEFAULT_ISO = 100
 DEFAULT_EXPOSURE = 1500000
-DEFAULT_CAPTURE_PARAMS = " -ss {DEFAULT_EXPOSURE} -ISO {DEFAULT_ISO}".format(**locals())
+DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
     "ExperimentConfiguration",
@@ -41,9 +41,10 @@ ExperimentVariant = namedtuple(
     "ExperimentVariant",
     [
         "capture_params",  # parameters to pass to raspistill binary through the command line
+        "exposure_time",  # Length of camera exposure, us
+        "camera_warm_up",  # Amount of time to let the camera warm up before taking an image, seconds
         "led_on",  # Whether LED should be on or off
-        "led_warm_up",  # amount of time to wait for led to warm up
-        "led_cool_down",  # If set, LED is turned off between each variant for a time value (#.#s)
+        "led_warm_up",  # amount of time to wait for led to warm up before the camera takes its exposure
     ],
 )
 
@@ -151,17 +152,15 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant "-ss 500000 -ISO 100 --led-on --led-warm-up 3 --led-cool-down 1"
+                    --variant " -ISO 100 --exposure_time 500000 --camera-warm-up 1 --led-on --led-warm-up 3"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
                 raspistill camera parameters within each --variant flag are passed directly to raspistill.
                 Some relevant parameters:
                     "-ISO" should be a value from 100-800, in increments of 100
-                    "-ss" (Shutter Speed) is in microseconds, and is undefined above 6s (-ss 6000000)
-                    "-q 100 -awb off -awbg 1.307,1.615":
-                        adding these Pagnutti parameters optimize the jpeg for visual inspection.
-                Ex: --variant "-ss 500000 -ISO 100" --variant "-ss 100000 -ISO 200".
+                    "--exposure_time" is in microseconds, and is undefined above 6s (--exposure_time 6000000)
+                Ex: --variant "-ISO 100 --exposure_time 500000 " --variant "-ISO 200 --exposure_time 100000".
                 Default: "{DEFAULT_CAPTURE_PARAMS}".
 
             LED control:
@@ -171,6 +170,20 @@ def _get_variant_parser():
         )
     )
 
+    arg_parser.add_argument(
+        "--exposure-time",
+        required=False,
+        type=int,
+        default=DEFAULT_EXPOSURE,
+        help="Exposure time for the image to be taken, in microseconds. Default: 1500000us (1.5s)",
+    )
+    arg_parser.add_argument(
+        "--camera-warm-up",
+        required=False,
+        type=float,
+        default=5,
+        help="Time to allow the camera sensor to warm up before exposure, in seconds. Default: 5s. Minimum: 1ms",
+    )
     arg_parser.add_argument(
         "--led-on",
         action="store_true",
@@ -182,13 +195,6 @@ def _get_variant_parser():
         type=float,
         default=0,
         help="If set, LED is turned on before initiating capture for a time value in seconds",
-    )
-    arg_parser.add_argument(
-        "--led-cool-down",
-        required=False,
-        type=float,
-        default=0,
-        help="If set, LED is turned off between each variant for a time value in seconds",
     )
     return arg_parser
 
@@ -203,9 +209,10 @@ def _parse_variant(variant):
 
     return ExperimentVariant(
         capture_params=capture_params,
+        exposure_time=parsed_args.exposure_time,
+        camera_warm_up=parsed_args.camera_warm_up,
         led_on=parsed_args.led_on,
         led_warm_up=parsed_args.led_warm_up,
-        led_cool_down=parsed_args.led_cool_down,
     )
 
 
@@ -216,7 +223,7 @@ def get_experiment_variants(args):
     if args["exposures"]:
         isos = args["isos"] or [DEFAULT_ISO]
         variants.extend(
-            _parse_variant(" -ss {exposure} -ISO {iso}".format(**locals()))
+            _parse_variant(" --exposure-time {exposure} -ISO {iso}".format(**locals()))
             for exposure in args["exposures"]
             for iso in isos
         )
