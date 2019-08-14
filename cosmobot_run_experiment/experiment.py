@@ -96,19 +96,23 @@ def perform_experiment(configuration):
                 configuration.experiment_directory_path, image_filename
             )
 
-            led_thread = threading.Thread(
-                target=flash_led_once,
-                kwargs={
-                    "wait_time_s": max(variant.camera_warm_up - variant.led_warm_up, 0),
-                    "on_time_s": variant.led_warm_up + variant.exposure_time + 0.2,
-                },
-            )
-            led_thread.start()
+            if variant.led_on:
+                led_thread = threading.Thread(
+                    target=flash_led_once,
+                    kwargs={
+                        "wait_time_s": max(
+                            variant.camera_warm_up - variant.led_warm_up, 0
+                        ),
+                        "on_time_s": variant.led_warm_up + variant.exposure_time + 0.2,
+                    },
+                )
+                led_thread.start()
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
-            # Make sure LED thread is ended
-            # led_thread_response = led_thread.join(10)
+            if variant.led_on:
+                # Make sure LED thread is ended
+                led_thread_response = led_thread.join(10)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
