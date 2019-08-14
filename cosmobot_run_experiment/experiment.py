@@ -16,7 +16,7 @@ from .prepare import (
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import control_led, flash_led_once
+from .led_control import flash_led_once
 from .temperature import log_temperature
 
 from datetime import datetime, timedelta
