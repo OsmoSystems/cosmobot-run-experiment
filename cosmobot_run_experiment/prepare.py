@@ -13,7 +13,7 @@ import yaml
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 
 DEFAULT_ISO = 100
-DEFAULT_EXPOSURE = 1500000
+DEFAULT_EXPOSURE = 1.5
 DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
@@ -152,15 +152,15 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant " -ISO 100 --exposure_time 500000 --camera-warm-up 1 --led-on --led-warm-up 3"
+                    --variant " -ISO 100 --exposure_time 0.5 --camera-warm-up 1 --led-on --led-warm-up 3"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
                 raspistill camera parameters within each --variant flag are passed directly to raspistill.
                 Some relevant parameters:
                     "-ISO" should be a value from 100-800, in increments of 100
-                    "--exposure_time" is in microseconds, and is undefined above 6s (--exposure_time 6000000)
-                Ex: --variant "-ISO 100 --exposure_time 500000 " --variant "-ISO 200 --exposure_time 100000".
+                    "--exposure_time" is in microseconds, and is undefined above 6s (--exposure_time 6)
+                Ex: --variant "-ISO 100 --exposure_time 0.5 " --variant "-ISO 200 --exposure_time 0.1".
                 Default: "{DEFAULT_CAPTURE_PARAMS}".
 
             LED control:
@@ -173,9 +173,9 @@ def _get_variant_parser():
     arg_parser.add_argument(
         "--exposure-time",
         required=False,
-        type=int,
+        type=float,
         default=DEFAULT_EXPOSURE,
-        help="Exposure time for the image to be taken, in microseconds. Default: 1500000us (1.5s)",
+        help="Exposure time for the image to be taken, in seconds. Default: 1.5s",
     )
     arg_parser.add_argument(
         "--camera-warm-up",

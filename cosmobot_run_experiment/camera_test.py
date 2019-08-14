@@ -24,10 +24,10 @@ class TestCapture:
         filename = "output_file.jpeg"
         expected_command = (
             'raspistill --raw -o "output_file.jpeg"'
-            " -q 100 -awb off -awbg 1.307,1.615 -ss 1 --timeout 1000 "
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 333333 --timeout 1000 "
         )
 
-        module.capture(filename, exposure_time=1.1)
+        module.capture(filename, exposure_time=1 / 3)
 
         expected_call = mocker.call(expected_command, shell=True)
 

@@ -93,7 +93,7 @@ def _default_variant_with(**kwargs):
     """ get an ExperimentVariant with overridable default settings """
     variant_kwargs = {
         "capture_params": "",
-        "exposure_time": 1500000,
+        "exposure_time": 1.5,
         "camera_warm_up": 5,
         "led_on": False,
         "led_warm_up": 0,
@@ -276,7 +276,7 @@ class TestParseVariant:
     def test_parse_variant_creates_variant_has_sane_defaults(self):
         expected_variant = module.ExperimentVariant(
             capture_params=module.DEFAULT_CAPTURE_PARAMS,
-            exposure_time=1500000,
+            exposure_time=1.5,
             camera_warm_up=5,
             led_on=False,
             led_warm_up=0,
