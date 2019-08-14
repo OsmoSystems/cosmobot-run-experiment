@@ -81,15 +81,6 @@ def perform_experiment(configuration):
                     experiment_ended_message="Insufficient space to save the image. Quitting...",
                 )
 
-            led_thread = threading.Thread(
-                target=flash_led_once,
-                kwargs={
-                    "wait_time_s": max(variant.camera_warm_up - variant.led_warm_up, 0),
-                    "on_time_s": variant.led_warm_up + variant.exposure_time + 0.1,
-                },
-            )
-            led_thread.start()
-
             # Share timestamp between image and temperature reading, to make them easy to align
             capture_timestamp = datetime.now()
 
@@ -104,6 +95,15 @@ def perform_experiment(configuration):
             image_filepath = os.path.join(
                 configuration.experiment_directory_path, image_filename
             )
+
+            led_thread = threading.Thread(
+                target=flash_led_once,
+                kwargs={
+                    "wait_time_s": max(variant.camera_warm_up - variant.led_warm_up, 0),
+                    "on_time_s": variant.led_warm_up + variant.exposure_time + 0.2,
+                },
+            )
+            led_thread.start()
 
             capture(image_filepath, additional_capture_params=variant.capture_params)
 
