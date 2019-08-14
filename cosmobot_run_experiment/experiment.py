@@ -109,7 +109,8 @@ def perform_experiment(configuration):
                             0,
                         ),
                         # fmt: off
-                        "on_time_s": variant.led_warm_up
+                        "on_time_s":
+                            variant.led_warm_up
                             + variant.exposure_time
                             + LED_SAFETY_INTERVAL * 2,
                         # fmt: on
@@ -117,7 +118,12 @@ def perform_experiment(configuration):
                 )
                 led_thread.start()
 
-            capture(image_filepath, additional_capture_params=variant.capture_params)
+            capture(
+                image_filepath,
+                exposure_time=variant.exposure_time,
+                warm_up_time=variant.camera_warm_up,
+                additional_capture_params=variant.capture_params,
+            )
 
             if variant.led_on:
                 # Make sure LED thread is ended
@@ -160,8 +166,6 @@ def end_experiment(experiment_configuration, experiment_ended_message):
 
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
-
-    control_led(led_on=False)
 
     quit()
 
