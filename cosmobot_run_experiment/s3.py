@@ -63,11 +63,10 @@ def list_camera_sensor_experiments_s3_bucket_contents(
     try:
         s3 = boto.connect_s3()
     except boto.exception.NoAuthHandlerFound:  # type: ignore
-        # TODO this returns an empty list on auth issues. we really want it to raise an exception when using this for --group-results
         print(
             "You must have aws credentials already saved, e.g. via `aws configure`. \n"
         )
-        return []
+        raise
 
     bucket = s3.get_bucket(CAMERA_SENSOR_EXPERIMENTS_BUCKET_NAME)
     keys = bucket.list(directory_name, delimiter="/")

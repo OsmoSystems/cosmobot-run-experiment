@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import pytest
@@ -41,6 +42,7 @@ class TestParseArgs:
             "skip_sync": False,
             "review_exposure": False,
             "erase_synced_files": False,
+            "group_results": False,
         }
         assert module._parse_args(args_in) == expected_args_out
 
@@ -50,6 +52,18 @@ class TestParseArgs:
 
     def test_missing_args_blows_up(self):
         args_in = []
+        with pytest.raises(SystemExit):
+            module._parse_args(args_in)
+
+    def test_group_results_and_skip_sync_exclusive(self):
+        args_in = [
+            "--name",
+            "thebest",
+            "--interval",
+            "500",
+            "--group-results",
+            "--skip-sync",
+        ]
         with pytest.raises(SystemExit):
             module._parse_args(args_in)
 
@@ -215,7 +229,7 @@ class TestGetExperimentVariants:
 
 class TestCreateFileStructureForExperiment:
     MockExperimentConfiguration = namedtuple(
-        "MockExperimentConfiguration", ["experiment_directory_path"]
+        "MockExperimentConfiguration", ["experiment_directory_path", "start_date"]
     )
 
     subdir_name = "subdirectory"
@@ -236,7 +250,8 @@ class TestCreateFileStructureForExperiment:
         )
 
         return self.MockExperimentConfiguration(
-            experiment_directory_path=experiment_directory_path
+            experiment_directory_path=experiment_directory_path,
+            start_date=datetime.datetime(year=1988, month=9, day=1),
         )
 
     def test_output_directory_present__does_not_explode(self, mocker, tmp_path):
@@ -259,7 +274,7 @@ class TestCreateFileStructureForExperiment:
         module.create_file_structure_for_experiment(mock_config)
 
         assert os.listdir(mock_config.experiment_directory_path) == [
-            "experiment_metadata.yml"
+            "1988-09-01--00-00-00_experiment_metadata.yml"
         ]
 
 
