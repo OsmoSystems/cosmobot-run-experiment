@@ -85,12 +85,17 @@ def flash_led_once(wait_time_s, on_time_s):
 
 
 def flash_led_cli(cli_args=None):
-    """ flash the LED once based on command-line parameters
+    """ flash the LED continuously based on command-line parameters
      Args:
         args: list of command-line-like argument strings such as sys.argv. if not provided, sys.argv[1:] will be used
      Returns:
         None
     """
+
+    logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
+    logging.basicConfig(
+        level=logging.INFO, format=logging_format, handlers=[logging.StreamHandler()]
+    )
 
     if cli_args is None:
         # First argument is the name of the command itself, not an "argument" we want to parse
@@ -107,9 +112,11 @@ def flash_led_cli(cli_args=None):
     arg_parser.add_argument(
         "--wait_time",
         type=float,
-        help="Amount of time (s) to wait before turning the LED on",
+        default=1,
+        help="Amount of time (s) to wait before turning the LED on and between flashes",
     )
 
     args = arg_parser.parse_args(cli_args)
 
-    flash_led_once(wait_time_s=args.wait_time, on_time_s=args.on_time)
+    while True:
+        flash_led_once(wait_time_s=args.wait_time, on_time_s=args.on_time)
