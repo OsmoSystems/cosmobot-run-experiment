@@ -1,5 +1,6 @@
 import datetime
 import os
+from unittest.mock import sentinel
 
 import pytest
 from . import prepare as module
@@ -299,3 +300,68 @@ class TestParseVariant:
             led_cool_down=0,
         )
         assert module._parse_variant("") == expected_variant
+
+
+@pytest.fixture
+def mock_list_experiments(mocker):
+    return mocker.patch.object(module, "list_experiments")
+
+
+@pytest.fixture
+def mock_get_base_output_path(mocker):
+    return mocker.patch.object(
+        module, "get_base_output_path", return_value="base-output-path"
+    )
+
+
+class TestGetExperimentDirectoryPath:
+    def test_group_results_and_matching_dir_exists(
+        self, mock_get_base_output_path, mock_list_experiments
+    ):
+        group_results = True
+        pi_experiment_name = "Pi1234-cool_experiment"
+        start_date = sentinel.start_date
+
+        mock_list_experiments.return_value = [
+            "date3-Pi1234-bad_experiment",
+            "date2-{pi_experiment_name}".format(**locals()),
+            "date1-{pi_experiment_name}".format(**locals()),
+        ]
+
+        assert module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        ) == os.path.join(
+            "base-output-path", "date2-{pi_experiment_name}".format(**locals())
+        )
+
+    def test_group_results_and_matching_dir_does_not_exist(
+        self, mock_get_base_output_path, mock_list_experiments
+    ):
+        group_results = True
+        pi_experiment_name = "Pi1234-cool_experiment"
+        start_date = datetime.datetime(year=1988, month=9, day=1)
+
+        mock_list_experiments.return_value = [
+            "date1-Pi5678-cool_experiment",
+            "date2-Pi1234-bad_experiment",
+        ]
+
+        assert module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        ) == os.path.join(
+            "base-output-path",
+            "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
+        )
+
+    def test_no_group_results(self, mock_get_base_output_path, mock_list_experiments):
+        group_results = False
+        pi_experiment_name = "Pi1234-cool_experiment"
+        start_date = datetime.datetime(year=1988, month=9, day=1)
+
+        assert module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        ) == os.path.join(
+            "base-output-path",
+            "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
+        )
+        mock_list_experiments.assert_not_called()

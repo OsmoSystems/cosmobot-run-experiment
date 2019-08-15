@@ -248,32 +248,36 @@ def _get_mac_last_4():
     return _get_mac_address()[-4:]
 
 
-def _experiment_directory_matches(directory, experiment_name, mac_last_4):
-    return directory.endswith(
-        "-Pi{mac_last_4}-{experiment_name}".format(
-            mac_last_4=mac_last_4, experiment_name=experiment_name
-        )
-    )
+def _get_most_recent_experiment_directory_name(pi_experiment_name):
+    """Get most recent experiment directory name from S3 matching the given pi_experiment_name
 
+    Returns the first matching experiment directory if one exists, otherwise returns None.
+    """
 
-def _get_matching_directories(directories, experiment_name, mac_last_4):
-    # get matching directories (and maintain sorted order of directories)
-    return [
-        directory
-        for directory in directories
-        if _experiment_directory_matches(directory, experiment_name, mac_last_4)
-    ]
-
-
-def _get_most_recent_experiment_directory_path(experiment_name, mac_last_4):
     # list_experiments() returns the directory names sorted by descending date
     sorted_directories = list_experiments()
 
-    matching_directories = _get_matching_directories(
-        sorted_directories, experiment_name, mac_last_4
-    )
+    matching_directories = [
+        directory
+        for directory in sorted_directories
+        if directory.endswith(pi_experiment_name)
+    ]
 
     return None if not matching_directories else matching_directories[0]
+
+
+def _get_experiment_directory_name(start_date, pi_experiment_name):
+    iso_ish_datetime = iso_datetime_for_filename(start_date)
+    return "{iso_ish_datetime}-{pi_experiment_name}".format(**locals())
+
+
+def _get_experiment_directory_path(group_results, pi_experiment_name, start_date):
+    experiment_directory_name = (
+        group_results
+        and _get_most_recent_experiment_directory_name(pi_experiment_name)
+        or _get_experiment_directory_name(start_date, pi_experiment_name)
+    )
+    return os.path.join(get_base_output_path(), experiment_directory_name)
 
 
 def get_experiment_configuration(cli_args):
@@ -294,23 +298,14 @@ def get_experiment_configuration(cli_args):
     mac_address = _get_mac_address()
     mac_last_4 = _get_mac_last_4()
 
-    iso_ish_datetime = iso_datetime_for_filename(start_date)
     name = args["name"]
     group_results = args["group_results"]
 
-    experiment_directory_path = (
-        _get_most_recent_experiment_directory_path(name, mac_last_4)
-        if group_results
-        else None
-    )
+    pi_experiment_name = "Pi{mac_last_4}-{name}".format(**locals())
 
-    if experiment_directory_path is None:
-        experiment_directory_name = "{iso_ish_datetime}-Pi{mac_last_4}-{name}".format(
-            **locals()
-        )
-        experiment_directory_path = os.path.join(
-            get_base_output_path(), experiment_directory_name
-        )
+    experiment_directory_path = _get_experiment_directory_path(
+        group_results, pi_experiment_name, start_date
+    )
 
     variants = get_experiment_variants(args)
 
