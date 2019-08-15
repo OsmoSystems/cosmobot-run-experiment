@@ -21,7 +21,8 @@ from .temperature import log_temperature
 
 from datetime import datetime, timedelta
 
-LED_SAFETY_INTERVAL = 0.1
+# time to leave the LED on after we think the exposure is complete, to ensure we don't turn it off too early
+LED_OFF_SAFETY_INTERVAL = 0.1
 
 # Basic logging configuration - sets the base log level to INFO and provides a
 # log format (time, log level, log message) for all messages to be written to stdout (console)
@@ -103,17 +104,12 @@ def perform_experiment(configuration):
             if variant.led_on:
                 led_future = led_executor.submit(
                     flash_led_once,
-                    wait_time_s=max(
-                        variant.camera_warm_up
-                        - variant.led_warm_up
-                        - LED_SAFETY_INTERVAL,
-                        0,
-                    ),
+                    wait_time_s=max(variant.camera_warm_up - variant.led_warm_up, 0),
                     # fmt: off
                     on_time_s=(
                         variant.led_warm_up
                         + variant.exposure_time
-                        + LED_SAFETY_INTERVAL * 2
+                        + LED_OFF_SAFETY_INTERVAL
                     ),
                     # fmt: on
                 )

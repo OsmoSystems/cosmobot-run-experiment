@@ -96,7 +96,7 @@ def _default_variant_with(**kwargs):
         "exposure_time": 1.5,
         "camera_warm_up": 5,
         "led_on": False,
-        "led_warm_up": 0,
+        "led_warm_up": 0.9,
         **kwargs,
     }
     return module.ExperimentVariant(**variant_kwargs)
@@ -279,6 +279,12 @@ class TestParseVariant:
             exposure_time=1.5,
             camera_warm_up=5,
             led_on=False,
-            led_warm_up=0,
+            led_warm_up=0.9,
         )
         assert module._parse_variant("") == expected_variant
+
+    def test_parse_variant_creates_variant_doesnt_allow_longer_led_warm_up_than_camera_warm_up(
+        self
+    ):
+        with pytest.raises(ValueError):
+            module._parse_variant("--camera-warm-up 1 --led-warm-up 100")

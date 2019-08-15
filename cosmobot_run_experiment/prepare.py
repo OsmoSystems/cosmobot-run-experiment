@@ -193,8 +193,11 @@ def _get_variant_parser():
         "--led-warm-up",
         required=False,
         type=float,
-        default=0,
-        help="If set, LED is turned on before initiating capture for a time value in seconds",
+        default=0.9,
+        help=(
+            "If set, LED is turned on before initiating capture for a time value in seconds."
+            " Default: 0.9s (the recommended minimum to allow the LED to turn on fully)"
+        ),
     )
     return arg_parser
 
@@ -206,6 +209,13 @@ def _parse_variant(variant):
 
     # capture_params aren't parsed as regular args - they'll just be passed wholesale into raspistill
     capture_params = " ".join(remaining_args_for_capture) or DEFAULT_CAPTURE_PARAMS
+
+    if parsed_args.camera_warm_up < parsed_args.led_warm_up:
+        raise ValueError(
+            "LED warm up {} longer than camera warm up {} is not supported".format(
+                parsed_args.led_warm_up, parsed_args.camera_warm_up
+            )
+        )
 
     return ExperimentVariant(
         capture_params=capture_params,
