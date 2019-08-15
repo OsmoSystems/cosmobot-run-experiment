@@ -6,7 +6,7 @@ from subprocess import check_call
 AWB_QUALITY_CAPTURE_PARAMS = "-q 100 -awb off -awbg 1.307,1.615"
 
 
-def capture(filename, exposure_time=1.5, warm_up_time=1, additional_capture_params=""):
+def capture(filename, exposure_time=0.1, warm_up_time=5, additional_capture_params=""):
     """ Capture raw image JPEG+EXIF using command line
 
     Args:
