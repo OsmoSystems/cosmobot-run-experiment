@@ -154,7 +154,8 @@ class TestRunExperiment:
     ):
         mock_hostname_is_correct.return_value = False
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exception_info:
             module.run_experiment(MOCK_BASIC_PARAMETERS)
 
+        assert exception_info.value.code == 1
         assert mock_perform_experiment.call_count == 0
