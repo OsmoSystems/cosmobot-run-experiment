@@ -1,4 +1,6 @@
+import datetime
 import os
+from unittest.mock import sentinel
 
 import pytest
 from . import prepare as module
@@ -41,6 +43,7 @@ class TestParseArgs:
             "skip_sync": False,
             "review_exposure": False,
             "erase_synced_files": False,
+            "group_results": False,
         }
         assert module._parse_args(args_in) == expected_args_out
 
@@ -50,6 +53,18 @@ class TestParseArgs:
 
     def test_missing_args_blows_up(self):
         args_in = []
+        with pytest.raises(SystemExit):
+            module._parse_args(args_in)
+
+    def test_group_results_and_skip_sync_exclusive(self):
+        args_in = [
+            "--name",
+            "thebest",
+            "--interval",
+            "500",
+            "--group-results",
+            "--skip-sync",
+        ]
         with pytest.raises(SystemExit):
             module._parse_args(args_in)
 
@@ -209,7 +224,7 @@ class TestGetExperimentVariants:
 
 class TestCreateFileStructureForExperiment:
     MockExperimentConfiguration = namedtuple(
-        "MockExperimentConfiguration", ["experiment_directory_path"]
+        "MockExperimentConfiguration", ["experiment_directory_path", "start_date"]
     )
 
     subdir_name = "subdirectory"
@@ -230,7 +245,8 @@ class TestCreateFileStructureForExperiment:
         )
 
         return self.MockExperimentConfiguration(
-            experiment_directory_path=experiment_directory_path
+            experiment_directory_path=experiment_directory_path,
+            start_date=datetime.datetime(year=1988, month=9, day=1),
         )
 
     def test_output_directory_present__does_not_explode(self, mocker, tmp_path):
@@ -253,7 +269,7 @@ class TestCreateFileStructureForExperiment:
         module.create_file_structure_for_experiment(mock_config)
 
         assert os.listdir(mock_config.experiment_directory_path) == [
-            "experiment_metadata.yml"
+            "1988-09-01--00-00-00_experiment_metadata.yml"
         ]
 
 
@@ -299,3 +315,76 @@ class TestParseVariant:
         old_school = module._parse_variant("-ex 1")
         new_school = module._parse_variant("--exposure-time 1")
         assert old_school == new_school
+
+
+@pytest.fixture
+def mock_list_experiments(mocker):
+    return mocker.patch.object(module, "list_experiments")
+
+
+@pytest.fixture
+def mock_get_base_output_path(mocker):
+    return mocker.patch.object(
+        module, "get_base_output_path", return_value="base-output-path"
+    )
+
+
+class TestGetExperimentDirectoryPath:
+    def test_uses_matching_dir_name_for_group_results(
+        self, mock_get_base_output_path, mock_list_experiments
+    ):
+        group_results = True
+        pi_experiment_name = "Pi1234-cool_experiment"
+        start_date = sentinel.start_date
+
+        mock_list_experiments.return_value = [
+            "date3-Pi1234-bad_experiment",
+            "date2-{pi_experiment_name}".format(**locals()),
+            "date1-{pi_experiment_name}".format(**locals()),
+        ]
+
+        actual_path = module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        )
+        expected_path = os.path.join(
+            "base-output-path", "date2-{pi_experiment_name}".format(**locals())
+        )
+        assert actual_path == expected_path
+
+    def test_generates_dir_name_when_no_matching_directory_for_group_results(
+        self, mock_get_base_output_path, mock_list_experiments
+    ):
+        group_results = True
+        pi_experiment_name = "Pi1234-cool_experiment"
+        start_date = datetime.datetime(year=1988, month=9, day=1)
+
+        mock_list_experiments.return_value = [
+            "date1-Pi5678-cool_experiment",
+            "date2-Pi1234-bad_experiment",
+        ]
+
+        expected_path = os.path.join(
+            "base-output-path",
+            "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
+        )
+        actual_path = module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        )
+        assert actual_path == expected_path
+
+    def test_generates_dir_name_when_group_results_is_false(
+        self, mock_get_base_output_path, mock_list_experiments
+    ):
+        group_results = False
+        pi_experiment_name = "Pi1234-cool_experiment"
+        start_date = datetime.datetime(year=1988, month=9, day=1)
+
+        expected_path = os.path.join(
+            "base-output-path",
+            "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
+        )
+        actual_path = module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        )
+        assert actual_path == expected_path
+        mock_list_experiments.assert_not_called()

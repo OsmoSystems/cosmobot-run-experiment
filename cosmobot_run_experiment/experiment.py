@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from cosmobot_run_experiment.file_structure import get_image_filename
 from .camera import capture
-from .file_structure import remove_experiment_directory
+from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
     get_experiment_configuration,
@@ -174,8 +174,12 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     quit()
 
 
-def set_up_log_file_with_base_handler(experiment_directory):
-    log_filepath = os.path.join(experiment_directory, "experiment.log")
+def set_up_log_file_with_base_handler(experiment_directory, start_date):
+    iso_ish_datetime = iso_datetime_for_filename(start_date)
+    log_filepath = os.path.join(
+        experiment_directory,
+        "{iso_ish_datetime}_experiment.log".format(iso_ish_datetime=iso_ish_datetime),
+    )
     log_file_handler = logging.FileHandler(log_filepath)
     formatter = logging.Formatter(logging_format)
     log_file_handler.setFormatter(formatter)
@@ -214,7 +218,9 @@ def run_experiment(cli_args=None):
             quit()
 
         create_file_structure_for_experiment(configuration)
-        set_up_log_file_with_base_handler(configuration.experiment_directory_path)
+        set_up_log_file_with_base_handler(
+            configuration.experiment_directory_path, configuration.start_date
+        )
 
         try:
             perform_experiment(configuration)
