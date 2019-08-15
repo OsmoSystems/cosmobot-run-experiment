@@ -274,7 +274,7 @@ class TestCreateFileStructureForExperiment:
 
 
 class TestParseVariant:
-    def test_parse_variant_creates_variant_with_params(self):
+    def test_creates_variant_with_params(self):
         variant = module._parse_variant(
             "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on --led-warm-up 1"
         )
@@ -287,7 +287,7 @@ class TestParseVariant:
         )
         assert variant == expected_variant
 
-    def test_parse_variant_creates_variant_has_sane_defaults(self):
+    def test_creates_variant_has_sane_defaults(self):
         expected_variant = module.ExperimentVariant(
             capture_params=module.DEFAULT_CAPTURE_PARAMS,
             exposure_time=1.5,
@@ -297,21 +297,19 @@ class TestParseVariant:
         )
         assert module._parse_variant("") == expected_variant
 
-    def test_parse_variant_creates_variant_doesnt_allow_longer_led_warm_up_than_camera_warm_up(
-        self
-    ):
+    def test_creates_variant_doesnt_allow_longer_led_warm_up_than_camera_warm_up(self):
         with pytest.raises(ValueError):
             module._parse_variant("--camera-warm-up 1 --led-warm-up 100")
 
-    def test_parse_variant_doesnt_allow_old_school_shutter_speed(self):
+    def test_doesnt_allow_old_school_shutter_speed(self):
         with pytest.raises(ValueError):
             module._parse_variant("-ss 100000000")
 
-    def test_parse_variant_doesnt_allow_old_school_timeout(self):
+    def test_doesnt_allow_old_school_timeout(self):
         with pytest.raises(ValueError):
             module._parse_variant("--timeout 1")
 
-    def test_parse_variant_allows_short_exposure_time(self):
+    def test_allows_short_or_long_version_of_exposure_time_parameter(self):
         old_school = module._parse_variant("-ex 1")
         new_school = module._parse_variant("--exposure-time 1")
         assert old_school == new_school

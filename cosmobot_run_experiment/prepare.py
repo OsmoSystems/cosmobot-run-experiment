@@ -199,7 +199,7 @@ def _get_variant_parser():
         required=False,
         type=float,
         default=5,
-        help="Time to allow the camera sensor to warm up before exposure, in seconds. Default: 5s. Minimum: 1ms",
+        help="Time to allow the camera sensor to warm up before exposure, in seconds. Default: 5s. Minimum: 0.001s",
     )
     arg_parser.add_argument(
         "--led-on",
@@ -211,7 +211,7 @@ def _get_variant_parser():
         required=False,
         type=float,
         default=0.1,
-        help="If set, LED is turned on before initiating capture for a time value in seconds. Default: 0.1s",
+        help="The LED is turned on for this amount of time, in seconds, before camera exposure begins. Default: 0.1s.",
     )
     return arg_parser
 

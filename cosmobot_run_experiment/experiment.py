@@ -66,6 +66,8 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
+    # Prep an executor so we can control the LED in detail
+    # while raspistill does its whole (camera warm-up + exposure + file save) thing
     led_executor = ThreadPoolExecutor(max_workers=1)
 
     while configuration.duration is None or datetime.now() < configuration.end_date:
@@ -127,9 +129,11 @@ def perform_experiment(configuration):
                 # Make sure LED thread is ended
                 # There's no real reason the LED thread should take longer than the camera thread, but if there's a
                 # short delay let's not freak out.
-                led_safety_wait_s = 3
+                buffer_time_to_wait_for_led_after_capture_finishes = 3
                 # exceptions from LED code will raise here
-                led_future.result(timeout=led_safety_wait_s)
+                led_future.result(
+                    timeout=buffer_time_to_wait_for_led_after_capture_finishes
+                )
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
