@@ -36,7 +36,7 @@ class TestProcessParamStringsForFilename:
 
 class TestGetImageFilename:
     example_variant = ExperimentVariant(
-        capture_params=" -ss 1234 -ISO 5678",
+        capture_params=" -ISO 5678",
         exposure_time=1,
         camera_warm_up=5.0001,
         led_on=True,
@@ -51,7 +51,7 @@ class TestGetImageFilename:
         )
 
     def test_get_image_filename_includes_capture_params_with_spaces_replaced(self):
-        assert "_ss_1234_ISO_5678_" in module.get_image_filename(
+        assert "_ISO_5678_" in module.get_image_filename(
             self.datetime_, self.example_variant
         )
 

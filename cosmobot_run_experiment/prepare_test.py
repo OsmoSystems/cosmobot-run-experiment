@@ -19,7 +19,7 @@ class TestParseArgs:
             "--variant",
             # Note: when a quoted command-line value is read using sys.argv,
             # it's grouped into a single list item like this:
-            "-ISO 100 -ss 5",
+            "-ISO 100",
             "--variant",
             "variant2",
             "--exposures",
@@ -34,7 +34,7 @@ class TestParseArgs:
             "name": "thebest",
             "interval": 25,
             "duration": 100,
-            "variant": ["-ISO 100 -ss 5", "variant2"],
+            "variant": ["-ISO 100", "variant2"],
             "exposures": [20, 30],
             "isos": [45, 55],
             "skip_temperature": False,
