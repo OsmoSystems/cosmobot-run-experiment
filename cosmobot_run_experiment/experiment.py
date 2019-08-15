@@ -102,15 +102,17 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
+                led_wait_time = variant.camera_warm_up - variant.led_warm_up
+                led_on_time = (
+                    variant.led_warm_up
+                    + variant.exposure_time
+                    + LED_OFF_SAFETY_INTERVAL
+                )
                 led_future = led_executor.submit(
                     flash_led_once,
-                    wait_time_s=variant.camera_warm_up - variant.led_warm_up,
+                    wait_time_s=led_wait_time,
                     # fmt: off
-                    on_time_s=(
-                        variant.led_warm_up
-                        + variant.exposure_time
-                        + LED_OFF_SAFETY_INTERVAL
-                    ),
+                    on_time_s=led_on_time,
                     # fmt: on
                 )
 
@@ -122,8 +124,12 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                # Make sure LED thread is ended; exceptions from LED code will raise here
-                led_future.result(timeout=3)
+                # Make sure LED thread is ended
+                # There's no real reason the LED thread should take longer than the camera thread, but if there's a
+                # short delay let's not freak out.
+                led_safety_wait_s = 3
+                # exceptions from LED code will raise here
+                led_future.result(timeout=led_safety_wait_s)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
