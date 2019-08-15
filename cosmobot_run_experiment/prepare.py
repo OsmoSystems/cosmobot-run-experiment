@@ -118,7 +118,7 @@ def _parse_args(args):
     )
 
     # --group-results should only be used when syncing to S3 since it queries S3 to determine the bucket name and
-    #     doesn't take into account unsynced experiment directories
+    # doesn't take into account unsynced experiment directories
     mutually_exclusive_group = arg_parser.add_mutually_exclusive_group()
     mutually_exclusive_group.add_argument(
         "--group-results",
