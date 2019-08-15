@@ -16,7 +16,7 @@ from .prepare import (
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import flash_led_once
+from .led_control import flash_led_once, control_led
 from .temperature import log_temperature
 
 from datetime import datetime, timedelta
@@ -142,6 +142,8 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
     # remaining images. To that end, we end any existing sync process and start a new one
     logging.info(experiment_ended_message)
+
+    control_led(led_on=False)
 
     if not experiment_configuration.skip_sync:
         logging.info("Beginning final sync to s3 due to end of experiment...")
