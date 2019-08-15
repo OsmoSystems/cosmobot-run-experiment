@@ -104,7 +104,7 @@ def perform_experiment(configuration):
             if variant.led_on:
                 led_future = led_executor.submit(
                     flash_led_once,
-                    wait_time_s=max(variant.camera_warm_up - variant.led_warm_up, 0),
+                    wait_time_s=variant.camera_warm_up - variant.led_warm_up,
                     # fmt: off
                     on_time_s=(
                         variant.led_warm_up
