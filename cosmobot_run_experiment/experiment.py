@@ -120,7 +120,16 @@ def perform_experiment(configuration):
 
 
 def end_experiment(experiment_configuration, experiment_ended_message, has_errored):
-    """ Complete an experiment by ensuring all remaining images finish syncing """
+    """ Complete an experiment by ensuring all remaining images finish syncing, then exit
+
+    Args:
+        experiment_configuration: experiment configuration namedtuple
+        experiment_ended_message: message to log about why experiment ended
+        has_errored: whether the experiment is being ended due to an error. If True, this will exit the process with exit status of 1.
+
+    Returns:
+        None (exits with 1 if has_errored, otherwise 0)
+    """
     # If a file(s) is written after a sync process begins it does not get added to the list to sync.
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
     # remaining images. To that end, we end any existing sync process and start a new one
@@ -172,6 +181,8 @@ def run_experiment(cli_args=None):
     """ Top-level function to run an experiment.
     Collects command-line arguments, captures images, and syncs them to s3.
     Also checks that the system has the correct hostname configured and handles graceful closure upon KeyboardInterrupt.
+
+    On error, it will log the error and exit with a non-zero status code.
 
     Args:
         cli_args: Optional: list of command-line argument strings like sys.argv. If not provided, sys.argv will be used
