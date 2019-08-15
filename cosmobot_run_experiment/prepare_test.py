@@ -19,7 +19,7 @@ class TestParseArgs:
             "--variant",
             # Note: when a quoted command-line value is read using sys.argv,
             # it's grouped into a single list item like this:
-            "-ISO 100 -ss 50000",
+            "-ISO 100 -ss 5",
             "--variant",
             "variant2",
             "--exposures",
@@ -34,7 +34,7 @@ class TestParseArgs:
             "name": "thebest",
             "interval": 25,
             "duration": 100,
-            "variant": ["-ISO 100 -ss 50000", "variant2"],
+            "variant": ["-ISO 100 -ss 5", "variant2"],
             "exposures": [20, 30],
             "isos": [45, 55],
             "skip_temperature": False,
@@ -143,17 +143,17 @@ class TestGetExperimentVariants:
         args = {
             "name": "test",
             "interval": 10,
-            "variant": ["--exposure-time 4000000 -ISO 100"],
-            "exposures": [100, 200],
+            "variant": ["--exposure-time 0.4 -ISO 100"],
+            "exposures": [1, 2.5],
             "isos": [100, 200],
         }
 
         expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=4000000),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=100),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=100),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=200),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=200),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=0.4),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
+            _default_variant_with(capture_params="-ISO 200", exposure_time=1),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=2.5),
+            _default_variant_with(capture_params="-ISO 200", exposure_time=2.5),
         ]
 
         actual = module.get_experiment_variants(args)

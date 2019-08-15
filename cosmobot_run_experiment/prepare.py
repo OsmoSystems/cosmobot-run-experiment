@@ -98,7 +98,7 @@ def _parse_args(args):
         type=int,
         nargs="+",
         default=None,
-        help='List of exposures to iterate capture through ex. "--exposures 1000000, 2000000"',
+        help='List of exposures to iterate capture through ex. "--exposures 0.1, 1"',
     )
     arg_parser.add_argument(
         "--isos",
