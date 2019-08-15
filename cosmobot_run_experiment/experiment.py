@@ -151,8 +151,6 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     # If a file(s) is written after a sync process begins it does not get added to the list to sync.
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
     # remaining images. To that end, we end any existing sync process and start a new one
-    logging.info(experiment_ended_message)
-
     control_led(led_on=False)
 
     if not experiment_configuration.skip_sync:
@@ -174,6 +172,8 @@ def end_experiment(experiment_configuration, experiment_ended_message):
 
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
+
+    logging.info(experiment_ended_message)
 
     quit()
 
