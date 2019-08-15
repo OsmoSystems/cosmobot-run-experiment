@@ -13,7 +13,7 @@ import yaml
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 
 DEFAULT_ISO = 100
-DEFAULT_EXPOSURE = 1.5
+DEFAULT_EXPOSURE_TIME = 1.5
 DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
@@ -171,11 +171,17 @@ def _get_variant_parser():
     )
 
     arg_parser.add_argument(
+        "-ex",
         "--exposure-time",
         required=False,
         type=float,
-        default=DEFAULT_EXPOSURE,
-        help="Exposure time for the image to be taken, in seconds. Default: 1.5s",
+        default=DEFAULT_EXPOSURE_TIME,
+        help=(
+            "Exposure time for the image to be taken, in seconds."
+            " Default: {}s. Behavior for exposure time >6s is undefined.".format(
+                DEFAULT_EXPOSURE_TIME
+            )
+        ),
     )
     arg_parser.add_argument(
         "--camera-warm-up",
@@ -212,6 +218,10 @@ def _parse_variant(variant):
             "LED warm up {} longer than camera warm up {} is not supported".format(
                 parsed_args.led_warm_up, parsed_args.camera_warm_up
             )
+        )
+    if "-ss" in capture_params:
+        raise ValueError(
+            "Setting shutter speed via -ss is no longer supported. Please use --exposure-time or -ex in seconds."
         )
 
     return ExperimentVariant(

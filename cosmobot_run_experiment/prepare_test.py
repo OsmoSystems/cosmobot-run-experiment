@@ -108,13 +108,13 @@ class TestGetExperimentVariants:
             "name": "test",
             "interval": 10,
             "variant": [],
-            "exposures": [100, 200],
+            "exposures": [1, 2],
             "isos": None,
         }
 
         expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=100),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=200),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=2),
         ]
 
         actual = module.get_experiment_variants(args)
@@ -125,15 +125,15 @@ class TestGetExperimentVariants:
             "name": "test",
             "interval": 10,
             "variant": [],
-            "exposures": [100, 200],
+            "exposures": [1, 2],
             "isos": [100, 200],
         }
 
         expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=100),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=100),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=200),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=200),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
+            _default_variant_with(capture_params="-ISO 200", exposure_time=1),
+            _default_variant_with(capture_params="-ISO 100", exposure_time=2),
+            _default_variant_with(capture_params="-ISO 200", exposure_time=2),
         ]
 
         actual = module.get_experiment_variants(args)
@@ -163,14 +163,14 @@ class TestGetExperimentVariants:
         args = {
             "name": "test",
             "interval": 10,
-            "variant": [" -ss 1000000 -ISO 100", " -ss 1100000 -ISO 100"],
+            "variant": [" -ISO 100", " -ISO 200"],
             "exposures": None,
             "isos": None,
         }
 
         expected = [
-            _default_variant_with(capture_params="-ss 1000000 -ISO 100"),
-            _default_variant_with(capture_params="-ss 1100000 -ISO 100"),
+            _default_variant_with(capture_params="-ISO 100"),
+            _default_variant_with(capture_params="-ISO 200"),
         ]
 
         actual = module.get_experiment_variants(args)
@@ -180,15 +180,13 @@ class TestGetExperimentVariants:
         args = {
             "name": "test",
             "interval": 10,
-            "variant": [" -ss 1000000 -ISO 100 --led-on --led-warm-up 1"],
+            "variant": [" -ISO 100 --led-on --led-warm-up 1"],
             "exposures": None,
             "isos": None,
         }
 
         expected = [
-            _default_variant_with(
-                capture_params="-ss 1000000 -ISO 100", led_on=True, led_warm_up=1
-            )
+            _default_variant_with(capture_params="-ISO 100", led_on=True, led_warm_up=1)
         ]
 
         actual = module.get_experiment_variants(args)
@@ -262,11 +260,11 @@ class TestCreateFileStructureForExperiment:
 class TestParseVariant:
     def test_parse_variant_creates_variant_with_params(self):
         variant = module._parse_variant(
-            "--iso 123 --exposure-time 456 --camera-warm-up 5 --led-on --led-warm-up 1"
+            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on --led-warm-up 1"
         )
         expected_variant = module.ExperimentVariant(
             capture_params="--iso 123",
-            exposure_time=456,
+            exposure_time=0.4,
             camera_warm_up=5,
             led_on=True,
             led_warm_up=1,
@@ -288,3 +286,12 @@ class TestParseVariant:
     ):
         with pytest.raises(ValueError):
             module._parse_variant("--camera-warm-up 1 --led-warm-up 100")
+
+    def test_parse_variant_blows_up_with_old_school_shutter_speed(self):
+        with pytest.raises(ValueError):
+            module._parse_variant("--camera-warm-up 1 --led-warm-up 100 -ss 100000000")
+
+    def test_parse_variant_allows_short_exposure_time(self):
+        old_school = module._parse_variant("-ex 1")
+        new_school = module._parse_variant("--exposure-time 1")
+        assert old_school == new_school
