@@ -22,7 +22,7 @@ from .temperature import log_temperature
 from datetime import datetime, timedelta
 
 # time to leave the LED on after we think the exposure is complete, to ensure we don't turn it off too early
-LED_OFF_SAFETY_INTERVAL = 0.1
+LED_OFF_SAFETY_INTERVAL = 1
 
 # Basic logging configuration - sets the base log level to INFO and provides a
 # log format (time, log level, log message) for all messages to be written to stdout (console)
@@ -123,7 +123,7 @@ def perform_experiment(configuration):
 
             if variant.led_on:
                 # Make sure LED thread is ended; exceptions from LED code will raise here
-                led_future.result(timeout=1)
+                led_future.result(timeout=3)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
