@@ -22,7 +22,7 @@ from .temperature import log_temperature
 from datetime import datetime, timedelta
 
 # time to leave the LED on after we think the exposure is complete, to ensure we don't turn it off too early
-LED_OFF_SAFETY_INTERVAL = 0.1
+LED_OFF_SAFETY_INTERVAL = 2
 
 # Basic logging configuration - sets the base log level to INFO and provides a
 # log format (time, log level, log message) for all messages to be written to stdout (console)
