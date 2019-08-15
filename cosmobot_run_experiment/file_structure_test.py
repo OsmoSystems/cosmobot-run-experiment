@@ -66,3 +66,29 @@ class TestGetImageFilename:
         assert module.get_image_filename(self.datetime_, self.example_variant).endswith(
             "_.jpeg"
         )
+
+
+# COPY-PASTA from cosmobot-process-experiment
+class TestIsoDatetimeAndRestFromFilename:
+    def test_returns_datetime(self):
+        actual = module.datetime_from_filename(
+            "2018-01-02--13-14-15-something-something.jpeg"
+        )
+        expected = datetime(2018, 1, 2, 13, 14, 15)
+
+        assert actual == expected
+
+
+# COPY-PASTA from cosmobot-process-experiment
+class TestFilenameHasFormat:
+    @pytest.mark.parametrize(
+        "filename, truthiness",
+        [
+            ("2018-01-02--13-14-15-something-something.jpeg", True),
+            ("2018-01-02--13-aa-15-something-something.jpeg", False),
+            ("2018-01-02--13-14-1-hi-hi.jpeg", False),
+            ("prefix-2018-01-02--13-14-15something-something.jpeg", False),
+        ],
+    )
+    def test_filename_has_correct_datetime_format(self, filename, truthiness):
+        assert module.filename_has_correct_datetime_format(filename) is truthiness

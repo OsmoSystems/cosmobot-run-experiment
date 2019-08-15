@@ -1,4 +1,9 @@
+import datetime
 import os
+
+
+_FILENAME_DATETIME_FORMAT = "%Y-%m-%d--%H-%M-%S"
+FILENAME_TIMESTAMP_LENGTH = len("2018-01-01--12-01-01")
 
 
 def get_base_output_path():
@@ -87,3 +92,36 @@ def remove_experiment_directory(experiment_directory):
 
     directory = os.path.join(get_base_output_path(), experiment_directory)
     os.rmdir(directory)
+
+
+# COPY-PASTA from cosmobot-process-experiment
+def datetime_from_filename(filename: str) -> datetime.datetime:
+    """ Recover a datetime that has been encoded into a filename, also returning the remainder of the filename
+
+    Arguments:
+        filename: filename to process. Should start with an ISO-ish datetime
+            as produced by iso_datetime_for_filename()
+    Returns:
+        a datetime.datetime object matching the one that was encoded in the filename
+    """
+
+    return datetime.datetime.strptime(
+        filename[:FILENAME_TIMESTAMP_LENGTH], _FILENAME_DATETIME_FORMAT
+    )
+
+
+# COPY-PASTA from cosmobot-process-experiment
+def filename_has_correct_datetime_format(filename):
+    """ Is an ISO formatted date a substring at the start of filename
+
+    Arguments:
+        filename: filename to validate
+    Returns:
+        a true/false value that is used to validate file format is correct
+    """
+
+    try:
+        datetime_from_filename(filename)
+        return True
+    except ValueError:
+        return False
