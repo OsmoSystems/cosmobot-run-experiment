@@ -1,9 +1,9 @@
 import os
 import sys
-import threading
 import time
 import logging
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 
 from cosmobot_run_experiment.file_structure import get_image_filename
 from .camera import capture
@@ -65,6 +65,8 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
+    led_executor = ThreadPoolExecutor(max_workers=1)
+
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
             time.sleep(0.1)  # No need to totally peg the CPU
@@ -99,24 +101,22 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                led_thread = threading.Thread(
-                    target=flash_led_once,
-                    kwargs={
-                        "wait_time_s": max(
-                            variant.camera_warm_up
-                            - variant.led_warm_up
-                            - LED_SAFETY_INTERVAL,
-                            0,
-                        ),
-                        # fmt: off
-                        "on_time_s":
-                            variant.led_warm_up
-                            + variant.exposure_time
-                            + LED_SAFETY_INTERVAL * 2,
-                        # fmt: on
-                    },
+                led_future = led_executor.submit(
+                    flash_led_once,
+                    wait_time_s=max(
+                        variant.camera_warm_up
+                        - variant.led_warm_up
+                        - LED_SAFETY_INTERVAL,
+                        0,
+                    ),
+                    # fmt: off
+                    on_time_s=(
+                        variant.led_warm_up
+                        + variant.exposure_time
+                        + LED_SAFETY_INTERVAL * 2
+                    ),
+                    # fmt: on
                 )
-                led_thread.start()
 
             capture(
                 image_filepath,
@@ -126,8 +126,8 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                # Make sure LED thread is ended
-                led_thread_response = led_thread.join(10)
+                # Make sure LED thread is ended; exceptions from LED code will raise here
+                led_future.result(10)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:

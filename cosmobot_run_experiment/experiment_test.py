@@ -39,7 +39,7 @@ def mock_free_space_for_one_image(mocker):
 
 @pytest.fixture
 def mock_control_led(mocker):
-    return mocker.patch.object(module, "control_led")
+    return mocker.patch.object(module, "flash_led_once")
 
 
 @pytest.fixture
