@@ -287,9 +287,13 @@ class TestParseVariant:
         with pytest.raises(ValueError):
             module._parse_variant("--camera-warm-up 1 --led-warm-up 100")
 
-    def test_parse_variant_blows_up_with_old_school_shutter_speed(self):
+    def test_parse_variant_doesnt_allow_old_school_shutter_speed(self):
         with pytest.raises(ValueError):
-            module._parse_variant("--camera-warm-up 1 --led-warm-up 100 -ss 100000000")
+            module._parse_variant("-ss 100000000")
+
+    def test_parse_variant_doesnt_allow_old_school_timeout(self):
+        with pytest.raises(ValueError):
+            module._parse_variant("--timeout 1")
 
     def test_parse_variant_allows_short_exposure_time(self):
         old_school = module._parse_variant("-ex 1")

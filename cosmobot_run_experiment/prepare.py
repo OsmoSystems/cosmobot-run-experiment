@@ -224,6 +224,12 @@ def _parse_variant(variant):
             "Setting shutter speed via -ss is no longer supported. Please use --exposure-time or -ex in seconds."
         )
 
+    if "--timeout" in capture_params:
+        raise ValueError(
+            "Setting camera warm-up time via --timeout is no longer supported."
+            " Please use --camera-warm-up in seconds."
+        )
+
     return ExperimentVariant(
         capture_params=capture_params,
         exposure_time=parsed_args.exposure_time,
