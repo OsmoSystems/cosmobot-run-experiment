@@ -123,7 +123,7 @@ def perform_experiment(configuration):
 
             if variant.led_on:
                 # Make sure LED thread is ended; exceptions from LED code will raise here
-                led_future.result(10)
+                led_future.result(timeout=1)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
