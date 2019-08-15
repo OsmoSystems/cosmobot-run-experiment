@@ -105,11 +105,7 @@ def perform_experiment(configuration):
 
             if variant.led_on:
                 led_wait_time = variant.camera_warm_up - variant.led_warm_up
-                led_on_time = (
-                    variant.led_warm_up
-                    + variant.exposure_time
-                    + LED_OFF_SAFETY_INTERVAL
-                )
+                led_on_time = variant.led_on_time
                 led_future = led_executor.submit(
                     flash_led_once,
                     wait_time_s=led_wait_time,
@@ -148,13 +144,14 @@ def perform_experiment(configuration):
 
 def end_experiment(experiment_configuration, experiment_ended_message):
     """ Complete an experiment by ensuring all remaining images finish syncing """
-    # If a file(s) is written after a sync process begins it does not get added to the list to sync.
-    # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
-    # remaining images. To that end, we end any existing sync process and start a new one
     control_led(led_on=False)
 
     if not experiment_configuration.skip_sync:
         logging.info("Beginning final sync to s3 due to end of experiment...")
+
+        # If a file(s) is written after a sync process begins it does not get added to the list to sync.
+        # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
+        # remaining images. To that end, we end any existing sync process and start a new one
         end_syncing_process()
         sync_directory_in_separate_process(
             experiment_configuration.experiment_directory_path,
