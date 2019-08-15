@@ -47,11 +47,6 @@ def mock_log_temperature(mocker):
     return mocker.patch.object(module, "log_temperature")
 
 
-@pytest.fixture
-def mock_end_experiment(mocker):
-    return mocker.patch.object(module, "end_experiment")
-
-
 MOCK_BASIC_PARAMETERS = [
     "--name",
     "automated_integration_test",
