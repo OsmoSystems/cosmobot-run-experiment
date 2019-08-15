@@ -1,3 +1,5 @@
+from unittest.mock import sentinel, call
+
 import pytest
 from . import led_control as module
 
@@ -44,3 +46,19 @@ class TestControlLed:
         module.control_led(True)
 
         mock_info_logger.assert_called_with("Turning LED on (DIO pin 6 -> low)")
+
+
+class TestFlashLed:
+    def test_flash_led_calls_appropriate_things(self, mocker):
+        mock_control_led = mocker.patch.object(module, "control_led")
+        mock_sleep = mocker.patch.object(module, "sleep")
+
+        module.flash_led_once(
+            wait_time_s=sentinel.wait_time, on_time_s=sentinel.on_time
+        )
+
+        # These calls are interleaved, but we can only assert the call ordering separately for each method
+        mock_sleep.assert_has_calls(
+            [call(sentinel.wait_time), call(sentinel.on_time)], any_order=False
+        )
+        mock_control_led.assert_has_calls([call(True), call(False)], any_order=False)
