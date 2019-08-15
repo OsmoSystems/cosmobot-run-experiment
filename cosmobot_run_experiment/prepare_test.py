@@ -315,7 +315,7 @@ def mock_get_base_output_path(mocker):
 
 
 class TestGetExperimentDirectoryPath:
-    def test_group_results_and_matching_dir_exists(
+    def test_uses_matching_dir_name_for_group_results(
         self, mock_get_base_output_path, mock_list_experiments
     ):
         group_results = True
@@ -328,13 +328,15 @@ class TestGetExperimentDirectoryPath:
             "date1-{pi_experiment_name}".format(**locals()),
         ]
 
-        assert module._get_experiment_directory_path(
+        actual_path = module._get_experiment_directory_path(
             group_results, pi_experiment_name, start_date
-        ) == os.path.join(
+        )
+        expected_path = os.path.join(
             "base-output-path", "date2-{pi_experiment_name}".format(**locals())
         )
+        assert actual_path == expected_path
 
-    def test_group_results_and_matching_dir_does_not_exist(
+    def test_generates_dir_name_when_no_matching_directory_for_group_results(
         self, mock_get_base_output_path, mock_list_experiments
     ):
         group_results = True
@@ -346,22 +348,28 @@ class TestGetExperimentDirectoryPath:
             "date2-Pi1234-bad_experiment",
         ]
 
-        assert module._get_experiment_directory_path(
-            group_results, pi_experiment_name, start_date
-        ) == os.path.join(
+        expected_path = os.path.join(
             "base-output-path",
             "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
         )
+        actual_path = module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        )
+        assert actual_path == expected_path
 
-    def test_no_group_results(self, mock_get_base_output_path, mock_list_experiments):
+    def test_generates_dir_name_when_group_results_is_false(
+        self, mock_get_base_output_path, mock_list_experiments
+    ):
         group_results = False
         pi_experiment_name = "Pi1234-cool_experiment"
         start_date = datetime.datetime(year=1988, month=9, day=1)
 
-        assert module._get_experiment_directory_path(
-            group_results, pi_experiment_name, start_date
-        ) == os.path.join(
+        expected_path = os.path.join(
             "base-output-path",
             "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
         )
+        actual_path = module._get_experiment_directory_path(
+            group_results, pi_experiment_name, start_date
+        )
+        assert actual_path == expected_path
         mock_list_experiments.assert_not_called()

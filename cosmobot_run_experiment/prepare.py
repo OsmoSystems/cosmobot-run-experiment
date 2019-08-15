@@ -266,16 +266,20 @@ def _get_most_recent_experiment_directory_name(pi_experiment_name):
     return None if not matching_directories else matching_directories[0]
 
 
-def _get_experiment_directory_name(start_date, pi_experiment_name):
+def _generate_experiment_directory_name(start_date, pi_experiment_name):
     iso_ish_datetime = iso_datetime_for_filename(start_date)
     return "{iso_ish_datetime}-{pi_experiment_name}".format(**locals())
 
 
 def _get_experiment_directory_path(group_results, pi_experiment_name, start_date):
+    """If group_results is True, try to find a matching directory in S3 to use.
+    If we don't find a match, or if group_results is False, generate a directory name to use
+    for a new directory.
+    """
     experiment_directory_name = (
         group_results
         and _get_most_recent_experiment_directory_name(pi_experiment_name)
-        or _get_experiment_directory_name(start_date, pi_experiment_name)
+        or _generate_experiment_directory_name(start_date, pi_experiment_name)
     )
     return os.path.join(get_base_output_path(), experiment_directory_name)
 
