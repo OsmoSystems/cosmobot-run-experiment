@@ -78,7 +78,7 @@ def perform_experiment(configuration):
                 end_experiment(
                     configuration,
                     experiment_ended_message="Insufficient space to save the image. Quitting...",
-                    is_error=True,
+                    has_errored=True,
                 )
 
             control_led(led_on=variant.led_on)
@@ -115,11 +115,11 @@ def perform_experiment(configuration):
     end_experiment(
         configuration,
         experiment_ended_message="Experiment completed successfully!",
-        is_error=False,
+        has_errored=False,
     )
 
 
-def end_experiment(experiment_configuration, experiment_ended_message, is_error):
+def end_experiment(experiment_configuration, experiment_ended_message, has_errored):
     """ Complete an experiment by ensuring all remaining images finish syncing """
     # If a file(s) is written after a sync process begins it does not get added to the list to sync.
     # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
@@ -148,7 +148,7 @@ def end_experiment(experiment_configuration, experiment_ended_message, is_error)
 
     control_led(led_on=False)
 
-    sys.exit(1 if is_error else 0)
+    sys.exit(1 if has_errored else 0)
 
 
 def set_up_log_file_with_base_handler(experiment_directory, start_date):
@@ -205,7 +205,7 @@ def run_experiment(cli_args=None):
             end_experiment(
                 configuration,
                 experiment_ended_message="Keyboard interrupt detected. Quitting...",
-                is_error=True,
+                has_errored=True,
             )
 
     # We might get a SubprocessError from check_call (which calls raspistill/s3),
