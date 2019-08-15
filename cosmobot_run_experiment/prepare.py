@@ -117,7 +117,8 @@ def _parse_args(args):
         help="If provided, skips recording temperature.",
     )
 
-    # --group-results should only be used when syncing to S3
+    # --group-results should only be used when syncing to S3 since it queries S3 to determine the bucket name and
+    #     doesn't take into account unsynced experiment directories
     mutually_exclusive_group = arg_parser.add_mutually_exclusive_group()
     mutually_exclusive_group.add_argument(
         "--group-results",
@@ -247,7 +248,7 @@ def _get_mac_last_4():
     return _get_mac_address()[-4:]
 
 
-def _is_current_experiment(directory, experiment_name, mac_last_4):
+def _experiment_directory_matches(directory, experiment_name, mac_last_4):
     return directory.endswith(
         "-Pi{mac_last_4}-{experiment_name}".format(
             mac_last_4=mac_last_4, experiment_name=experiment_name
@@ -256,17 +257,20 @@ def _is_current_experiment(directory, experiment_name, mac_last_4):
 
 
 def _get_matching_directories(directories, experiment_name, mac_last_4):
+    # get matching directories (and maintain sorted order of directories)
     return [
         directory
         for directory in directories
-        if _is_current_experiment(directory, experiment_name, mac_last_4)
+        if _experiment_directory_matches(directory, experiment_name, mac_last_4)
     ]
 
 
 def _get_most_recent_experiment_directory_path(experiment_name, mac_last_4):
-    directories = list_experiments()
+    # list_experiments() returns the directory names sorted by descending date
+    sorted_directories = list_experiments()
+
     matching_directories = _get_matching_directories(
-        directories, experiment_name, mac_last_4
+        sorted_directories, experiment_name, mac_last_4
     )
 
     return None if not matching_directories else matching_directories[0]
@@ -294,12 +298,11 @@ def get_experiment_configuration(cli_args):
     name = args["name"]
     group_results = args["group_results"]
 
-    experiment_directory_path = None
-
-    if group_results:
-        experiment_directory_path = _get_most_recent_experiment_directory_path(
-            name, mac_last_4
-        )
+    experiment_directory_path = (
+        _get_most_recent_experiment_directory_path(name, mac_last_4)
+        if group_results
+        else None
+    )
 
     if experiment_directory_path is None:
         experiment_directory_name = "{iso_ish_datetime}-Pi{mac_last_4}-{name}".format(
@@ -341,9 +344,8 @@ def create_file_structure_for_experiment(configuration):
     )
     os.makedirs(configuration.experiment_directory_path, exist_ok=True)
 
-    iso_ish_datetime = iso_datetime_for_filename(configuration.start_date)
     metadata_filename = "{iso_ish_datetime}_experiment_metadata.yml".format(
-        iso_ish_datetime=iso_ish_datetime
+        iso_ish_datetime=iso_datetime_for_filename(configuration.start_date)
     )
 
     metadata_path = os.path.join(
