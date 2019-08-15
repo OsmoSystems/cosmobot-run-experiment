@@ -193,11 +193,8 @@ def _get_variant_parser():
         "--led-warm-up",
         required=False,
         type=float,
-        default=0.9,
-        help=(
-            "If set, LED is turned on before initiating capture for a time value in seconds."
-            " Default: 0.9s (the recommended minimum to allow the LED to turn on fully)"
-        ),
+        default=0.1,
+        help="If set, LED is turned on before initiating capture for a time value in seconds. Default: 0.1s",
     )
     return arg_parser
 

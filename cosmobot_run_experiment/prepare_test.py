@@ -96,7 +96,7 @@ def _default_variant_with(**kwargs):
         "exposure_time": 1.5,
         "camera_warm_up": 5,
         "led_on": False,
-        "led_warm_up": 0.9,
+        "led_warm_up": 0.1,
         **kwargs,
     }
     return module.ExperimentVariant(**variant_kwargs)
@@ -279,7 +279,7 @@ class TestParseVariant:
             exposure_time=1.5,
             camera_warm_up=5,
             led_on=False,
-            led_warm_up=0.9,
+            led_warm_up=0.1,
         )
         assert module._parse_variant("") == expected_variant
 
