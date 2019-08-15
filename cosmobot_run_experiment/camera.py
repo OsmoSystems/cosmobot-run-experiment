@@ -33,7 +33,7 @@ def capture(filename, exposure_time=1.5, warm_up_time=1, additional_capture_para
 
 
 def simulate_capture_with_copy(
-    filename, exposure_time=1.5, warm_up_time=1000, additional_capture_params=""
+    filename, exposure_time=None, warm_up_time=None, additional_capture_params=""
 ):
     """ Simulate capture by copying image file
 
