@@ -41,6 +41,7 @@ class TestGetImageFilename:
         camera_warm_up=5.0001,
         led_on=True,
         led_warm_up=0.1,
+        led_buffer=1,
     )
     datetime_ = datetime(2019, 4, 8, 9, 52, 12)
 
@@ -56,9 +57,7 @@ class TestGetImageFilename:
         )
 
     def test_get_image_filename_includes_led_capture_params(self):
-        expected_led_params_string = (
-            "_exposure_time_1_camera_warm_up_5.0001_led_on_True_led_warm_up_0.1"
-        )
+        expected_led_params_string = "_exposure_time_1_camera_warm_up_5.0001_led_on_True_led_warm_up_0.1_led_buffer_1"
         assert expected_led_params_string in module.get_image_filename(
             self.datetime_, self.example_variant
         )

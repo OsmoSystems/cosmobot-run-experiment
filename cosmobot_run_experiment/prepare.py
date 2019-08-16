@@ -47,6 +47,7 @@ ExperimentVariant = namedtuple(
         "camera_warm_up",  # amount of time to let the camera warm up before taking an image, seconds
         "led_on",  # ahether LED should be on or off
         "led_warm_up",  # amount of time to wait for led to warm up before the camera takes its exposure
+        "led_buffer",  # amount of time to keep LED on after exposure should be complete
     ],
 )
 
@@ -213,6 +214,17 @@ def _get_variant_parser():
         default=0.1,
         help="The LED is turned on for this amount of time, in seconds, before camera exposure begins. Default: 0.1s.",
     )
+    arg_parser.add_argument(
+        "--led-buffer",
+        required=False,
+        type=float,
+        default=0.4,
+        help=(
+            "The LED is kept on for this amount of time, in seconds,"
+            " after camera exposure would be done assuming load time for raspistill."
+            "Conceptually, matches the maximum load time of raspistill. Default: 0.4s."
+        ),
+    )
     return arg_parser
 
 
@@ -247,6 +259,7 @@ def _parse_variant(variant):
         camera_warm_up=parsed_args.camera_warm_up,
         led_on=parsed_args.led_on,
         led_warm_up=parsed_args.led_warm_up,
+        led_buffer=parsed_args.led_buffer,
     )
 
 

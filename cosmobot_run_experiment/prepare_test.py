@@ -112,6 +112,7 @@ def _default_variant_with(**kwargs):
         "camera_warm_up": 5,
         "led_on": False,
         "led_warm_up": 0.1,
+        "led_buffer": 0.4,
         **kwargs,
     }
     return module.ExperimentVariant(**variant_kwargs)
@@ -276,7 +277,7 @@ class TestCreateFileStructureForExperiment:
 class TestParseVariant:
     def test_creates_variant_with_params(self):
         variant = module._parse_variant(
-            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on --led-warm-up 1"
+            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on --led-warm-up 1 --led-buffer 3"
         )
         expected_variant = module.ExperimentVariant(
             capture_params="--iso 123",
@@ -284,6 +285,7 @@ class TestParseVariant:
             camera_warm_up=5,
             led_on=True,
             led_warm_up=1,
+            led_buffer=3,
         )
         assert variant == expected_variant
 
@@ -294,6 +296,7 @@ class TestParseVariant:
             camera_warm_up=5,
             led_on=False,
             led_warm_up=0.1,
+            led_buffer=0.4,
         )
         assert module._parse_variant("") == expected_variant
 
