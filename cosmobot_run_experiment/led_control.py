@@ -118,9 +118,10 @@ def flash_led_cli(cli_args=None):
         cli_args = sys.argv[1:]
 
     arg_parser = argparse.ArgumentParser(
-        description="Flash LED on/off indefinitely on digital pin {} (kill with ctrl+c)".format(
-            DIGITAL_LED_PIN
-        )
+        description=(
+            "Flash LED on/off indefinitely on digital pins "
+            "{} (if pin high = led on) or {} (if pin low = led on) (kill with ctrl+c)"
+        ).format(DIGITAL_LED_PIN_ON_HIGH, DIGITAL_LED_PIN_ON_LOW)
     )
 
     arg_parser.add_argument(
