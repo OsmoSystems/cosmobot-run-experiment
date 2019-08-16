@@ -89,6 +89,7 @@ def perform_experiment(configuration):
                 end_experiment(
                     configuration,
                     experiment_ended_message="Insufficient space to save the image. Quitting...",
+                    has_errored=True,
                 )
 
             # Share timestamp between image and temperature reading, to make them easy to align
@@ -130,12 +131,24 @@ def perform_experiment(configuration):
                 )
 
     end_experiment(
-        configuration, experiment_ended_message="Experiment completed successfully!"
+        configuration,
+        experiment_ended_message="Experiment completed successfully!",
+        has_errored=False,
     )
 
 
-def end_experiment(experiment_configuration, experiment_ended_message):
-    """ Complete an experiment by ensuring all remaining images finish syncing """
+def end_experiment(experiment_configuration, experiment_ended_message, has_errored):
+    """ Complete an experiment by ensuring all remaining images finish syncing, then exit
+
+    Args:
+        experiment_configuration: experiment configuration namedtuple
+        experiment_ended_message: message to log about why experiment ended
+        has_errored: whether the experiment is being ended due to an error. If True, this will exit the process with
+        exit status of 1.
+
+    Returns:
+        None (exits with 1 if has_errored, otherwise 0)
+    """
     control_led(led_on=False)
     logging.info(experiment_ended_message)
 
@@ -162,7 +175,7 @@ def end_experiment(experiment_configuration, experiment_ended_message):
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
 
-    quit()
+    sys.exit(1 if has_errored else 0)
 
 
 def set_up_log_file_with_base_handler(experiment_directory, start_date):
@@ -187,6 +200,8 @@ def run_experiment(cli_args=None):
     Collects command-line arguments, captures images, and syncs them to s3.
     Also checks that the system has the correct hostname configured and handles graceful closure upon KeyboardInterrupt.
 
+    On error, it will log the error and exit with a non-zero status code.
+
     Args:
         cli_args: Optional: list of command-line argument strings like sys.argv. If not provided, sys.argv will be used
     Returns:
@@ -206,7 +221,7 @@ def run_experiment(cli_args=None):
                 )
             )
             logging.error(quit_message)
-            quit()
+            sys.exit(1)
 
         create_file_structure_for_experiment(configuration)
         set_up_log_file_with_base_handler(
@@ -219,6 +234,7 @@ def run_experiment(cli_args=None):
             end_experiment(
                 configuration,
                 experiment_ended_message="Keyboard interrupt detected. Quitting...",
+                has_errored=True,
             )
 
     # We might get a SubprocessError from check_call (which calls raspistill/s3),
@@ -228,6 +244,7 @@ def run_experiment(cli_args=None):
         logging.error(exception)
         exc_type, exc_value, exc_traceback = sys.exc_info()
         logging.error("\n".join(traceback.format_tb(exc_traceback)))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

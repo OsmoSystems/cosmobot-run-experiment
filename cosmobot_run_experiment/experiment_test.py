@@ -42,11 +42,6 @@ def mock_log_temperature(mocker):
     return mocker.patch.object(module, "log_temperature")
 
 
-@pytest.fixture
-def mock_end_experiment(mocker):
-    return mocker.patch.object(module, "end_experiment")
-
-
 MOCK_BASIC_PARAMETERS = [
     "--name",
     "automated_integration_test",
@@ -135,7 +130,8 @@ class TestRunExperiment:
     ):
         mock_hostname_is_correct.return_value = False
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exception_info:
             module.run_experiment(MOCK_BASIC_PARAMETERS)
 
+        assert exception_info.value.code == 1
         assert mock_perform_experiment.call_count == 0
