@@ -162,15 +162,15 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant "-ISO 100 --exposure_time 0.5 --camera-warm-up 1 --led-on"
+                    --variant "-ISO 100 --exposure-time 0.5 --camera-warm-up 1 --led-on"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
                 raspistill camera parameters within each --variant flag are passed directly to raspistill.
                 Some relevant parameters:
                     "-ISO" should be a value from 100-800, in increments of 100
-                    "--exposure_time" is in microseconds, and is undefined above 6s (--exposure_time 6)
-                Ex: --variant "-ISO 100 --exposure_time 0.5 " --variant "-ISO 200 --exposure_time 0.1".
+                    "--exposure-time" is in microseconds, and is undefined above 6s (--exposure-time 6)
+                Ex: --variant "-ISO 100 --exposure-time 0.5 " --variant "-ISO 200 --exposure-time 0.1".
                 Default: "{DEFAULT_CAPTURE_PARAMS}".
 
             LED control:
