@@ -46,9 +46,7 @@ ExperimentVariant = namedtuple(
         "capture_params",  # parameters to pass to raspistill binary through the command line
         "exposure_time",  # length of camera exposure, us
         "camera_warm_up",  # amount of time to let the camera warm up before taking an image, seconds
-        "led_on",  # ahether LED should be on or off
-        "led_warm_up",  # amount of time to wait for led to warm up before the camera takes its exposure
-        "led_buffer",  # amount of time to keep LED on after exposure should be complete
+        "led_on",  # whether LED should be on or off
     ],
 )
 
@@ -219,23 +217,6 @@ def _get_variant_parser():
         action="store_true",
         help="If set, LED will be turned on for this variant",
     )
-    arg_parser.add_argument(
-        "--led-warm-up",
-        required=False,
-        type=float,
-        default=0.4,
-        help="The LED is turned on for this amount of time, in seconds, before camera exposure begins. Default: 0.1s.",
-    )
-    arg_parser.add_argument(
-        "--led-buffer",
-        required=False,
-        type=float,
-        default=0.4,
-        help=(
-            "The LED is kept on for this amount of time, in seconds,"
-            " after camera exposure is complete. Default: 0.4s."
-        ),
-    )
     return arg_parser
 
 
@@ -247,12 +228,6 @@ def _parse_variant(variant):
     # capture_params aren't parsed as regular args - they'll just be passed wholesale into raspistill
     capture_params = " ".join(remaining_args_for_capture) or DEFAULT_CAPTURE_PARAMS
 
-    if parsed_args.camera_warm_up < parsed_args.led_warm_up:
-        raise ValueError(
-            "LED warm up {} longer than camera warm up {} is not supported".format(
-                parsed_args.led_warm_up, parsed_args.camera_warm_up
-            )
-        )
     if "-ss" in capture_params:
         raise ValueError(
             "Setting shutter speed via -ss is no longer supported. Please use --exposure-time or -ex in seconds."
@@ -269,8 +244,6 @@ def _parse_variant(variant):
         exposure_time=parsed_args.exposure_time,
         camera_warm_up=parsed_args.camera_warm_up,
         led_on=parsed_args.led_on,
-        led_warm_up=parsed_args.led_warm_up,
-        led_buffer=parsed_args.led_buffer,
     )
 
 

@@ -16,7 +16,7 @@ from .prepare import (
 from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
-from .led_control import flash_led_once, control_led
+from .led_control import control_led
 from .temperature import log_temperature
 
 from datetime import datetime, timedelta
@@ -30,6 +30,11 @@ logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
     level=logging.INFO, format=logging_format, handlers=[logging.StreamHandler()]
 )
+
+
+def _led_on_with_delay(delay):
+    time.sleep(delay)
+    control_led(led_on=True)
 
 
 def perform_experiment(configuration):
@@ -102,20 +107,9 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                led_wait_time = (
-                    configuration.raspistill_load_time
-                    + variant.camera_warm_up
-                    - variant.led_warm_up
-                )
-                led_on_time = (
-                    variant.led_warm_up + variant.exposure_time + variant.led_buffer
-                )
+                # Leave the LED off for the duration of camera warm-up.
                 led_future = led_executor.submit(
-                    flash_led_once,
-                    wait_time_s=led_wait_time,
-                    # fmt: off
-                    on_time_s=led_on_time,
-                    # fmt: on
+                    _led_on_with_delay, delay=variant.camera_warm_up
                 )
 
             capture(
@@ -126,16 +120,8 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                # Make sure LED thread is ended
-                # There's no real reason the LED thread should take longer than the camera thread, but if there's a
-                # short delay let's not freak out.
-                buffer_time_to_wait_for_led_after_capture_finishes = (
-                    variant.led_buffer + 3
-                )
-                # exceptions from LED code will raise here
-                led_future.result(
-                    timeout=buffer_time_to_wait_for_led_after_capture_finishes
-                )
+                led_future.result()
+                control_led(led_on=False)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:

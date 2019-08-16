@@ -36,12 +36,7 @@ class TestProcessParamStringsForFilename:
 
 class TestGetImageFilename:
     example_variant = ExperimentVariant(
-        capture_params=" -ISO 5678",
-        exposure_time=1,
-        camera_warm_up=5.0001,
-        led_on=True,
-        led_warm_up=0.1,
-        led_buffer=1,
+        capture_params=" -ISO 5678", exposure_time=1, camera_warm_up=5.0001, led_on=True
     )
     datetime_ = datetime(2019, 4, 8, 9, 52, 12)
 
@@ -57,7 +52,9 @@ class TestGetImageFilename:
         )
 
     def test_get_image_filename_includes_led_capture_params(self):
-        expected_led_params_string = "_exposure_time_1_camera_warm_up_5.0001_led_on_True_led_warm_up_0.1_led_buffer_1"
+        expected_led_params_string = (
+            "_exposure_time_1_camera_warm_up_5.0001_led_on_True"
+        )
         assert expected_led_params_string in module.get_image_filename(
             self.datetime_, self.example_variant
         )

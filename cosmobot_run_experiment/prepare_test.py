@@ -114,8 +114,6 @@ def _default_variant_with(**kwargs):
         "exposure_time": 0.8,
         "camera_warm_up": 5,
         "led_on": False,
-        "led_warm_up": 0.4,
-        "led_buffer": 0.4,
         **kwargs,
     }
     return module.ExperimentVariant(**variant_kwargs)
@@ -199,14 +197,12 @@ class TestGetExperimentVariants:
         args = {
             "name": "test",
             "interval": 10,
-            "variant": [" -ISO 100 --led-on --led-warm-up 1"],
+            "variant": [" -ISO 100 --led-on"],
             "exposures": None,
             "isos": None,
         }
 
-        expected = [
-            _default_variant_with(capture_params="-ISO 100", led_on=True, led_warm_up=1)
-        ]
+        expected = [_default_variant_with(capture_params="-ISO 100", led_on=True)]
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
@@ -280,15 +276,10 @@ class TestCreateFileStructureForExperiment:
 class TestParseVariant:
     def test_creates_variant_with_params(self):
         variant = module._parse_variant(
-            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on --led-warm-up 1 --led-buffer 3"
+            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on"
         )
         expected_variant = module.ExperimentVariant(
-            capture_params="--iso 123",
-            exposure_time=0.4,
-            camera_warm_up=5,
-            led_on=True,
-            led_warm_up=1,
-            led_buffer=3,
+            capture_params="--iso 123", exposure_time=0.4, camera_warm_up=5, led_on=True
         )
         assert variant == expected_variant
 
@@ -298,14 +289,8 @@ class TestParseVariant:
             exposure_time=0.8,
             camera_warm_up=5,
             led_on=False,
-            led_warm_up=0.4,
-            led_buffer=0.4,
         )
         assert module._parse_variant("") == expected_variant
-
-    def test_creates_variant_doesnt_allow_longer_led_warm_up_than_camera_warm_up(self):
-        with pytest.raises(ValueError):
-            module._parse_variant("--camera-warm-up 1 --led-warm-up 100")
 
     def test_doesnt_allow_old_school_shutter_speed(self):
         with pytest.raises(ValueError):
