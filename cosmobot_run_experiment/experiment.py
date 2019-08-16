@@ -125,7 +125,9 @@ def perform_experiment(configuration):
                 # Make sure LED thread is ended
                 # There's no real reason the LED thread should take longer than the camera thread, but if there's a
                 # short delay let's not freak out.
-                buffer_time_to_wait_for_led_after_capture_finishes = 3
+                buffer_time_to_wait_for_led_after_capture_finishes = (
+                    variant.led_buffer + 3
+                )
                 # exceptions from LED code will raise here
                 led_future.result(
                     timeout=buffer_time_to_wait_for_led_after_capture_finishes
