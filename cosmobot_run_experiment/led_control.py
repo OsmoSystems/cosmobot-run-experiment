@@ -16,18 +16,16 @@ DIGITAL_LED_PIN_ON_HIGH = board.D5
 DIGITAL_LED_PIN_ON_LOW = board.D6
 
 
-def _control_led(led_on, pin, pin_high):
+def _set_dio_pin(pin, value: bool):
     logging.info(
-        "Turning LED {led_setpoint} (DIO pin {pin} -> {pin_setpoint})".format(
-            led_setpoint="on" if led_on else "off",
-            pin=pin,
-            pin_setpoint="high" if pin_high else "low",
+        "Setting DIO pin {pin} -> {pin_setpoint}".format(
+            pin=pin, pin_setpoint="high" if value else "low"
         )
     )
 
-    led_pin = digitalio.DigitalInOut(pin=pin)
-    led_pin.direction = digitalio.Direction.OUTPUT
-    led_pin.value = pin_high
+    dio_pin = digitalio.DigitalInOut(pin=pin)
+    dio_pin.direction = digitalio.Direction.OUTPUT
+    dio_pin.value = value
 
 
 def control_led(led_on=True):
@@ -49,8 +47,11 @@ def control_led(led_on=True):
     Returns:
         None
     """
-    _control_led(led_on, pin=DIGITAL_LED_PIN_ON_HIGH, pin_high=led_on)
-    _control_led(led_on, pin=DIGITAL_LED_PIN_ON_LOW, pin_high=not led_on)
+    logging.info(
+        "Turning LED {led_setpoint}".format(led_setpoint="on" if led_on else "off")
+    )
+    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_HIGH, value=led_on)
+    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_LOW, value=not led_on)
 
 
 def main(cli_args=None):

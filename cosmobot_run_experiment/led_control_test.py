@@ -46,7 +46,8 @@ class TestControlLed:
 
         mock_info_logger.assert_has_calls(
             [
-                call("Turning LED on (DIO pin 5 -> high)"),
-                call("Turning LED on (DIO pin 6 -> low)"),
+                call("Turning LED on"),
+                call("Setting DIO pin 5 -> high"),
+                call("Setting DIO pin 6 -> low"),
             ]
         )
