@@ -36,7 +36,6 @@ ExperimentConfiguration = namedtuple(
         "skip_sync",  # whether to skip syncing to s3
         "erase_synced_files",  # whether to erase the local experiment folder after synced to s3
         "review_exposure",  # review exposure statistics after experiment finishes and do not sync to s3)
-        "raspistill_load_time",  # amount of time to wait for raspistill to load
     ],
 )
 
@@ -137,17 +136,6 @@ def _parse_args(args):
         "--erase-synced-files",
         action="store_true",
         help="If provided, uses s3 mv to erase files after sync is completed.",
-    )
-    arg_parser.add_argument(
-        "--raspistill-load-time",
-        required=False,
-        type=float,
-        default=1.2,
-        help=(
-            "Amount of time to wait for raspistill to load each time it is called, in seconds."
-            " NOTE that this increases with shutter speed in an unknown way."
-            " If this is incorrect, the effectiveness of led-warm-up and led-buffer will be affected. Default: 0.3s"
-        ),
     )
 
     arg_parser.add_argument(
@@ -357,7 +345,6 @@ def get_experiment_configuration(cli_args):
         skip_sync=args["skip_sync"],
         erase_synced_files=args["erase_synced_files"],
         review_exposure=args["review_exposure"],
-        raspistill_load_time=args["raspistill_load_time"],
     )
 
     return experiment_configuration

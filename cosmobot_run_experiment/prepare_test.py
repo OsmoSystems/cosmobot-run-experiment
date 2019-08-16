@@ -30,8 +30,6 @@ class TestParseArgs:
             "--isos",
             "45",
             "55",
-            "--raspistill-load-time",
-            "2",
         ]
 
         expected_args_out = {
@@ -46,7 +44,6 @@ class TestParseArgs:
             "review_exposure": False,
             "erase_synced_files": False,
             "group_results": False,
-            "raspistill_load_time": 2,
         }
         assert module._parse_args(args_in) == expected_args_out
 
