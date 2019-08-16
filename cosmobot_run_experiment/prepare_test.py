@@ -23,7 +23,7 @@ class TestParseArgs:
             # it's grouped into a single list item like this:
             "-ISO 100",
             "--variant",
-            "variant2",
+            "some-variant-thingy",
             "--exposures",
             "20",
             "30",
@@ -36,7 +36,7 @@ class TestParseArgs:
             "name": "thebest",
             "interval": 25,
             "duration": 100,
-            "variant": ["-ISO 100", "variant2"],
+            "variant": ["-ISO 100", "some-variant-thingy"],
             "exposures": [20, 30],
             "isos": [45, 55],
             "skip_temperature": False,
@@ -298,9 +298,9 @@ class TestParseVariant:
             module._parse_variant("--timeout 1")
 
     def test_allows_short_or_long_version_of_exposure_time_parameter(self):
-        old_school = module._parse_variant("-ex 1")
-        new_school = module._parse_variant("--exposure-time 1")
-        assert old_school == new_school
+        variant_with_short_parameter = module._parse_variant("-ex 1")
+        variant_with_long_parameter = module._parse_variant("--exposure-time 1")
+        assert variant_with_short_parameter == variant_with_long_parameter
 
 
 @pytest.fixture

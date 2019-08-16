@@ -18,8 +18,8 @@ def capture(filename, exposure_time=0.1, warm_up_time=5, additional_capture_para
     Returns:
         Resulting command line output of the raspistill command
     """
-    exposure_time_microseconds = int(exposure_time * 1000000)
-    timeout_milliseconds = int(warm_up_time * 1000)
+    exposure_time_microseconds = int(exposure_time * 1e6)
+    timeout_milliseconds = int(warm_up_time * 1e3)
     command = (
         'raspistill --raw -o "{filename}"'
         " {AWB_QUALITY_CAPTURE_PARAMS}"

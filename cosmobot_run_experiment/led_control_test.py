@@ -54,7 +54,7 @@ class TestFlashLed:
         mock_sleep = mocker.patch.object(module, "sleep")
 
         module.flash_led_once(
-            wait_time_s=sentinel.wait_time, on_time_s=sentinel.on_time
+            wait_time_seconds=sentinel.wait_time, on_time_seconds=sentinel.on_time
         )
 
         # These calls are interleaved, but we can only assert the call ordering separately for each method

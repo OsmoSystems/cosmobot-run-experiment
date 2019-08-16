@@ -2,10 +2,9 @@ import argparse
 import logging
 import platform
 import sys
-
-# Support development without needing pi specific modules installed.
 from time import sleep
 
+# Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
     import board  # noqa: E0401  Unable to import
     import digitalio  # noqa: E0401  Unable to import
@@ -68,19 +67,19 @@ def set_led_cli(cli_args=None):
     control_led(led_on=args.state == "on")
 
 
-def flash_led_once(wait_time_s, on_time_s):
+def flash_led_once(wait_time_seconds, on_time_seconds):
     """ Wait a predetermined amount of time and then turn the LED on for a predetermined amount of time
 
     Args:
-        wait_time_s: amount of time (s) to wait before turning the LED on
-        on_time_s: amount of time (s) to leave the LED on
+        wait_time_seconds: amount of time (s) to wait before turning the LED on
+        on_time_seconds: amount of time (s) to leave the LED on
 
     Returns: None
 
     """
-    sleep(wait_time_s)
+    sleep(wait_time_seconds)
     control_led(True)
-    sleep(on_time_s)
+    sleep(on_time_seconds)
     control_led(False)
 
 
@@ -102,11 +101,15 @@ def flash_led_cli(cli_args=None):
         cli_args = sys.argv[1:]
 
     arg_parser = argparse.ArgumentParser(
-        description="Flash LED on digital pin {}".format(DIGITAL_LED_PIN)
+        description="Flash LED on/off indefinitely on digital pin {} (kill with ctrl+c)".format(
+            DIGITAL_LED_PIN
+        )
     )
 
     arg_parser.add_argument(
-        "on_time", type=float, help="Amount of time (s) to leave the LED on"
+        "on_time",
+        type=float,
+        help="Amount of time (s) to leave the LED on during a single flash",
     )
 
     arg_parser.add_argument(
@@ -119,4 +122,4 @@ def flash_led_cli(cli_args=None):
     args = arg_parser.parse_args(cli_args)
 
     while True:
-        flash_led_once(wait_time_s=args.wait_time, on_time_s=args.on_time)
+        flash_led_once(wait_time_seconds=args.wait_time, on_time_seconds=args.on_time)

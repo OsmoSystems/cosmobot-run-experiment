@@ -107,7 +107,7 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                # Leave the LED off for the duration of camera warm-up.
+                # Leave the LED off for the duration of camera warm-up, then turn it on
                 led_future = led_executor.submit(
                     _led_on_with_delay, delay=variant.camera_warm_up
                 )
