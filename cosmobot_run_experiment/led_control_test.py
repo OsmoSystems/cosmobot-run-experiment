@@ -27,17 +27,16 @@ class TestSetLedCli:
 
 class TestControlLed:
     @pytest.mark.parametrize("led_setpoint", [True, False])
-    def test_sets_inverse_value(self, led_setpoint, mocker):
+    def test_sets_pins_opposite(self, led_setpoint, mocker):
         mock_dio_cls = mocker.patch.object(module.digitalio, "DigitalInOut")
-        mock_dio_pin = mocker.Mock()
-        mock_dio_cls.return_value = mock_dio_pin
+        mock_dio_pin_on_high = mocker.Mock()
+        mock_dio_pin_on_low = mocker.Mock()
+        mock_dio_cls.side_effect = [mock_dio_pin_on_high, mock_dio_pin_on_low]
 
         module.control_led(led_setpoint)
 
-        # the LED is wired such that when the pin is HIGH, the LED is off and vice versa.
-        expected_pin_value = not led_setpoint
-
-        assert mock_dio_pin.value == expected_pin_value
+        assert mock_dio_pin_on_high.value == led_setpoint
+        assert mock_dio_pin_on_low.value == (not led_setpoint)
 
     def test_logs_pin_and_led_info(self, mocker):
         mocker.patch.object(module.digitalio, "DigitalInOut")
@@ -45,7 +44,13 @@ class TestControlLed:
 
         module.control_led(True)
 
-        mock_info_logger.assert_called_with("Turning LED on (DIO pin 6 -> low)")
+        mock_info_logger.assert_has_calls(
+            [
+                call("Turning LED on"),
+                call("Setting DIO pin 5 -> high"),
+                call("Setting DIO pin 6 -> low"),
+            ]
+        )
 
 
 class TestFlashLed:
