@@ -125,7 +125,8 @@ def end_experiment(experiment_configuration, experiment_ended_message, has_error
     Args:
         experiment_configuration: experiment configuration namedtuple
         experiment_ended_message: message to log about why experiment ended
-        has_errored: whether the experiment is being ended due to an error. If True, this will exit the process with exit status of 1.
+        has_errored: whether the experiment is being ended due to an error. If True, this will exit the process with
+        exit status of 1.
 
     Returns:
         None (exits with 1 if has_errored, otherwise 0)
