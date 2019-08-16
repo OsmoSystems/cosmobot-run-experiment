@@ -10,11 +10,11 @@ from uuid import getnode as get_mac
 
 import yaml
 
+from cosmobot_run_experiment.camera import DEFAULT_EXPOSURE_TIME
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 from .s3 import list_experiments
 
 DEFAULT_ISO = 100
-DEFAULT_EXPOSURE_TIME = 0.8
 DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
