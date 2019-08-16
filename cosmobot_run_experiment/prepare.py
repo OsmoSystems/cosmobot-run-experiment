@@ -14,7 +14,7 @@ from .file_structure import iso_datetime_for_filename, get_base_output_path
 from .s3 import list_experiments
 
 DEFAULT_ISO = 100
-DEFAULT_EXPOSURE_TIME = 1.5
+DEFAULT_EXPOSURE_TIME = 0.8
 DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
@@ -144,10 +144,11 @@ def _parse_args(args):
         "--raspistill-load-time",
         required=False,
         type=float,
-        default=0.3,
+        default=1.2,
         help=(
-            "Amount of time to wait for raspistill to load each time it is called, in seconds. "
-            "If this is incorrect, the effectiveness of led-warm-up and led-buffer will be affected. Default: 0.3s"
+            "Amount of time to wait for raspistill to load each time it is called, in seconds."
+            " NOTE that this increases with shutter speed in an unknown way."
+            " If this is incorrect, the effectiveness of led-warm-up and led-buffer will be affected. Default: 0.3s"
         ),
     )
 
@@ -222,14 +223,14 @@ def _get_variant_parser():
         "--led-warm-up",
         required=False,
         type=float,
-        default=0.2,
+        default=0.4,
         help="The LED is turned on for this amount of time, in seconds, before camera exposure begins. Default: 0.1s.",
     )
     arg_parser.add_argument(
         "--led-buffer",
         required=False,
         type=float,
-        default=0.2,
+        default=0.4,
         help=(
             "The LED is kept on for this amount of time, in seconds,"
             " after camera exposure is complete. Default: 0.4s."
