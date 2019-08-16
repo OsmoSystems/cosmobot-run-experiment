@@ -36,6 +36,7 @@ ExperimentConfiguration = namedtuple(
         "skip_sync",  # whether to skip syncing to s3
         "erase_synced_files",  # whether to erase the local experiment folder after synced to s3
         "review_exposure",  # review exposure statistics after experiment finishes and do not sync to s3)
+        "raspistill_load_time",  # amount of time to wait for raspistill to load
     ],
 )
 
@@ -382,6 +383,7 @@ def get_experiment_configuration(cli_args):
         skip_sync=args["skip_sync"],
         erase_synced_files=args["erase_synced_files"],
         review_exposure=args["review_exposure"],
+        raspistill_load_time=args["raspistill_load_time"],
     )
 
     return experiment_configuration
