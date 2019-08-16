@@ -162,7 +162,7 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant " -ISO 100 --exposure_time 0.5 --camera-warm-up 1 --led-on --led-warm-up 3"
+                    --variant "-ISO 100 --exposure_time 0.5 --camera-warm-up 1 --led-on"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
@@ -242,7 +242,7 @@ def get_experiment_variants(args):
     if args["exposures"]:
         isos = args["isos"] or [DEFAULT_ISO]
         variants.extend(
-            _parse_variant(" --exposure-time {exposure} -ISO {iso}".format(**locals()))
+            _parse_variant("--exposure-time {exposure} -ISO {iso}".format(**locals()))
             for exposure in args["exposures"]
             for iso in isos
         )

@@ -136,12 +136,13 @@ def perform_experiment(configuration):
 
 def end_experiment(experiment_configuration, experiment_ended_message):
     """ Complete an experiment by ensuring all remaining images finish syncing """
-    # If a file(s) is written after a sync process begins it does not get added to the list to sync.
-    # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
-    # remaining images. To that end, we end any existing sync process and start a new one
     control_led(led_on=False)
+    logging.info(experiment_ended_message)
 
     if not experiment_configuration.skip_sync:
+        # If a file(s) is written after a sync process begins it does not get added to the list to sync.
+        # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
+        # remaining images. To that end, we end any existing sync process and start a new one
         logging.info("Beginning final sync to s3 due to end of experiment...")
         end_syncing_process()
         sync_directory_in_separate_process(
@@ -160,8 +161,6 @@ def end_experiment(experiment_configuration, experiment_ended_message):
 
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
-
-    logging.info(experiment_ended_message)
 
     quit()
 
