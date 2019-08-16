@@ -38,11 +38,6 @@ def mock_free_space_for_one_image(mocker):
 
 
 @pytest.fixture
-def mock_control_led(mocker):
-    return mocker.patch.object(module, "control_led")
-
-
-@pytest.fixture
 def mock_log_temperature(mocker):
     return mocker.patch.object(module, "log_temperature")
 
@@ -66,11 +61,7 @@ MOCK_BASIC_PARAMETERS = [
 # A slightly unfortunate combination of integration and unit tests
 class TestPerformExperiment:
     def test_perform_experiment_dry_run_with_basic_parameters(
-        self,
-        mock_control_led,
-        mock_log_temperature,
-        mock_capture,
-        mock_free_space_for_one_image,
+        self, mock_log_temperature, mock_capture, mock_free_space_for_one_image
     ):
         # Shortcut: use `get_experiment_configuration` to create the configuration (aka. make this an integration test)
         # Since `get_experiment_configuration` generates the start_date and end_date of the experiment,
@@ -92,16 +83,10 @@ class TestPerformExperiment:
         assert elapsed_time < max_test_time
 
         assert mock_capture.call_count == 1
-        # Called twice in perform_experiment and once in end_experiment
-        assert mock_control_led.call_count == 3
         assert mock_log_temperature.call_count == 1
 
     def test_ends_experiment_without_capture_if_no_free_space(
-        self,
-        mock_control_led,
-        mock_log_temperature,
-        mock_capture,
-        mock_free_space_for_one_image,
+        self, mock_log_temperature, mock_capture, mock_free_space_for_one_image
     ):
         mock_free_space_for_one_image.return_value = False
         mock_configuration = module.get_experiment_configuration(MOCK_BASIC_PARAMETERS)
@@ -112,11 +97,7 @@ class TestPerformExperiment:
         assert mock_capture.call_count == 0
 
     def test_skips_temperature_if_flagged(
-        self,
-        mock_control_led,
-        mock_log_temperature,
-        mock_capture,
-        mock_free_space_for_one_image,
+        self, mock_log_temperature, mock_capture, mock_free_space_for_one_image
     ):
         mock_configuration = module.get_experiment_configuration(
             MOCK_BASIC_PARAMETERS + ["--skip-temperature"]

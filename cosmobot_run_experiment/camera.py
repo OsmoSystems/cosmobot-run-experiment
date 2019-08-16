@@ -5,29 +5,49 @@ from subprocess import check_call
 # defaults recommended by Pagnutti. These only affect the .jpegs
 AWB_QUALITY_CAPTURE_PARAMS = "-q 100 -awb off -awbg 1.307,1.615"
 
+DEFAULT_EXPOSURE_TIME = 0.8
 
-def capture(filename, additional_capture_params=""):
+
+def capture(
+    filename,
+    exposure_time=DEFAULT_EXPOSURE_TIME,
+    warm_up_time=5,
+    additional_capture_params="",
+):
     """ Capture raw image JPEG+EXIF using command line
 
     Args:
         filename: filename to save an image to
+        exposure_time: number of seconds in the exposure
+        warm_up_time: number of seconds to wait for the camera to warm up
         additional_capture_params: Additional parameters to pass to raspistill command
 
     Returns:
         Resulting command line output of the raspistill command
     """
-    command = 'raspistill --raw -o "{filename}" {AWB_QUALITY_CAPTURE_PARAMS} {additional_capture_params}'.format(
-        **locals(), **globals()
-    )
+    exposure_time_microseconds = int(exposure_time * 1e6)
+    timeout_milliseconds = int(warm_up_time * 1e3)
+    command = (
+        'raspistill --raw -o "{filename}"'
+        " {AWB_QUALITY_CAPTURE_PARAMS}"
+        " -ss {exposure_time_microseconds}"
+        " --timeout {timeout_milliseconds}"
+        " {additional_capture_params}"
+    ).format(**locals(), **globals())
+
     logging.info("Capturing image using raspistill: {command}".format(**locals()))
     check_call(command, shell=True)
 
 
-def simulate_capture_with_copy(filename, additional_capture_params=""):
+def simulate_capture_with_copy(
+    filename, exposure_time=None, warm_up_time=None, additional_capture_params=""
+):
     """ Simulate capture by copying image file
 
     Args:
         filename: filename to copy a test image to
+        exposure_time: ignored, only exists to keep the same signature as `capture()`
+        warm_up_time: ignored, only exists to keep the same signature as `capture()`
         additional_capture_params: ignored, only exists to keep the same signature as `capture()`
 
     Returns:

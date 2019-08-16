@@ -1,4 +1,4 @@
-from unittest.mock import call
+from unittest.mock import sentinel, call
 
 import pytest
 from . import led_control as module
@@ -9,12 +9,12 @@ def mock_control_led(mocker):
     return mocker.patch.object(module, "control_led")
 
 
-class TestMain:
+class TestSetLedCli:
     @pytest.mark.parametrize(
         "args_in, expected_led_on", [(["on"], True), (["off"], False)]
     )
     def test_sets_led_appropriately(self, args_in, expected_led_on, mock_control_led):
-        module.main(args_in)
+        module.set_led_cli(args_in)
         mock_control_led.assert_called_with(led_on=expected_led_on)
 
     @pytest.mark.parametrize(["args_in"], [([],), ([""],), (["blue"],)])
@@ -22,7 +22,7 @@ class TestMain:
         self, args_in, mock_control_led
     ):
         with pytest.raises(SystemExit):
-            module.main(args_in)
+            module.set_led_cli(args_in)
 
 
 class TestControlLed:
@@ -51,3 +51,19 @@ class TestControlLed:
                 call("Setting DIO pin 6 -> low"),
             ]
         )
+
+
+class TestFlashLed:
+    def test_flash_led_calls_appropriate_things(self, mocker):
+        mock_control_led = mocker.patch.object(module, "control_led")
+        mock_sleep = mocker.patch.object(module, "sleep")
+
+        module.flash_led_once(
+            wait_time_seconds=sentinel.wait_time, on_time_seconds=sentinel.on_time
+        )
+
+        # These calls are interleaved, but we can only assert the call ordering separately for each method
+        mock_sleep.assert_has_calls(
+            [call(sentinel.wait_time), call(sentinel.on_time)], any_order=False
+        )
+        mock_control_led.assert_has_calls([call(True), call(False)], any_order=False)

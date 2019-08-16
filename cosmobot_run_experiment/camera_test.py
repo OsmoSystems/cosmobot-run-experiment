@@ -8,10 +8,26 @@ class TestCapture:
 
         filename = "output_file.jpeg"
         expected_command = (
-            'raspistill --raw -o "output_file.jpeg" -q 100 -awb off -awbg 1.307,1.615 '
+            'raspistill --raw -o "output_file.jpeg"'
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 800000 --timeout 5000 "
         )
 
         module.capture(filename)
+
+        expected_call = mocker.call(expected_command, shell=True)
+
+        mock_check_call.assert_has_calls([expected_call])
+
+    def test_rounds_non_integer_exposure_time(self, mocker):
+        mock_check_call = mocker.patch.object(module, "check_call")
+
+        filename = "output_file.jpeg"
+        expected_command = (
+            'raspistill --raw -o "output_file.jpeg"'
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 333333 --timeout 5000 "
+        )
+
+        module.capture(filename, exposure_time=1 / 3)
 
         expected_call = mocker.call(expected_command, shell=True)
 
@@ -24,7 +40,10 @@ class TestCapture:
         mock_check_call = mocker.patch.object(module, "check_call")
         additional_capture_params = "additional!!"
 
-        module.capture(mocker.sentinel.filename, additional_capture_params)
+        module.capture(
+            mocker.sentinel.filename,
+            additional_capture_params=additional_capture_params,
+        )
 
         # Call args looks like [call(command, shell=True)] where call is a tuple
         actual_call_command = mock_check_call.call_args[0][0]
@@ -60,7 +79,8 @@ class TestSimulateCaptureWithCopy:
         additional_capture_params = "additional!!"
 
         module.simulate_capture_with_copy(
-            mocker.sentinel.filename, additional_capture_params
+            mocker.sentinel.filename,
+            additional_capture_params=additional_capture_params,
         )
 
         assert mock_check_call.called
