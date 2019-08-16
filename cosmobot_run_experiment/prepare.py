@@ -139,6 +139,16 @@ def _parse_args(args):
         action="store_true",
         help="If provided, uses s3 mv to erase files after sync is completed.",
     )
+    arg_parser.add_argument(
+        "--raspistill-load-time",
+        required=False,
+        type=float,
+        default=0.3,
+        help=(
+            "Amount of time to wait for raspistill to load each time it is called, in seconds. "
+            "If this is incorrect, the effectiveness of led-warm-up and led-buffer will be affected. Default: 0.3s"
+        ),
+    )
 
     arg_parser.add_argument(
         "--review-exposure",
@@ -211,18 +221,17 @@ def _get_variant_parser():
         "--led-warm-up",
         required=False,
         type=float,
-        default=0.1,
+        default=0.2,
         help="The LED is turned on for this amount of time, in seconds, before camera exposure begins. Default: 0.1s.",
     )
     arg_parser.add_argument(
         "--led-buffer",
         required=False,
         type=float,
-        default=0.4,
+        default=0.2,
         help=(
             "The LED is kept on for this amount of time, in seconds,"
-            " after camera exposure would be done assuming load time for raspistill."
-            "Conceptually, matches the maximum load time of raspistill. Default: 0.4s."
+            " after camera exposure is complete. Default: 0.4s."
         ),
     )
     return arg_parser

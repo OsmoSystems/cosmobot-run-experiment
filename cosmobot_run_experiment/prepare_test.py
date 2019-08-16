@@ -30,6 +30,8 @@ class TestParseArgs:
             "--isos",
             "45",
             "55",
+            "--raspistill-load-time",
+            "2",
         ]
 
         expected_args_out = {
@@ -44,6 +46,7 @@ class TestParseArgs:
             "review_exposure": False,
             "erase_synced_files": False,
             "group_results": False,
+            "raspistill_load_time": 2,
         }
         assert module._parse_args(args_in) == expected_args_out
 
@@ -111,8 +114,8 @@ def _default_variant_with(**kwargs):
         "exposure_time": 1.5,
         "camera_warm_up": 5,
         "led_on": False,
-        "led_warm_up": 0.1,
-        "led_buffer": 0.4,
+        "led_warm_up": 0.2,
+        "led_buffer": 0.2,
         **kwargs,
     }
     return module.ExperimentVariant(**variant_kwargs)
@@ -295,8 +298,8 @@ class TestParseVariant:
             exposure_time=1.5,
             camera_warm_up=5,
             led_on=False,
-            led_warm_up=0.1,
-            led_buffer=0.4,
+            led_warm_up=0.2,
+            led_buffer=0.2,
         )
         assert module._parse_variant("") == expected_variant
 

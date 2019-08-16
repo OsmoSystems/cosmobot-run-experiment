@@ -102,7 +102,11 @@ def perform_experiment(configuration):
             )
 
             if variant.led_on:
-                led_wait_time = variant.camera_warm_up - variant.led_warm_up
+                led_wait_time = (
+                    configuration.raspistill_load_time
+                    + variant.camera_warm_up
+                    - variant.led_warm_up
+                )
                 led_on_time = (
                     variant.led_warm_up + variant.exposure_time + variant.led_buffer
                 )
