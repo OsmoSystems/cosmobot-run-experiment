@@ -12,31 +12,46 @@ else:
     from cosmobot_run_experiment.pi_stubs import board, digitalio
 
 
-DIGITAL_LED_PIN = board.D6
+DIGITAL_LED_PIN_ON_HIGH = board.D5
+DIGITAL_LED_PIN_ON_LOW = board.D6
+
+
+def _set_dio_pin(pin, value: bool):
+    logging.info(
+        "Setting DIO pin {pin} -> {pin_setpoint}".format(
+            pin=pin, pin_setpoint="high" if value else "low"
+        )
+    )
+
+    dio_pin = digitalio.DigitalInOut(pin=pin)
+    dio_pin.direction = digitalio.Direction.OUTPUT
+    dio_pin.value = value
 
 
 def control_led(led_on=True):
     """ turn on/off Digital IO LED
-    Note that the LED is connected through a relay such that setting the DIO pin *low* will turn the LED *on*,
-    and vice versa.
+
+    This function is intended to be used to turn an LED on and off.
+
+    However, it is implemented to actually control _two_ pins, in opposite directions.
+
+    This allows us to choose whether we are controlling the LED through a device which
+    turns the LED *on* when the pin is *high*, or *on* when the pin is *low*, simply by
+    connecting to the appropriate pin:
+
+        D5: LED *on* when the pin is *high*
+        D6: LED *on* when the pin is *low*
 
     Args:
-        led_on: boolean; if True, turn LED on by setting the DIO pin low. if False, turn off LED by setting DIO pin high
+        led_on: boolean; if True, turn LED on. if False, turn LED off
     Returns:
         None
     """
-    pin_setpoint = not led_on
     logging.info(
-        "Turning LED {led_setpoint} (DIO pin {pin} -> {pin_setpoint})".format(
-            led_setpoint="on" if led_on else "off",
-            pin=DIGITAL_LED_PIN,
-            pin_setpoint="high" if pin_setpoint else "low",
-        )
+        "Turning LED {led_setpoint}".format(led_setpoint="on" if led_on else "off")
     )
-
-    led_pin = digitalio.DigitalInOut(pin=DIGITAL_LED_PIN)
-    led_pin.direction = digitalio.Direction.OUTPUT
-    led_pin.value = pin_setpoint
+    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_HIGH, value=led_on)
+    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_LOW, value=not led_on)
 
 
 def main(cli_args=None):
@@ -52,7 +67,9 @@ def main(cli_args=None):
         cli_args = sys.argv[1:]
 
     arg_parser = argparse.ArgumentParser(
-        description="Turn on or off LED on digital pin {}".format(DIGITAL_LED_PIN)
+        description="Turn on or off LED on digital pin {} (if pin high = led on) or {} (if pin low = led on)".format(
+            DIGITAL_LED_PIN_ON_HIGH, DIGITAL_LED_PIN_ON_LOW
+        )
     )
 
     arg_parser.add_argument(
