@@ -3,6 +3,7 @@ import sys
 import time
 import logging
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 
 from cosmobot_run_experiment.file_structure import get_image_filename
 from .camera import capture
@@ -20,6 +21,7 @@ from .temperature import log_temperature
 
 from datetime import datetime, timedelta
 
+
 # Basic logging configuration - sets the base log level to INFO and provides a
 # log format (time, log level, log message) for all messages to be written to stdout (console)
 # or to a log file. This is set outside of a function as the execution path through testing
@@ -28,6 +30,11 @@ logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
     level=logging.INFO, format=logging_format, handlers=[logging.StreamHandler()]
 )
+
+
+def _led_on_with_delay(delay):
+    time.sleep(delay)
+    control_led(led_on=True)
 
 
 def perform_experiment(configuration):
@@ -62,6 +69,10 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
+    # Prep an executor so we can control the LED in detail
+    # while raspistill does its whole (camera warm-up + exposure + file save) thing
+    led_executor = ThreadPoolExecutor(max_workers=1)
+
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
             time.sleep(0.1)  # No need to totally peg the CPU
@@ -81,10 +92,6 @@ def perform_experiment(configuration):
                     has_errored=True,
                 )
 
-            control_led(led_on=variant.led_on)
-
-            time.sleep(variant.led_warm_up)
-
             # Share timestamp between image and temperature reading, to make them easy to align
             capture_timestamp = datetime.now()
 
@@ -100,11 +107,22 @@ def perform_experiment(configuration):
                 configuration.experiment_directory_path, image_filename
             )
 
-            capture(image_filepath, additional_capture_params=variant.capture_params)
+            if variant.led_on:
+                # Leave the LED off for the duration of camera warm-up, then turn it on
+                led_future = led_executor.submit(
+                    _led_on_with_delay, delay=variant.camera_warm_up
+                )
 
-            # Turn off LEDs after capture
-            control_led(led_on=False)
-            time.sleep(variant.led_cool_down)
+            capture(
+                image_filepath,
+                exposure_time=variant.exposure_time,
+                warm_up_time=variant.camera_warm_up,
+                additional_capture_params=variant.capture_params,
+            )
+
+            if variant.led_on:
+                led_future.result()
+                control_led(led_on=False)
 
             # If a sync is currently occuring, this is a no-op.
             if not configuration.skip_sync:
@@ -131,12 +149,13 @@ def end_experiment(experiment_configuration, experiment_ended_message, has_error
     Returns:
         None (exits with 1 if has_errored, otherwise 0)
     """
-    # If a file(s) is written after a sync process begins it does not get added to the list to sync.
-    # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
-    # remaining images. To that end, we end any existing sync process and start a new one
+    control_led(led_on=False)
     logging.info(experiment_ended_message)
 
     if not experiment_configuration.skip_sync:
+        # If a file(s) is written after a sync process begins it does not get added to the list to sync.
+        # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
+        # remaining images. To that end, we end any existing sync process and start a new one
         logging.info("Beginning final sync to s3 due to end of experiment...")
         end_syncing_process()
         sync_directory_in_separate_process(
@@ -155,8 +174,6 @@ def end_experiment(experiment_configuration, experiment_ended_message, has_error
 
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
-
-    control_led(led_on=False)
 
     sys.exit(1 if has_errored else 0)
 

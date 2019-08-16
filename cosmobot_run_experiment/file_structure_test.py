@@ -36,10 +36,10 @@ class TestProcessParamStringsForFilename:
 
 class TestGetImageFilename:
     example_variant = ExperimentVariant(
-        capture_params=" -ss 1234 -ISO 5678",
+        capture_params="-br 99 -ISO 5678",
+        exposure_time=1,
+        camera_warm_up=5.0001,
         led_on=True,
-        led_warm_up=0.1,
-        led_cool_down=99,
     )
     datetime_ = datetime(2019, 4, 8, 9, 52, 12)
 
@@ -50,12 +50,14 @@ class TestGetImageFilename:
         )
 
     def test_get_image_filename_includes_capture_params_with_spaces_replaced(self):
-        assert "_ss_1234_ISO_5678_" in module.get_image_filename(
+        assert "_br_99_ISO_5678_" in module.get_image_filename(
             self.datetime_, self.example_variant
         )
 
-    def test_get_image_filename_includes_led_capture_params(self):
-        expected_led_params_string = "_led_on_True_led_warm_up_0.1_led_cool_down_99"
+    def test_get_image_filename_includes_variant_params(self):
+        expected_led_params_string = (
+            "_exposure_time_1_camera_warm_up_5.0001_led_on_True"
+        )
         assert expected_led_params_string in module.get_image_filename(
             self.datetime_, self.example_variant
         )
