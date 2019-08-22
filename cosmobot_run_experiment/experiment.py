@@ -3,7 +3,7 @@ import sys
 import time
 import logging
 import traceback
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 from cosmobot_run_experiment.file_structure import get_image_filename
 from .camera import capture
@@ -71,7 +71,7 @@ def perform_experiment(configuration):
 
     # Prep an executor so we can control the LED in detail
     # while raspistill does its whole (camera warm-up + exposure + file save) thing
-    led_executor = ThreadPoolExecutor(max_workers=1)
+    led_executor = ProcessPoolExecutor(max_workers=1)
 
     while configuration.duration is None or datetime.now() < configuration.end_date:
         if datetime.now() < next_capture_time:
