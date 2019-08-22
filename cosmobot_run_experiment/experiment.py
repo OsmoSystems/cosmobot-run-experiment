@@ -5,6 +5,8 @@ import logging
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
+import picamera
+
 from cosmobot_run_experiment.file_structure import get_image_filename
 from .camera import capture
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
@@ -113,12 +115,29 @@ def perform_experiment(configuration):
                     _led_on_with_delay, delay=variant.camera_warm_up
                 )
 
-            capture(
-                image_filepath,
-                exposure_time=variant.exposure_time,
-                warm_up_time=variant.camera_warm_up,
-                additional_capture_params=variant.capture_params,
-            )
+            camera = picamera.PiCamera()
+            camera.resolution = (1024, 768)
+            camera.start_preview()
+            # Camera warm-up time
+            time.sleep(variant.camera_warm_up)
+            control_led(led_on=True)
+            camera.shutter_speed = variant.time
+            camera.awb_mode = "off"
+            camera.awb_gains = [1.307, 1.615]
+            camera.iso = 100  # TODO: use variant values
+
+            logging.info("Capturing image using PiCamera")
+            camera.capture(image_filepath, bayer=True, quality=100)
+            logging.info("Captured image using PiCamera")
+
+            control_led(led_on=False)
+
+            # capture(
+            #     image_filepath,
+            #     exposure_time=variant.exposure_time,
+            #     warm_up_time=variant.camera_warm_up,
+            #     additional_capture_params=variant.capture_params,
+            # )
 
             if variant.led_on:
                 led_future.result()
