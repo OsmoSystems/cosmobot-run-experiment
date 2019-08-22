@@ -19,7 +19,7 @@ DIGITAL_LED_PIN_ON_LOW = board.D6
 
 
 def _set_dio_pin(pin, value: bool):
-    now = datetime.now()
+    now = datetime.datetime.now().isoformat()
     logging.info(
         "Setting DIO pin (T={time}) {pin} -> {pin_setpoint}".format(
             time=now, pin=pin, pin_setpoint="high" if value else "low"
