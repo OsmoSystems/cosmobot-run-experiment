@@ -108,28 +108,27 @@ def perform_experiment(configuration):
                 image_filepath = os.path.join(
                     configuration.experiment_directory_path, image_filename
                 )
+                logging.debug("Preparing to capture {}".format(image_filename))
 
                 # TODO: factor this out to camera.py, probably replacing the raspistill code
-                logging.debug("setting framerate")
+                logging.debug("Setting framerate")
                 camera.framerate = 1 / variant.exposure_time
-                logging.debug("starting preview")
+                logging.debug("Starting preview")
                 camera.start_preview()
                 # Camera warm-up time # TODO: do this just once
-                logging.debug("letting it warm up")
+                logging.debug("Letting it warm up")
                 time.sleep(variant.camera_warm_up)
 
                 if variant.led_on:
                     control_led(led_on=True)
 
-                logging.debug("setting other camera params")
+                logging.debug("Setting other camera params")
                 camera.shutter_speed = int(variant.exposure_time * 1000000)
                 camera.awb_mode = "off"
                 camera.awb_gains = [1.307, 1.615]
                 camera.iso = 100  # TODO: use variant values
 
-                logging.info(
-                    'Capturing image using PiCamera: "{}"'.format(image_filepath)
-                )
+                logging.info("Capturing image using PiCamera")
                 camera.capture(image_filepath, bayer=True, quality=100)
                 logging.debug("Captured image using PiCamera")
 
