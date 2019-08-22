@@ -4,6 +4,7 @@ import time
 import logging
 import traceback
 from concurrent.futures import ThreadPoolExecutor
+from fractions import Fraction
 
 import picamera
 
@@ -115,13 +116,12 @@ def perform_experiment(configuration):
                     _led_on_with_delay, delay=variant.camera_warm_up
                 )
 
-            camera = picamera.PiCamera()
-            camera.resolution = (1024, 768)
+            camera = picamera.PiCamera(resolution=(1024, 768), framerate=Fraction(1, 6))
             camera.start_preview()
             # Camera warm-up time
             time.sleep(variant.camera_warm_up)
             control_led(led_on=True)
-            camera.shutter_speed = variant.exposure_time
+            camera.shutter_speed = int(variant.exposure_time * 1000000)
             camera.awb_mode = "off"
             camera.awb_gains = [1.307, 1.615]
             camera.iso = 100  # TODO: use variant values
