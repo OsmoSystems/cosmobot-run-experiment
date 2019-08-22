@@ -31,7 +31,7 @@ from datetime import datetime, timedelta
 # shows that setting the values inside a function causes some silent failure with stdout to a console.
 logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
-    level=logging.INFO, format=logging_format, handlers=[logging.StreamHandler()]
+    level=logging.DEBUG, format=logging_format, handlers=[logging.StreamHandler()]
 )
 
 
@@ -107,17 +107,17 @@ def perform_experiment(configuration):
                     configuration.experiment_directory_path, image_filename
                 )
 
-                logging.info("setting framerate")
+                logging.debug("setting framerate")
                 camera.framerate = 1 / variant.exposure_time
-                logging.info("starting preview")
+                logging.debug("starting preview")
                 camera.start_preview()
                 # Camera warm-up time
-                logging.info("letting it warm up")
+                logging.debug("letting it warm up")
                 time.sleep(variant.camera_warm_up)
 
                 if variant.led_on:
                     control_led(led_on=True)
-                logging.info("setting other camera params")
+                logging.debug("setting other camera params")
                 camera.shutter_speed = int(variant.exposure_time * 1000000)
                 camera.awb_mode = "off"
                 camera.awb_gains = [1.307, 1.615]
@@ -125,7 +125,7 @@ def perform_experiment(configuration):
 
                 logging.info("Capturing image using PiCamera")
                 camera.capture(image_filepath, bayer=True, quality=100)
-                logging.info("Captured image using PiCamera")
+                logging.debug("Captured image using PiCamera")
 
                 if variant.led_on:
                     control_led(led_on=False)
