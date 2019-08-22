@@ -117,14 +117,14 @@ def perform_experiment(configuration):
                 logging.debug("Letting it warm up")
                 time.sleep(variant.camera_warm_up)
 
-                if variant.led_on:
-                    control_led(led_on=True)
-
                 logging.debug("Setting other camera params")
                 camera.shutter_speed = int(variant.exposure_time * 1000000)
                 camera.awb_mode = "off"
                 camera.awb_gains = [1.307, 1.615]
                 camera.iso = 100  # TODO: use variant values
+
+                if variant.led_on:
+                    control_led(led_on=True)
 
                 logging.info("Capturing image using PiCamera")
                 camera.capture(image_filepath, bayer=True, quality=100)
