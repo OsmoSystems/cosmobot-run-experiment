@@ -121,7 +121,7 @@ def perform_experiment(configuration):
             # Camera warm-up time
             time.sleep(variant.camera_warm_up)
             control_led(led_on=True)
-            camera.shutter_speed = variant.time
+            camera.shutter_speed = variant.exposure_time
             camera.awb_mode = "off"
             camera.awb_gains = [1.307, 1.615]
             camera.iso = 100  # TODO: use variant values
