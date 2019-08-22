@@ -3,13 +3,11 @@ import sys
 import time
 import logging
 import traceback
-from concurrent.futures import ThreadPoolExecutor
-from fractions import Fraction
 
 import picamera
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import capture
+from .camera import capture  # TODO: bring this back
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
