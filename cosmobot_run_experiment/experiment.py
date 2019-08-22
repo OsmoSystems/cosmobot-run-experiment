@@ -123,7 +123,9 @@ def perform_experiment(configuration):
                 camera.awb_gains = [1.307, 1.615]
                 camera.iso = 100  # TODO: use variant values
 
-                logging.info("Capturing image using PiCamera")
+                logging.info(
+                    'Capturing image using PiCamera: "{}"'.format(image_filepath)
+                )
                 camera.capture(image_filepath, bayer=True, quality=100)
                 logging.debug("Captured image using PiCamera")
 
