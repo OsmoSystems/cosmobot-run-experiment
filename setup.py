@@ -32,9 +32,9 @@ setup(
         "io": [
             "adafruit-blinka",
             "adafruit-circuitpython-ads1x15",
+            "picamera",
             "rpi_ws281x",
             "RPI.GPIO",
-            "picamera",
         ]
     },
     include_package_data=True,
