@@ -107,13 +107,17 @@ def perform_experiment(configuration):
                     configuration.experiment_directory_path, image_filename
                 )
 
+                logging.info("setting framerate")
                 camera.framerate = 1 / variant.exposure_time
+                logging.info("starting preview")
                 camera.start_preview()
                 # Camera warm-up time
+                logging.info("letting it warm up")
                 time.sleep(variant.camera_warm_up)
 
                 if variant.led_on:
                     control_led(led_on=True)
+                logging.info("setting other camera params")
                 camera.shutter_speed = int(variant.exposure_time * 1000000)
                 camera.awb_mode = "off"
                 camera.awb_gains = [1.307, 1.615]
