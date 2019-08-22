@@ -25,19 +25,19 @@ def _set_dio_pin(pin, value: bool):
     )
 
     dio_pin = digitalio.DigitalInOut(pin=pin)
-    logging.info(
+    logging.debug(
         "Initialized pin. Setting direction for DIO pin {pin} -> {pin_setpoint}".format(
             pin=pin, pin_setpoint="high" if value else "low"
         )
     )
     dio_pin.direction = digitalio.Direction.OUTPUT
-    logging.info(
+    logging.debug(
         "Set direction. Setting value for DIO pin {pin} -> {pin_setpoint}".format(
             pin=pin, pin_setpoint="high" if value else "low"
         )
     )
     dio_pin.value = value
-    logging.info(
+    logging.debug(
         "Successfully set DIO pin {pin} -> {pin_setpoint}".format(
             pin=pin, pin_setpoint="high" if value else "low"
         )
