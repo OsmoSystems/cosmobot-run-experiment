@@ -52,7 +52,6 @@ def control_led(led_on=True):
         "Turning LED {led_setpoint}".format(led_setpoint="on" if led_on else "off")
     )
     _set_dio_pin(pin=DIGITAL_LED_PIN_ON_HIGH, value=led_on)
-    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_LOW, value=not led_on)
 
 
 def set_led_cli(cli_args=None):
