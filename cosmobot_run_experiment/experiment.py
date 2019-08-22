@@ -72,7 +72,9 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
-    with picamera.PiCamera(framerate=Fraction(1, 6)) as camera:
+    camera = picamera.PiCamera()
+
+    try:  # Loop to make sure camera is properly closed on error
         while configuration.duration is None or datetime.now() < configuration.end_date:
             if datetime.now() < next_capture_time:
                 time.sleep(0.1)  # No need to totally peg the CPU
@@ -144,6 +146,10 @@ def perform_experiment(configuration):
                     sync_directory_in_separate_process(
                         configuration.experiment_directory_path
                     )
+    finally:
+        # Work around https://github.com/waveform80/picamera/issues/528
+        camera.framerate = 1
+        camera.close()
 
     end_experiment(
         configuration,
