@@ -111,7 +111,9 @@ def perform_experiment(configuration):
                 camera.start_preview()
                 # Camera warm-up time
                 time.sleep(variant.camera_warm_up)
-                control_led(led_on=True)
+
+                if variant.led_on:
+                    control_led(led_on=True)
                 camera.shutter_speed = int(variant.exposure_time * 1000000)
                 camera.awb_mode = "off"
                 camera.awb_gains = [1.307, 1.615]
@@ -121,7 +123,8 @@ def perform_experiment(configuration):
                 camera.capture(image_filepath, bayer=True, quality=100)
                 logging.info("Captured image using PiCamera")
 
-                control_led(led_on=False)
+                if variant.led_on:
+                    control_led(led_on=False)
 
                 # capture(
                 #     image_filepath,
@@ -129,10 +132,6 @@ def perform_experiment(configuration):
                 #     warm_up_time=variant.camera_warm_up,
                 #     additional_capture_params=variant.capture_params,
                 # )
-
-                if variant.led_on:
-                    led_future.result()
-                    control_led(led_on=False)
 
                 # If a sync is currently occuring, this is a no-op.
                 if not configuration.skip_sync:
