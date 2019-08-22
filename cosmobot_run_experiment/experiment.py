@@ -70,7 +70,7 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
-    camera = picamera.PiCamera()
+    camera = picamera.PiCamera(resolution=(3280, 2464))
 
     try:  # Loop to make sure camera is properly closed on error
         while configuration.duration is None or datetime.now() < configuration.end_date:
@@ -110,6 +110,8 @@ def perform_experiment(configuration):
 
                 # TODO: factor this out to camera.py, probably replacing the raspistill code
                 logging.debug("Setting framerate")
+                # Important to set framerate before shutter_speed, since framerate limits shutter speed
+                # https://picamera.readthedocs.io/en/release-1.13/recipes1.html#capturing-in-low-light
                 camera.framerate = 1 / variant.exposure_time
                 logging.debug("Starting preview")
                 camera.start_preview()
