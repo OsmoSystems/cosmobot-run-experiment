@@ -72,7 +72,7 @@ def perform_experiment(configuration):
 
     camera = picamera.PiCamera(resolution=(3280, 2464))
 
-    try:  # Loop to make sure camera is properly closed on error
+    try:  # Try/finally to ensure camera is properly closed even if there is an unrelated error
         while configuration.duration is None or datetime.now() < configuration.end_date:
             if datetime.now() < next_capture_time:
                 time.sleep(0.1)  # No need to totally peg the CPU
