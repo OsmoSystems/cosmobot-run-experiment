@@ -43,7 +43,7 @@ ExperimentVariant = namedtuple(
     "ExperimentVariant",
     [
         "capture_params",  # parameters to pass to raspistill binary through the command line
-        "exposure_time",  # length of camera exposure, us
+        "exposure_time",  # length of camera exposure, seconds
         "camera_warm_up",  # amount of time to let the camera warm up before taking an image, seconds
         "led_on",  # whether LED should be on or off
     ],
@@ -169,7 +169,7 @@ def _get_variant_parser():
                 raspistill camera parameters within each --variant flag are passed directly to raspistill.
                 Some relevant parameters:
                     "-ISO" should be a value from 100-800, in increments of 100
-                    "--exposure-time" is in microseconds, and is undefined above 6s (--exposure-time 6)
+                    "--exposure-time" is in seconds, and is undefined above 6s (--exposure-time 6)
                 Ex: --variant "-ISO 100 --exposure-time 0.5 " --variant "-ISO 200 --exposure-time 0.1".
                 Default: "{DEFAULT_CAPTURE_PARAMS}".
 
