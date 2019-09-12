@@ -1,3 +1,4 @@
+from fractions import Fraction
 import logging
 import pkg_resources
 import platform
@@ -23,15 +24,18 @@ AWB_QUALITY_CAPTURE_PARAMS = "-q {quality} -awb {awb_mode} -awbg {awb_gains}".fo
 
 DEFAULT_EXPOSURE_TIME = 0.8
 
+MICROSECONDS_PER_SECOND = 1000000
+
 
 def capture_with_picamera(
     image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME, warm_up_time=5
 ):
     resolution = (3280, 2464)
-    # framerate is in frames per second
-    framerate = int(1 / exposure_time)
+
     # shutter_speed is in microseconds
-    shutter_speed = int(exposure_time * 1000000)
+    shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)
+    # framerate is in frames per second
+    framerate = Fraction(MICROSECONDS_PER_SECOND, shutter_speed)
     iso = 100
 
     camera = picamera.PiCamera()
