@@ -5,7 +5,7 @@ import time
 import traceback
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import capture_with_picamera
+from .camera import capture_with_picamera, capture_with_raspistill
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -106,20 +106,21 @@ def perform_experiment(configuration):
                 # TODO: Try using picamera flash instead
                 control_led(led_on=True)
 
+            base_image_filepath, ext = os.path.splitext(image_filepath)
             capture_with_picamera(
-                image_filepath,
+                "{base}picamera_{ext}".format(base=base_image_filepath, ext=ext),
                 exposure_time=variant.exposure_time,
                 warm_up_time=variant.camera_warm_up,
                 # TODO: rip out concept of extra capture params
                 # additional_capture_params=variant.capture_params,
             )
 
-            # capture(
-            #     image_filepath,
-            #     exposure_time=variant.exposure_time,
-            #     warm_up_time=variant.camera_warm_up,
-            #     additional_capture_params=variant.capture_params,
-            # )
+            capture_with_raspistill(
+                "{base}raspistill_{ext}".format(base=base_image_filepath, ext=ext),
+                exposure_time=variant.exposure_time,
+                warm_up_time=variant.camera_warm_up,
+                additional_capture_params=variant.capture_params,
+            )
 
             if variant.led_on:
                 control_led(led_on=False)

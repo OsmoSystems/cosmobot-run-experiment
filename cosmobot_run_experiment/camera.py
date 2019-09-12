@@ -12,7 +12,14 @@ else:
     # TODO: stub for local development
 
 # defaults recommended by Pagnutti. These only affect the .jpegs
-AWB_QUALITY_CAPTURE_PARAMS = "-q 100 -awb off -awbg 1.307,1.615"
+AWB_GAINS = (1.307, 1.615)
+QUALITY = 100
+AWB_MODE = "off"
+AWB_QUALITY_CAPTURE_PARAMS = "-q {quality} -awb {awb_mode} -awbg {awb_gains}".format(
+    quality=QUALITY,
+    awb_mode=AWB_MODE,
+    awb_gains=",".join(str(gain) for gain in AWB_GAINS),
+)
 
 DEFAULT_EXPOSURE_TIME = 0.8
 
@@ -35,6 +42,7 @@ def capture_with_picamera(
     # Camera warm-up time
     print("Sleeping for {}s".format(warm_up_time))
     time.sleep(warm_up_time)
+
     print("Setting framerate to {}".format(framerate))
     camera.framerate = framerate
 
@@ -45,11 +53,11 @@ def capture_with_picamera(
     camera.iso = 100  # TODO: use variant values
 
     print("Setting awb params")
-    camera.awb_mode = "off"
-    camera.awb_gains = [1.307, 1.615]
+    camera.awb_mode = AWB_MODE
+    camera.awb_gains = AWB_GAINS
 
     print("Capturing image using PiCamera")
-    camera.capture(image_filepath, bayer=True, quality=100)
+    camera.capture(image_filepath, bayer=True, quality=QUALITY)
     print("Captured image using PiCamera")
 
     # Work around https://github.com/waveform80/picamera/issues/528
@@ -58,8 +66,8 @@ def capture_with_picamera(
     camera.close()
 
 
-def capture(
-    filename,
+def capture_with_raspistill(
+    image_filepath,
     exposure_time=DEFAULT_EXPOSURE_TIME,
     warm_up_time=5,
     additional_capture_params="",
@@ -67,7 +75,7 @@ def capture(
     """ Capture raw image JPEG+EXIF using command line
 
     Args:
-        filename: filename to save an image to
+        image_filepath: filepath where the image will be saved
         exposure_time: number of seconds in the exposure
         warm_up_time: number of seconds to wait for the camera to warm up
         additional_capture_params: Additional parameters to pass to raspistill command
@@ -78,7 +86,7 @@ def capture(
     exposure_time_microseconds = int(exposure_time * 1e6)
     timeout_milliseconds = int(warm_up_time * 1e3)
     command = (
-        'raspistill --raw -o "{filename}"'
+        'raspistill --raw -o "{image_filepath}"'
         " {AWB_QUALITY_CAPTURE_PARAMS}"
         " -ss {exposure_time_microseconds}"
         " --timeout {timeout_milliseconds}"
