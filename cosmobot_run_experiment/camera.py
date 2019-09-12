@@ -23,57 +23,75 @@ AWB_QUALITY_CAPTURE_PARAMS = "-q {quality} -awb {awb_mode} -awbg {awb_gains}".fo
 )
 
 DEFAULT_EXPOSURE_TIME = 0.8
+DEFAULT_WARM_UP_TIME = 5
 
 MICROSECONDS_PER_SECOND = 1000000
 
 
+class PiCameraWithSafeClose(picamera.PiCamera):
+    def __exit__(self):
+        print("resetting framerate before close...")
+        self.framerate = 1
+        print("new framerate: ", self.framerate)
+        self.close()
+
+
 def capture_with_picamera(
-    image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME, warm_up_time=5
+    image_filepath,
+    exposure_time=DEFAULT_EXPOSURE_TIME,
+    warm_up_time=DEFAULT_WARM_UP_TIME,
 ):
-    resolution = (3280, 2464)
+    with PiCameraWithSafeClose() as camera:
+        # Had to update gpu_mem (from 128 to 256) using raspi-config to prevent an out of memory error.
+        # TODO: update provisioing script with this: sudo raspi-config nonint do_memory_split 256
+        resolution = (3280, 2464)
+        shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)  # In microseconds
+        framerate = Fraction(
+            MICROSECONDS_PER_SECOND, shutter_speed
+        )  # In frames per second
+        iso = 100
 
-    # shutter_speed is in microseconds
-    shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)
-    # framerate is in frames per second
-    framerate = Fraction(MICROSECONDS_PER_SECOND, shutter_speed)
-    iso = 100
+        # TODO: initialize camera and perform warmup only once
+        camera.resolution = resolution
+        camera.start_preview()
 
-    camera = picamera.PiCamera()
-    # I get out of memory errors when I try to set the resolution
-    # camera.resolution = resolution
-    camera.start_preview()
+        logging.debug("Warming up for {warm_up_time}s".format(**locals()))
+        time.sleep(warm_up_time)
 
-    # Camera warm-up time
-    print("Sleeping for {}s".format(warm_up_time))
-    time.sleep(warm_up_time)
+        # The framerate limits the shutter speed, so it must be set *before* shutter speed
+        # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
+        logging.debug("Setting framerate to {framerate} fps".format(**locals()))
+        camera.framerate = framerate
 
-    print("Setting framerate to {}".format(framerate))
-    camera.framerate = framerate
+        # TODO: protect against shutter speeds >8s (bug causes it to hang)
+        # https://github.com/waveform80/picamera/issues/529
+        logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
+        camera.shutter_speed = shutter_speed
 
-    print("Setting shutter_speed to {}".format(shutter_speed))
-    camera.shutter_speed = shutter_speed
+        logging.debug("Setting iso to {iso}".format(**locals()))
+        camera.iso = 100  # TODO: use variant values
 
-    print("Setting iso to {}".format(iso))
-    camera.iso = 100  # TODO: use variant values
+        logging.debug(
+            "Setting awb to {AWB_MODE} {AWB_GAINS}".format(**locals(), **globals())
+        )
+        camera.awb_mode = AWB_MODE
+        camera.awb_gains = AWB_GAINS
 
-    print("Setting awb params")
-    camera.awb_mode = AWB_MODE
-    camera.awb_gains = AWB_GAINS
+        logging.info("Capturing image using PiCamera")
+        camera.capture(image_filepath, bayer=True, quality=QUALITY)
+        logging.debug("Captured image using PiCamera")
 
-    print("Capturing image using PiCamera")
-    camera.capture(image_filepath, bayer=True, quality=QUALITY)
-    print("Captured image using PiCamera")
-
-    # Work around https://github.com/waveform80/picamera/issues/528
-    # and properly close the camera
-    camera.framerate = 1
-    camera.close()
+        # # Work around https://github.com/waveform80/picamera/issues/528: set framerate back to 1 before closing camera
+        # camera.framerate = 1
+        #
+        # # TODO: ensure camera gets closed even if another error occurs
+        # camera.close()
 
 
 def capture_with_raspistill(
     image_filepath,
     exposure_time=DEFAULT_EXPOSURE_TIME,
-    warm_up_time=5,
+    warm_up_time=DEFAULT_WARM_UP_TIME,
     additional_capture_params="",
 ):
     """ Capture raw image JPEG+EXIF using command line
