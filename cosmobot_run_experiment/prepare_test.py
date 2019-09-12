@@ -22,7 +22,7 @@ class TestParseArgs:
             # Note: when a quoted command-line value is read using sys.argv,
             # it's grouped into a single list item like this:
             "-ISO 100",
-            "--variant",
+            "-v",
             "some-variant-thingy",
             "--exposures",
             "20",

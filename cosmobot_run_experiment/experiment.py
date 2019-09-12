@@ -35,6 +35,30 @@ def _led_on_with_delay(delay):
     control_led(led_on=True)
 
 
+def _end_experiment_if_not_enough_space(configuration):
+    if not free_space_for_one_image():
+        end_experiment(
+            configuration,
+            experiment_ended_message="Insufficient space to save the image. Quitting...",
+            has_errored=True,
+        )
+
+
+def _get_image_filepath(variant, configuration):
+    capture_timestamp = datetime.now()
+
+    image_filename = get_image_filename(capture_timestamp, variant)
+    return os.path.join(configuration.experiment_directory_path, image_filename)
+
+
+# TODO: remove (temporary for testing to distinguish between picamera and raspistill files)
+def _postfix(image_filepath, postfix):
+    base_image_filepath, ext = os.path.splitext(image_filepath)
+    return "{base}{postfix}{ext}".format(
+        base=base_image_filepath, postfix=postfix, ext=ext
+    )
+
+
 def perform_experiment(configuration):
     """Perform experiment using settings passed in through the configuration.
        experimental configuration defines the capture frequency and duration of the experiment
@@ -78,43 +102,29 @@ def perform_experiment(configuration):
                 seconds=configuration.interval
             )
 
-            # iterate through each capture variant and capture an image with it's settings
             for variant in configuration.variants:
-                if not free_space_for_one_image():
-                    end_experiment(
-                        configuration,
-                        experiment_ended_message="Insufficient space to save the image. Quitting...",
-                        has_errored=True,
-                    )
+                _end_experiment_if_not_enough_space(configuration)
 
-                capture_timestamp = datetime.now()
+                image_filepath = _get_image_filepath(variant, configuration)
 
-                image_filename = get_image_filename(capture_timestamp, variant)
-                image_filepath = os.path.join(
-                    configuration.experiment_directory_path, image_filename
-                )
-
-                if variant.led_on:
-                    # TODO: Try using picamera flash instead
+                if not variant.led_off:
                     control_led(led_on=True)
 
-                base_image_filepath, ext = os.path.splitext(image_filepath)
                 capture_with_picamera(
                     camera,
-                    "{base}picamera_{ext}".format(base=base_image_filepath, ext=ext),
+                    image_filepath=_postfix(image_filepath, "picamera"),
                     exposure_time=variant.exposure_time,
                     # TODO: rip out concept of extra capture params from everywhere else
                     # additional_capture_params=variant.capture_params,
                 )
 
-                # capture_with_raspistill(
-                #     "{base}raspistill_{ext}".format(base=base_image_filepath, ext=ext),
-                #     exposure_time=variant.exposure_time,
-                #     warm_up_time=variant.camera_warm_up,
-                #     additional_capture_params=variant.capture_params,
-                # )
+                capture_with_raspistill(
+                    image_filepath=_postfix(image_filepath, "raspistill"),
+                    exposure_time=variant.exposure_time,
+                    additional_capture_params=variant.capture_params,
+                )
 
-                if variant.led_on:
+                if not variant.led_off:
                     control_led(led_on=False)
 
                 # If a sync is currently occuring, this is a no-op.
