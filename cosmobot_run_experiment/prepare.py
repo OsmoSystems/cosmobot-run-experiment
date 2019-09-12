@@ -200,6 +200,21 @@ def _get_variant_parser():
         default=DEFAULT_ISO,
         help=("ISO for the image to be taken" " Default: {}.".format(DEFAULT_ISO)),
     )
+
+    arg_parser.add_argument(
+        "--camera-warm-up",
+        required=False,
+        type=float,
+        default=5,
+        help="Time to allow the camera sensor to warm up before exposure, in seconds. Default: 5s. Minimum: 0.001s",
+    )
+
+    arg_parser.add_argument(
+        "--led-off",
+        action="store_true",
+        help="If set, LED will not be turned on for this variant",
+    )
+
     arg_parser.add_argument(
         "--led-off",
         action="store_true",
