@@ -40,6 +40,7 @@ class CosmobotPiCamera(picamera.PiCamera):
 
     def __enter__(self):
         # TODO: parameterize this
+        # TODO: do we need to warm up anytime we change an important parameter?
         warm_up_time = DEFAULT_WARM_UP_TIME
         logging.info("Warming up for {warm_up_time}s".format(**locals()))
         time.sleep(warm_up_time)
@@ -56,7 +57,7 @@ def capture_with_picamera(image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME):
     with CosmobotPiCamera() as camera:
         # Had to update gpu_mem (from 128 to 256) using raspi-config to prevent an out of memory error.
         # TODO: update provisioing script with this: sudo raspi-config nonint do_memory_split 256
-        logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**locals()))
+        logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**globals()))
         camera.resolution = DEFAULT_RESOLUTION
 
         shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)  # In microseconds
