@@ -214,12 +214,6 @@ def _get_variant_parser():
         action="store_true",
         help="If set, LED will not be turned on for this variant",
     )
-
-    arg_parser.add_argument(
-        "--led-off",
-        action="store_true",
-        help="If set, LED will not be turned on for this variant",
-    )
     return arg_parser
 
 
