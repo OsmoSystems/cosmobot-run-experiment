@@ -12,6 +12,12 @@ else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
     # TODO: stub for local development
 
+logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
+logging.basicConfig(
+    level=logging.DEBUG, format=logging_format, handlers=[logging.StreamHandler()]
+)
+
+
 # defaults recommended by Pagnutti. These only affect the .jpegs
 AWB_GAINS = (1.307, 1.615)
 QUALITY = 100
