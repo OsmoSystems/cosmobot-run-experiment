@@ -76,7 +76,9 @@ def capture_with_picamera(
 
     # TODO: protect against shutter speeds >8s (bug causes it to hang)
     # https://github.com/waveform80/picamera/issues/529
-    logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
+    logging.debug(
+        "Setting shutter_speed to {exposure_time_microseconds}us".format(**locals())
+    )
     camera.shutter_speed = exposure_time_microseconds
 
     # TODO: use variant values
