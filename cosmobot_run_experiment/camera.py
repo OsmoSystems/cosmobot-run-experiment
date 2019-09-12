@@ -103,7 +103,6 @@ def capture_with_raspistill(
     exposure_time=DEFAULT_EXPOSURE_TIME,
     iso=DEFAULT_ISO,
     warm_up_time=DEFAULT_WARM_UP_TIME,
-    additional_capture_params="",
 ):
     """ Capture raw image JPEG+EXIF using command line
 
@@ -111,7 +110,6 @@ def capture_with_raspistill(
         image_filepath: filepath where the image will be saved
         exposure_time: number of seconds in the exposure
         warm_up_time: number of seconds to wait for the camera to warm up
-        additional_capture_params: Additional parameters to pass to raspistill command
 
     Returns:
         Resulting command line output of the raspistill command
@@ -124,23 +122,19 @@ def capture_with_raspistill(
         " -ss {exposure_time_microseconds}"
         " -ISO {iso}"
         " --timeout {timeout_milliseconds}"
-        " {additional_capture_params}"
     ).format(**locals(), **globals())
 
     logging.info("Capturing image using raspistill: {command}".format(**locals()))
     check_call(command, shell=True)
 
 
-def simulate_capture_with_copy(
-    filename, exposure_time=None, warm_up_time=None, additional_capture_params=""
-):
+def simulate_capture_with_copy(filename, exposure_time=None, warm_up_time=None):
     """ Simulate capture by copying image file
 
     Args:
         filename: filename to copy a test image to
         exposure_time: ignored, only exists to keep the same signature as `capture()`
         warm_up_time: ignored, only exists to keep the same signature as `capture()`
-        additional_capture_params: ignored, only exists to keep the same signature as `capture()`
 
     Returns:
         Resulting command line output of the copy command

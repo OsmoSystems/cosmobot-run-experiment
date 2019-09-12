@@ -114,14 +114,12 @@ def perform_experiment(configuration):
                     camera,
                     image_filepath=_postfix(image_filepath, "picamera"),
                     exposure_time=variant.exposure_time,
-                    # TODO: rip out concept of extra capture params from everywhere else
-                    # additional_capture_params=variant.capture_params,
                 )
 
                 capture_with_raspistill(
                     image_filepath=_postfix(image_filepath, "raspistill"),
                     exposure_time=variant.exposure_time,
-                    additional_capture_params=variant.capture_params,
+                    iso=variant.iso,
                 )
 
                 if not variant.led_off:
