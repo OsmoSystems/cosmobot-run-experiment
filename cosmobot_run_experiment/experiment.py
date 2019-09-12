@@ -114,13 +114,15 @@ def perform_experiment(configuration):
                     camera,
                     image_filepath=_postfix(image_filepath, "picamera"),
                     exposure_time=variant.exposure_time,
-                )
-
-                capture_with_raspistill(
-                    image_filepath=_postfix(image_filepath, "raspistill"),
-                    exposure_time=variant.exposure_time,
                     iso=variant.iso,
                 )
+
+                # capture_with_raspistill(
+                #     image_filepath=_postfix(image_filepath, "raspistill"),
+                #     exposure_time=variant.exposure_time,
+                #     iso=variant.iso,
+                #     # TODO: add back in camera warm up time
+                # )
 
                 if not variant.led_off:
                     control_led(led_on=False)
