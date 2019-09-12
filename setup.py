@@ -29,13 +29,13 @@ setup(
     extras_require={
         # These deps are only relevant on a raspberry pi (I/O stuff)
         # To install editable (local): pip install -e .[io]
+        # fmt: off
         "io": [
-            "adafruit-blinka",
-            "adafruit-circuitpython-ads1x15",
             "adafruit-circuitpython-neopixel",
             "rpi_ws281x",
             "RPI.GPIO",
         ]
+        # fmt: on
     },
     include_package_data=True,
 )

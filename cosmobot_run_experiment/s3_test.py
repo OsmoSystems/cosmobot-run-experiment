@@ -93,8 +93,6 @@ class TestListExperiments:
 
 
 UNORDERED_UNFILTERED_LIST_FOR_TESTS = [
-    "20180902103709_temperature",
-    "20180902103940_temperature",
     "2018-11-08--11-25-27-Pi4E82-test",
     "2018-11-08--11-26-00-Pi4E82-test",
     "should_be_filtered.jpng",
