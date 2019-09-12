@@ -22,6 +22,7 @@ setup(
         # These deps should install on any system
         "boto",
         "numpy",
+        "picamera",
         "picamraw",
         "psutil",
         "pyyaml",
@@ -29,11 +30,13 @@ setup(
     extras_require={
         # These deps are only relevant on a raspberry pi (I/O stuff)
         # To install editable (local): pip install -e .[io]
+        # fmt: off
         "io": [
             "adafruit-circuitpython-neopixel",
             "rpi_ws281x",
             "RPI.GPIO",
         ]
+        # fmt: on
     },
     include_package_data=True,
 )
