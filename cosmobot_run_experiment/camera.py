@@ -76,8 +76,9 @@ def capture_with_picamera(image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME):
         camera.shutter_speed = shutter_speed
 
         # TODO: use variant values
+        iso = 100
         logging.debug("Setting iso to {iso}".format(**locals()))
-        camera.iso = 100
+        camera.iso = iso
 
         logging.debug(
             "Setting awb to {AWB_MODE} {AWB_GAINS}".format(**locals(), **globals())
