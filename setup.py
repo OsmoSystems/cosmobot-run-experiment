@@ -22,7 +22,6 @@ setup(
         # These deps should install on any system
         "boto",
         "numpy",
-        "picamera",
         "picamraw",
         "psutil",
         "pyyaml",
