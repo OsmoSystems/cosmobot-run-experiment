@@ -33,7 +33,7 @@ class PiCameraWithSafeClose(picamera.PiCamera):
         print("resetting framerate before close...")
         self.framerate = 1
         print("new framerate: ", self.framerate)
-        super().__exit__()
+        super().__exit__(exc_type, exc_value, exc_tb)
 
 
 def capture_with_picamera(
