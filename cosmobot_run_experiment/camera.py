@@ -30,39 +30,39 @@ AWB_QUALITY_CAPTURE_PARAMS = "-q {quality} -awb {awb_mode} -awbg {awb_gains}".fo
 
 DEFAULT_EXPOSURE_TIME = 0.8
 DEFAULT_WARM_UP_TIME = 5
+DEFAULT_RESOLUTION = (3280, 2464)
 
 MICROSECONDS_PER_SECOND = 1000000
 
 
-class PiCameraWithSafeClose(picamera.PiCamera):
+class CosmobotPiCamera(picamera.PiCamera):
+    """ Initialize a PiCamera with experiment capture settings """
+
+    def __enter__(self):
+        # TODO: parameterize this
+        warm_up_time = DEFAULT_WARM_UP_TIME
+        logging.info("Warming up for {warm_up_time}s".format(**locals()))
+        time.sleep(warm_up_time)
+        return self
+
     def __exit__(self, exc_type, exc_value, exc_tb):
-        print("resetting framerate before close...")
+        # Work around https://github.com/waveform80/picamera/issues/528: set framerate to 1 before closing camera
+        logging.debug("Reset framerate to 1 before close.")
         self.framerate = 1
-        print("new framerate: ", self.framerate)
         super().__exit__(exc_type, exc_value, exc_tb)
 
 
-def capture_with_picamera(
-    image_filepath,
-    exposure_time=DEFAULT_EXPOSURE_TIME,
-    warm_up_time=DEFAULT_WARM_UP_TIME,
-):
-    with PiCameraWithSafeClose() as camera:
+def capture_with_picamera(image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME):
+    with CosmobotPiCamera() as camera:
         # Had to update gpu_mem (from 128 to 256) using raspi-config to prevent an out of memory error.
         # TODO: update provisioing script with this: sudo raspi-config nonint do_memory_split 256
-        resolution = (3280, 2464)
+        logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**locals()))
+        camera.resolution = DEFAULT_RESOLUTION
+
         shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)  # In microseconds
         framerate = Fraction(
             MICROSECONDS_PER_SECOND, shutter_speed
         )  # In frames per second
-        iso = 100
-
-        # TODO: initialize camera and perform warmup only once
-        camera.resolution = resolution
-        camera.start_preview()
-
-        logging.debug("Warming up for {warm_up_time}s".format(**locals()))
-        time.sleep(warm_up_time)
 
         # The framerate limits the shutter speed, so it must be set *before* shutter speed
         # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
@@ -74,8 +74,9 @@ def capture_with_picamera(
         logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
         camera.shutter_speed = shutter_speed
 
+        # TODO: use variant values
         logging.debug("Setting iso to {iso}".format(**locals()))
-        camera.iso = 100  # TODO: use variant values
+        camera.iso = 100
 
         logging.debug(
             "Setting awb to {AWB_MODE} {AWB_GAINS}".format(**locals(), **globals())
@@ -86,12 +87,6 @@ def capture_with_picamera(
         logging.info("Capturing image using PiCamera")
         camera.capture(image_filepath, bayer=True, quality=QUALITY)
         logging.debug("Captured image using PiCamera")
-
-        # # Work around https://github.com/waveform80/picamera/issues/528: set framerate back to 1 before closing camera
-        # camera.framerate = 1
-        #
-        # # TODO: ensure camera gets closed even if another error occurs
-        # camera.close()
 
 
 def capture_with_raspistill(
