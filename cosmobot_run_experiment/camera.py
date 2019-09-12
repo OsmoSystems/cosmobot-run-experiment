@@ -29,11 +29,11 @@ MICROSECONDS_PER_SECOND = 1000000
 
 
 class PiCameraWithSafeClose(picamera.PiCamera):
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, exc_tb):
         print("resetting framerate before close...")
         self.framerate = 1
         print("new framerate: ", self.framerate)
-        self.close()
+        super().__exit__()
 
 
 def capture_with_picamera(
