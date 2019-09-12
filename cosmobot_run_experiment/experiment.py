@@ -5,7 +5,7 @@ import time
 import traceback
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import capture_with_picamera, capture_with_raspistill
+from .camera import capture_with_picamera, capture_with_raspistill, CosmobotPiCamera
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -68,68 +68,69 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
-    while configuration.duration is None or datetime.now() < configuration.end_date:
-        if datetime.now() < next_capture_time:
-            time.sleep(0.1)  # No need to totally peg the CPU
-            continue
+    with CosmobotPiCamera() as camera:
+        while configuration.duration is None or datetime.now() < configuration.end_date:
+            if datetime.now() < next_capture_time:
+                time.sleep(0.1)  # No need to totally peg the CPU
+                continue
 
-        # next_capture_time is agnostic to the time needed for capture and writing of image
-        next_capture_time = next_capture_time + timedelta(
-            seconds=configuration.interval
-        )
-
-        # iterate through each capture variant and capture an image with it's settings
-        for variant in configuration.variants:
-            if not free_space_for_one_image():
-                end_experiment(
-                    configuration,
-                    experiment_ended_message="Insufficient space to save the image. Quitting...",
-                    has_errored=True,
-                )
-
-            # Share timestamp between image and temperature reading, to make them easy to align
-            capture_timestamp = datetime.now()
-
-            if not configuration.skip_temperature:
-                log_temperature(
-                    configuration.experiment_directory_path,
-                    capture_timestamp,
-                    number_of_readings_to_average=20,
-                )
-
-            image_filename = get_image_filename(capture_timestamp, variant)
-            image_filepath = os.path.join(
-                configuration.experiment_directory_path, image_filename
+            # next_capture_time is agnostic to the time needed for capture and writing of image
+            next_capture_time = next_capture_time + timedelta(
+                seconds=configuration.interval
             )
 
-            if variant.led_on:
-                # TODO: Try using picamera flash instead
-                control_led(led_on=True)
+            # iterate through each capture variant and capture an image with it's settings
+            for variant in configuration.variants:
+                if not free_space_for_one_image():
+                    end_experiment(
+                        configuration,
+                        experiment_ended_message="Insufficient space to save the image. Quitting...",
+                        has_errored=True,
+                    )
 
-            base_image_filepath, ext = os.path.splitext(image_filepath)
-            capture_with_picamera(
-                "{base}picamera_{ext}".format(base=base_image_filepath, ext=ext),
-                exposure_time=variant.exposure_time,
-                warm_up_time=variant.camera_warm_up,
-                # TODO: rip out concept of extra capture params
-                # additional_capture_params=variant.capture_params,
-            )
+                # Share timestamp between image and temperature reading, to make them easy to align
+                capture_timestamp = datetime.now()
 
-            capture_with_raspistill(
-                "{base}raspistill_{ext}".format(base=base_image_filepath, ext=ext),
-                exposure_time=variant.exposure_time,
-                warm_up_time=variant.camera_warm_up,
-                additional_capture_params=variant.capture_params,
-            )
+                if not configuration.skip_temperature:
+                    log_temperature(
+                        configuration.experiment_directory_path,
+                        capture_timestamp,
+                        number_of_readings_to_average=20,
+                    )
 
-            if variant.led_on:
-                control_led(led_on=False)
-
-            # If a sync is currently occuring, this is a no-op.
-            if not configuration.skip_sync:
-                sync_directory_in_separate_process(
-                    configuration.experiment_directory_path
+                image_filename = get_image_filename(capture_timestamp, variant)
+                image_filepath = os.path.join(
+                    configuration.experiment_directory_path, image_filename
                 )
+
+                if variant.led_on:
+                    # TODO: Try using picamera flash instead
+                    control_led(led_on=True)
+
+                base_image_filepath, ext = os.path.splitext(image_filepath)
+                capture_with_picamera(
+                    camera,
+                    "{base}picamera_{ext}".format(base=base_image_filepath, ext=ext),
+                    exposure_time=variant.exposure_time,
+                    # TODO: rip out concept of extra capture params from everywhere else
+                    # additional_capture_params=variant.capture_params,
+                )
+
+                # capture_with_raspistill(
+                #     "{base}raspistill_{ext}".format(base=base_image_filepath, ext=ext),
+                #     exposure_time=variant.exposure_time,
+                #     warm_up_time=variant.camera_warm_up,
+                #     additional_capture_params=variant.capture_params,
+                # )
+
+                if variant.led_on:
+                    control_led(led_on=False)
+
+                # If a sync is currently occuring, this is a no-op.
+                if not configuration.skip_sync:
+                    sync_directory_in_separate_process(
+                        configuration.experiment_directory_path
+                    )
 
     end_experiment(
         configuration,

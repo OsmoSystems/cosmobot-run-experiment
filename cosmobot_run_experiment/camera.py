@@ -53,42 +53,41 @@ class CosmobotPiCamera(picamera.PiCamera):
         super().__exit__(exc_type, exc_value, exc_tb)
 
 
-def capture_with_picamera(image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME):
-    with CosmobotPiCamera() as camera:
-        # Had to update gpu_mem (from 128 to 256) using raspi-config to prevent an out of memory error.
-        # TODO: update provisioing script with this: sudo raspi-config nonint do_memory_split 256
-        logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**globals()))
-        camera.resolution = DEFAULT_RESOLUTION
+def capture_with_picamera(camera, image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME):
+    # Had to update gpu_mem (from 128 to 256) using raspi-config to prevent an out of memory error.
+    # TODO: update provisioing script with this: sudo raspi-config nonint do_memory_split 256
+    logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**globals()))
+    camera.resolution = DEFAULT_RESOLUTION
 
-        shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)  # In microseconds
-        framerate = Fraction(
-            MICROSECONDS_PER_SECOND, shutter_speed
-        )  # In frames per second
+    shutter_speed = int(exposure_time * MICROSECONDS_PER_SECOND)  # In microseconds
+    framerate = Fraction(MICROSECONDS_PER_SECOND, shutter_speed)  # In frames per second
 
-        # The framerate limits the shutter speed, so it must be set *before* shutter speed
-        # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
-        logging.debug("Setting framerate to {framerate} fps".format(**locals()))
-        camera.framerate = framerate
+    # The framerate limits the shutter speed, so it must be set *before* shutter speed
+    # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
+    logging.debug("Setting framerate to {framerate} fps".format(**locals()))
+    camera.framerate = framerate
 
-        # TODO: protect against shutter speeds >8s (bug causes it to hang)
-        # https://github.com/waveform80/picamera/issues/529
-        logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
-        camera.shutter_speed = shutter_speed
+    # TODO: protect against shutter speeds >8s (bug causes it to hang)
+    # https://github.com/waveform80/picamera/issues/529
+    logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
+    camera.shutter_speed = shutter_speed
 
-        # TODO: use variant values
-        iso = 100
-        logging.debug("Setting iso to {iso}".format(**locals()))
-        camera.iso = iso
+    # TODO: use variant values
+    iso = 100
+    logging.debug("Setting iso to {iso}".format(**locals()))
+    camera.iso = iso
 
-        logging.debug(
-            "Setting awb to {AWB_MODE} {AWB_GAINS}".format(**locals(), **globals())
-        )
-        camera.awb_mode = AWB_MODE
-        camera.awb_gains = AWB_GAINS
+    logging.debug(
+        "Setting awb to {AWB_MODE} {AWB_GAINS}".format(**locals(), **globals())
+    )
+    camera.awb_mode = AWB_MODE
+    camera.awb_gains = AWB_GAINS
 
-        logging.info("Capturing image using PiCamera")
-        camera.capture(image_filepath, bayer=True, quality=QUALITY)
-        logging.debug("Captured image using PiCamera")
+    logging.info(
+        "Capturing image using PiCamera to {image_filepath}".format(**locals())
+    )
+    camera.capture(image_filepath, bayer=True, quality=QUALITY)
+    logging.debug("Captured image using PiCamera")
 
 
 def capture_with_raspistill(
