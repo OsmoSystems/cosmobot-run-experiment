@@ -34,6 +34,8 @@ DEFAULT_ISO = 100
 DEFAULT_WARM_UP_TIME = 5
 DEFAULT_RESOLUTION = (3280, 2464)
 
+MICROSECONDS_PER_SECOND = int(1e6)
+
 
 class CosmobotPiCamera(picamera.PiCamera):
     """ Initialize a PiCamera with experiment capture settings """
@@ -62,8 +64,10 @@ def capture_with_picamera(
     logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**globals()))
     camera.resolution = DEFAULT_RESOLUTION
 
-    exposure_time_microseconds = int(exposure_time * 1e6)
-    framerate = Fraction(1e6, exposure_time_microseconds)  # In frames per second
+    exposure_time_microseconds = int(exposure_time * MICROSECONDS_PER_SECOND)
+    framerate = Fraction(
+        MICROSECONDS_PER_SECOND, exposure_time_microseconds
+    )  # In frames per second
 
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
     # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
