@@ -1,11 +1,64 @@
-import pkg_resources
 import logging
+import pkg_resources
+import platform
+import time
 from subprocess import check_call
+
+# Support development without needing pi specific modules installed.
+if platform.machine() == "armv7l":
+    import picamera  # noqa: E0401  Unable to import
+else:
+    logging.warning("Using library stubs for non-raspberry-pi machine")
+    # TODO: stub for local development
 
 # defaults recommended by Pagnutti. These only affect the .jpegs
 AWB_QUALITY_CAPTURE_PARAMS = "-q 100 -awb off -awbg 1.307,1.615"
 
 DEFAULT_EXPOSURE_TIME = 0.8
+
+
+def capture_with_picamera(
+    image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME, warm_up_time=5
+):
+    # TODO: constant for resolution
+    resolution = (3280, 2464)
+    framerate = 1 / exposure_time
+    shutter_speed = int(exposure_time * 1000000)
+    iso = 100
+
+    camera = picamera.PiCamera(resolution=resolution)
+    logging.debug("Preparing to capture {}".format(image_filepath))
+
+    # Important to set framerate before shutter_speed, since framerate limits shutter speed
+    # https://picamera.readthedocs.io/en/release-1.13/recipes1.html#capturing-in-low-light
+    logging.debug("Setting framerate to {}".format(framerate))
+    camera.framerate = framerate
+
+    logging.debug("Starting preview")
+    camera.start_preview()
+    # Camera warm-up time # TODO: do this just once
+    logging.debug("Letting it warm up for {}s".format(warm_up_time))
+    time.sleep(warm_up_time)
+
+    logging.debug("Setting shutter_speed to {}".format(shutter_speed))
+    camera.shutter_speed = shutter_speed
+
+    logging.debug("Setting iso to {}".format(iso))
+    camera.iso = 100  # TODO: use variant values
+
+    logging.debug("Setting awb params")
+    camera.awb_mode = "off"
+    camera.awb_gains = [1.307, 1.615]
+
+    logging.info("Capturing image using PiCamera")
+    camera.capture(image_filepath, bayer=True, quality=100)
+    logging.debug("Captured image using PiCamera")
+
+    # TODO: probably make this a context manager
+    # Work around https://github.com/waveform80/picamera/issues/528
+    # and properly close the camera
+    camera.framerate = 1
+    camera.close()
 
 
 def capture(

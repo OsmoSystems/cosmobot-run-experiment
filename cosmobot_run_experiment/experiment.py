@@ -1,13 +1,11 @@
 import logging
 import os
-import platform
 import sys
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import capture
+from .camera import capture_with_picamera
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -21,13 +19,6 @@ from .led_control import control_led
 from .temperature import log_temperature
 
 from datetime import datetime, timedelta
-
-# Support development without needing pi specific modules installed.
-if platform.machine() == "armv7l":
-    import picamera  # noqa: E0401  Unable to import
-else:
-    logging.warning("Using library stubs for non-raspberry-pi machine")
-    # TODO: stub for local development
 
 
 # Basic logging configuration - sets the base log level to INFO and provides a
@@ -77,97 +68,67 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
-    # TODO: constant for resolution
-    camera = picamera.PiCamera(resolution=(3280, 2464))
+    while configuration.duration is None or datetime.now() < configuration.end_date:
+        if datetime.now() < next_capture_time:
+            time.sleep(0.1)  # No need to totally peg the CPU
+            continue
 
-    # Prep an executor so we can control the LED in detail
-    # while raspistill does its whole (camera warm-up + exposure + file save) thing
-    led_executor = ThreadPoolExecutor(max_workers=1)
+        # next_capture_time is agnostic to the time needed for capture and writing of image
+        next_capture_time = next_capture_time + timedelta(
+            seconds=configuration.interval
+        )
 
-    # TODO: context manager?
-    try:  # Try/finally to ensure camera is properly closed even if there is an unrelated error
-        while configuration.duration is None or datetime.now() < configuration.end_date:
-            if datetime.now() < next_capture_time:
-                time.sleep(0.1)  # No need to totally peg the CPU
-                continue
+        # iterate through each capture variant and capture an image with it's settings
+        for variant in configuration.variants:
+            if not free_space_for_one_image():
+                end_experiment(
+                    configuration,
+                    experiment_ended_message="Insufficient space to save the image. Quitting...",
+                    has_errored=True,
+                )
 
-            # next_capture_time is agnostic to the time needed for capture and writing of image
-            next_capture_time = next_capture_time + timedelta(
-                seconds=configuration.interval
+            # Share timestamp between image and temperature reading, to make them easy to align
+            capture_timestamp = datetime.now()
+
+            if not configuration.skip_temperature:
+                log_temperature(
+                    configuration.experiment_directory_path,
+                    capture_timestamp,
+                    number_of_readings_to_average=20,
+                )
+
+            image_filename = get_image_filename(capture_timestamp, variant)
+            image_filepath = os.path.join(
+                configuration.experiment_directory_path, image_filename
             )
 
-            # iterate through each capture variant and capture an image with it's settings
-            for variant in configuration.variants:
-                if not free_space_for_one_image():
-                    end_experiment(
-                        configuration,
-                        experiment_ended_message="Insufficient space to save the image. Quitting...",
-                        has_errored=True,
-                    )
+            if variant.led_on:
+                # TODO: Try using picamera flash instead
+                control_led(led_on=True)
 
-                # Share timestamp between image and temperature reading, to make them easy to align
-                capture_timestamp = datetime.now()
+            capture_with_picamera(
+                image_filepath,
+                exposure_time=variant.exposure_time,
+                warm_up_time=variant.camera_warm_up,
+                # TODO: rip out concept of extra capture params
+                # additional_capture_params=variant.capture_params,
+            )
 
-                if not configuration.skip_temperature:
-                    log_temperature(
-                        configuration.experiment_directory_path,
-                        capture_timestamp,
-                        number_of_readings_to_average=20,
-                    )
+            # capture(
+            #     image_filepath,
+            #     exposure_time=variant.exposure_time,
+            #     warm_up_time=variant.camera_warm_up,
+            #     additional_capture_params=variant.capture_params,
+            # )
 
-                image_filename = get_image_filename(capture_timestamp, variant)
-                image_filepath = os.path.join(
-                    configuration.experiment_directory_path, image_filename
+            if variant.led_on:
+                control_led(led_on=False)
+
+            # If a sync is currently occuring, this is a no-op.
+            if not configuration.skip_sync:
+                sync_directory_in_separate_process(
+                    configuration.experiment_directory_path
                 )
-
-                logging.debug("Preparing to capture {}".format(image_filename))
-
-                # TODO: factor this out to camera.py, probably replacing the raspistill code
-                logging.debug("Setting framerate")
-                # Important to set framerate before shutter_speed, since framerate limits shutter speed
-                # https://picamera.readthedocs.io/en/release-1.13/recipes1.html#capturing-in-low-light
-                camera.framerate = 1 / variant.exposure_time
-                logging.debug("Starting preview")
-                camera.start_preview()
-                # Camera warm-up time # TODO: do this just once
-                logging.debug("Letting it warm up")
-                time.sleep(variant.camera_warm_up)
-
-                logging.debug("Setting other camera params")
-                camera.shutter_speed = int(variant.exposure_time * 1000000)
-                camera.awb_mode = "off"
-                camera.awb_gains = [1.307, 1.615]
-                camera.iso = 100  # TODO: use variant values
-
-                if variant.led_on:
-                    # Try using picamera flash instead
-                    control_led(led_on=True)
-
-                logging.info("Capturing image using PiCamera")
-                camera.capture(image_filepath, bayer=True, quality=100)
-                logging.debug("Captured image using PiCamera")
-
-                capture(
-                    image_filepath,
-                    exposure_time=variant.exposure_time,
-                    warm_up_time=variant.camera_warm_up,
-                    additional_capture_params=variant.capture_params,
-                )
-
-                if variant.led_on:
-                    control_led(led_on=False)
-
-                # If a sync is currently occuring, this is a no-op.
-                if not configuration.skip_sync:
-                    sync_directory_in_separate_process(
-                        configuration.experiment_directory_path
-                    )
-    finally:
-        # TODO: probably make this a context manager
-        # Work around https://github.com/waveform80/picamera/issues/528
-        # and properly close the camera
-        camera.framerate = 1
-        camera.close()
 
     end_experiment(
         configuration,
