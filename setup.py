@@ -31,8 +31,6 @@ setup(
         # To install editable (local): pip install -e .[io]
         # fmt: off
         "io": [
-            "adafruit-blinka",
-            "adafruit-circuitpython-ads1x15",
             "picamera",
             "RPI.GPIO",
         ]

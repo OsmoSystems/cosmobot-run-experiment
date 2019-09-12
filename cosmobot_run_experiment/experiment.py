@@ -16,7 +16,6 @@ from .storage import free_space_for_one_image, how_many_images_with_free_space
 from .sync_manager import end_syncing_process, sync_directory_in_separate_process
 from .exposure import review_exposure_statistics
 from .led_control import control_led
-from .temperature import log_temperature
 
 from datetime import datetime, timedelta
 
@@ -88,15 +87,7 @@ def perform_experiment(configuration):
                         has_errored=True,
                     )
 
-                # Share timestamp between image and temperature reading, to make them easy to align
                 capture_timestamp = datetime.now()
-
-                if not configuration.skip_temperature:
-                    log_temperature(
-                        configuration.experiment_directory_path,
-                        capture_timestamp,
-                        number_of_readings_to_average=20,
-                    )
 
                 image_filename = get_image_filename(capture_timestamp, variant)
                 image_filepath = os.path.join(
