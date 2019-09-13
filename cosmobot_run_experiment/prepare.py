@@ -112,12 +112,6 @@ def _parse_args(args):
         "If not provided and --exposures is provided, ISO {DEFAULT_ISO} "
         "will be used when iterating over exposures.".format(**globals()),
     )
-    arg_parser.add_argument(
-        "--skip-temperature",
-        required=False,
-        action="store_true",
-        help="Deprecated. Temperature logging has been removed.",
-    )
 
     # --group-results should only be used when syncing to S3 since it queries S3 to determine the bucket name and
     # doesn't take into account unsynced experiment directories
