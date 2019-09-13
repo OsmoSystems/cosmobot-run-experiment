@@ -44,15 +44,9 @@ class TestGetImageFilename:
             self.datetime_, self.example_variant
         )
 
-    # TODO: if I add back in support for arbitrary settings, check it here
-    # def test_get_image_filename_includes_capture_params_with_spaces_replaced(self):
-    #     assert "_br_99_ISO_5678_" in module.get_image_filename(
-    #         self.datetime_, self.example_variant
-    #     )
-
     def test_get_image_filename_includes_variant_params(self):
-        expected_led_params_string = "_exposure_time_1_iso_200_led_on_True"
-        assert expected_led_params_string in module.get_image_filename(
+        expected_variant_params_string = "_exposure_time_1_iso_200_led_on_True"
+        assert expected_variant_params_string in module.get_image_filename(
             self.datetime_, self.example_variant
         )
 
