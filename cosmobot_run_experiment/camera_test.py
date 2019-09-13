@@ -9,10 +9,10 @@ class TestCapture:
         filename = "output_file.jpeg"
         expected_command = (
             'raspistill --raw -o "output_file.jpeg"'
-            " -q 100 -awb off -awbg 1.307,1.615 -ss 800000 --timeout 5000 "
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 800000 -ISO 100 --timeout 5000 "
         )
 
-        module.capture(filename)
+        module.capture_with_raspistill(filename)
 
         expected_call = mocker.call(expected_command, shell=True)
 
@@ -24,10 +24,10 @@ class TestCapture:
         filename = "output_file.jpeg"
         expected_command = (
             'raspistill --raw -o "output_file.jpeg"'
-            " -q 100 -awb off -awbg 1.307,1.615 -ss 333333 --timeout 5000 "
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 333333 -ISO 100 --timeout 5000 "
         )
 
-        module.capture(filename, exposure_time=1 / 3)
+        module.capture_with_raspistill(filename, exposure_time=1 / 3)
 
         expected_call = mocker.call(expected_command, shell=True)
 
@@ -40,7 +40,7 @@ class TestCapture:
         mock_check_call = mocker.patch.object(module, "check_call")
         additional_capture_params = "additional!!"
 
-        module.capture(
+        module.capture_with_raspistill(
             mocker.sentinel.filename,
             additional_capture_params=additional_capture_params,
         )
@@ -60,7 +60,7 @@ class TestCapture:
         )
 
         with pytest.raises(Exception):
-            module.capture(mocker.sentinel.filename)
+            module.capture_with_raspistill(mocker.sentinel.filename)
 
 
 class TestSimulateCaptureWithCopy:

@@ -10,7 +10,7 @@ if platform.machine() == "armv7l":
     import picamera  # noqa: E0401  Unable to import
 else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
-    # TODO: stub for local development
+    from .pi_stubs import picamera
 
 logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
@@ -28,7 +28,6 @@ AWB_QUALITY_CAPTURE_PARAMS = "-q {quality} -awb {awb_mode} -awbg {awb_gains}".fo
     awb_gains=",".join(str(gain) for gain in AWB_GAINS),
 )
 
-# TODO: de-dupe these defaults with arg parsing
 DEFAULT_EXPOSURE_TIME = 0.8
 DEFAULT_ISO = 100
 DEFAULT_WARM_UP_TIME = 5
@@ -38,10 +37,10 @@ MICROSECONDS_PER_SECOND = int(1e6)
 
 
 class CosmobotPiCamera(picamera.PiCamera):
-    """ Initialize a PiCamera with experiment capture settings """
+    """ Wraps the existing PiCamera context manager with an enforced warm up time and a bug workaround for closing """
 
     def __enter__(self):
-        # TODO: parameterize this
+        # TODO: parameterize this?
         # TODO: do we need to warm up anytime we change an important parameter?
         warm_up_time = DEFAULT_WARM_UP_TIME
         logging.info("Warming up for {warm_up_time}s".format(**locals()))
@@ -56,6 +55,7 @@ class CosmobotPiCamera(picamera.PiCamera):
 
 
 # TODO: maybe change this to just be `capture` and remove the old raspistill code?
+# TODO: could move this code into a capture method on the CosmobotPiCamera instead
 def capture_with_picamera(
     camera, image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME, iso=DEFAULT_ISO
 ):
@@ -81,7 +81,6 @@ def capture_with_picamera(
     )
     camera.shutter_speed = exposure_time_microseconds
 
-    # TODO: use variant values
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
 
@@ -103,6 +102,7 @@ def capture_with_raspistill(
     exposure_time=DEFAULT_EXPOSURE_TIME,
     iso=DEFAULT_ISO,
     warm_up_time=DEFAULT_WARM_UP_TIME,
+    additional_capture_params="",
 ):
     """ Capture raw image JPEG+EXIF using command line
 
@@ -110,6 +110,7 @@ def capture_with_raspistill(
         image_filepath: filepath where the image will be saved
         exposure_time: number of seconds in the exposure
         warm_up_time: number of seconds to wait for the camera to warm up
+        additional_capture_params: Additional parameters to pass to raspistill command
 
     Returns:
         Resulting command line output of the raspistill command
@@ -122,19 +123,19 @@ def capture_with_raspistill(
         " -ss {exposure_time_microseconds}"
         " -ISO {iso}"
         " --timeout {timeout_milliseconds}"
+        " {additional_capture_params}"
     ).format(**locals(), **globals())
 
     logging.info("Capturing image using raspistill: {command}".format(**locals()))
     check_call(command, shell=True)
 
 
-def simulate_capture_with_copy(filename, exposure_time=None, warm_up_time=None):
+def simulate_capture_with_copy(filename, **kwargs):
     """ Simulate capture by copying image file
 
     Args:
         filename: filename to copy a test image to
-        exposure_time: ignored, only exists to keep the same signature as `capture()`
-        warm_up_time: ignored, only exists to keep the same signature as `capture()`
+        kwargs: ignored, only exists to keep the same signature as `capture()`
 
     Returns:
         Resulting command line output of the copy command

@@ -21,7 +21,7 @@ class TestParseArgs:
             "--variant",
             # Note: when a quoted command-line value is read using sys.argv,
             # it's grouped into a single list item like this:
-            "-ISO 100",
+            "--iso 100",
             "-v",
             "some-variant-thingy",
             "--exposures",
@@ -36,7 +36,7 @@ class TestParseArgs:
             "name": "thebest",
             "interval": 25,
             "duration": 100,
-            "variant": ["-ISO 100", "some-variant-thingy"],
+            "variant": ["--iso 100", "some-variant-thingy"],
             "exposures": [20, 30],
             "isos": [45, 55],
             "skip_temperature": False,
@@ -106,48 +106,37 @@ def test_hostname_is_correct(
 
 def _default_variant_with(**kwargs):
     """ get an ExperimentVariant with overridable default settings """
+    # fmt: off
     variant_kwargs = {
-        "capture_params": "",
         "exposure_time": 0.8,
-        "camera_warm_up": 5,
-        "led_on": False,
+        "iso": 100,
+        "led_on": True,
         **kwargs,
     }
+    # fmt: on
     return module.ExperimentVariant(**variant_kwargs)
 
 
 class TestGetExperimentVariants:
     def test_exposure_no_iso_uses_default_iso(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [],
-            "exposures": [1, 2],
-            "isos": None,
-        }
+        args = {"variant": [], "exposures": [1, 2], "isos": None}
 
         expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=2),
+            _default_variant_with(exposure_time=1),
+            _default_variant_with(exposure_time=2),
         ]
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
 
     def test_exposure_and_iso_generate_correct_variants(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [],
-            "exposures": [1, 2],
-            "isos": [100, 200],
-        }
+        args = {"variant": [], "exposures": [1, 2], "isos": [100, 200]}
 
         expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=2),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=2),
+            _default_variant_with(iso=100, exposure_time=1),
+            _default_variant_with(iso=200, exposure_time=1),
+            _default_variant_with(iso=100, exposure_time=2),
+            _default_variant_with(iso=200, exposure_time=2),
         ]
 
         actual = module.get_experiment_variants(args)
@@ -155,114 +144,83 @@ class TestGetExperimentVariants:
 
     def test_exposure_and_iso_and_variant_generate_correct_variants(self):
         args = {
-            "name": "test",
-            "interval": 10,
-            "variant": ["--exposure-time 0.4 -ISO 100"],
+            "variant": ["--exposure-time 0.4 --iso 100"],
             "exposures": [1, 2.5],
-            "isos": [100, 200],
+            "isos": [200, 300],
         }
 
         expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=0.4),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=2.5),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=2.5),
+            _default_variant_with(iso=100, exposure_time=0.4),
+            _default_variant_with(iso=200, exposure_time=1),
+            _default_variant_with(iso=300, exposure_time=1),
+            _default_variant_with(iso=200, exposure_time=2.5),
+            _default_variant_with(iso=300, exposure_time=2.5),
         ]
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
 
     def test_only_variants_generate_correct_variants(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [" -ISO 100", " -ISO 200"],
-            "exposures": None,
-            "isos": None,
-        }
+        args = {"variant": ["--iso 200", "--iso 300"], "exposures": None, "isos": None}
 
-        expected = [
-            _default_variant_with(capture_params="-ISO 100"),
-            _default_variant_with(capture_params="-ISO 200"),
-        ]
+        expected = [_default_variant_with(iso=200), _default_variant_with(iso=300)]
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
 
     def test_led_params_passed_through(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [" -ISO 100 --led-on"],
-            "exposures": None,
-            "isos": None,
-        }
+        args = {"variant": ["--iso 200 --led-off"], "exposures": None, "isos": None}
 
-        expected = [_default_variant_with(capture_params="-ISO 100", led_on=True)]
+        expected = [_default_variant_with(iso=200, led_on=False)]
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
 
     def test_no_variant_args_produces_default_variant(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [],
-            "exposures": None,
-            "isos": None,
-        }
+        args = {"variant": [], "exposures": None, "isos": None}
 
-        expected = [_default_variant_with(capture_params="-ISO 100")]
+        expected = [_default_variant_with()]
 
         actual = module.get_experiment_variants(args)
         assert actual == expected
 
 
-class TestCreateFileStructureForExperiment:
-    MockExperimentConfiguration = namedtuple(
-        "MockExperimentConfiguration", ["experiment_directory_path", "start_date"]
+MockExperimentConfiguration = namedtuple(
+    "MockExperimentConfiguration", ["experiment_directory_path", "start_date"]
+)
+
+
+@pytest.fixture
+def mock_config(tmp_path):
+    # tmp_path is a PosixPath instance. python 3.5's os.path.join doesn't know how to handle it.
+    str_tmp_path = str(tmp_path)
+    experiment_directory_path = os.path.join(str_tmp_path, "mock_experiment_name")
+
+    return MockExperimentConfiguration(
+        experiment_directory_path=experiment_directory_path,
+        start_date=datetime.datetime(year=1988, month=9, day=1),
     )
 
-    subdir_name = "subdirectory"
 
+class TestCreateFileStructureForExperiment:
     def test_mock_experiment_configuration_subset_of_real_experiment_configuration(
         self
     ):
-        assert set(self.MockExperimentConfiguration._fields).issubset(
+        assert set(MockExperimentConfiguration._fields).issubset(
             module.ExperimentConfiguration._fields
         )
 
-    def _create_mock_configuration(self, mocker, tmp_path):
-        experiment_directory_path = os.path.join(
-            str(
-                tmp_path
-            ),  # tmp_path is a PosixPath instance. python 3.5's os.path.join doesn't know how to handle it.
-            self.subdir_name,
-        )
-
-        return self.MockExperimentConfiguration(
-            experiment_directory_path=experiment_directory_path,
-            start_date=datetime.datetime(year=1988, month=9, day=1),
-        )
-
-    def test_output_directory_present__does_not_explode(self, mocker, tmp_path):
-        mock_config = self._create_mock_configuration(mocker, tmp_path)
-
+    def test_output_directory_present__does_not_explode(self, mock_config):
         os.mkdir(mock_config.experiment_directory_path)
 
         module.create_file_structure_for_experiment(mock_config)
 
-    def test_creates_output_directory_if_not_present(self, mocker, tmp_path):
-        mock_config = self._create_mock_configuration(mocker, tmp_path)
-
+    def test_creates_output_directory_if_not_present(self, mock_config):
         module.create_file_structure_for_experiment(mock_config)
 
         assert os.path.exists(mock_config.experiment_directory_path)
 
-    def test_creates_metadata_file_in_output_directory(self, mocker, tmp_path):
-        mock_config = self._create_mock_configuration(mocker, tmp_path)
-
+    def test_creates_metadata_file_in_output_directory(self, mock_config):
         module.create_file_structure_for_experiment(mock_config)
 
         assert os.listdir(mock_config.experiment_directory_path) == [
@@ -272,34 +230,36 @@ class TestCreateFileStructureForExperiment:
 
 class TestParseVariant:
     def test_creates_variant_with_params(self):
-        variant = module._parse_variant(
-            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on"
-        )
+        variant = module._parse_variant("--iso 123 --exposure-time 0.4 --led-off")
         expected_variant = module.ExperimentVariant(
-            capture_params="--iso 123", exposure_time=0.4, camera_warm_up=5, led_on=True
+            exposure_time=0.4, iso=123, led_on=False
         )
         assert variant == expected_variant
 
     def test_creates_variant_has_sane_defaults(self):
         expected_variant = module.ExperimentVariant(
-            capture_params=module.DEFAULT_CAPTURE_PARAMS,
-            exposure_time=0.8,
-            camera_warm_up=5,
-            led_on=False,
+            exposure_time=0.8, iso=100, led_on=True
         )
         assert module._parse_variant("") == expected_variant
 
-    def test_doesnt_allow_old_school_shutter_speed(self):
-        with pytest.raises(ValueError):
-            module._parse_variant("-ss 100000000")
+    # TODO: probably just rip out this error checking?
+    # def test_doesnt_allow_old_school_shutter_speed(self):
+    #     with pytest.raises(ValueError):
+    #         module._parse_variant("-ss 100000000")
+    #
+    # def test_doesnt_allow_old_school_timeout(self):
+    #     with pytest.raises(ValueError):
+    #         module._parse_variant("--timeout 1")
 
-    def test_doesnt_allow_old_school_timeout(self):
-        with pytest.raises(ValueError):
-            module._parse_variant("--timeout 1")
-
-    def test_allows_short_or_long_version_of_exposure_time_parameter(self):
-        variant_with_short_parameter = module._parse_variant("-ex 1")
-        variant_with_long_parameter = module._parse_variant("--exposure-time 1")
+    @pytest.mark.parametrize(
+        "short_version,long_version",
+        [("-ex 1", "--exposure-time 1"), ("-i 200", "--iso 200")],
+    )
+    def test_allows_short_or_long_version_of_parameters(
+        self, short_version, long_version
+    ):
+        variant_with_short_parameter = module._parse_variant(short_version)
+        variant_with_long_parameter = module._parse_variant(long_version)
         assert variant_with_short_parameter == variant_with_long_parameter
 
 

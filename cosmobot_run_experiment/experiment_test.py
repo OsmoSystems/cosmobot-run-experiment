@@ -20,7 +20,8 @@ def mock_perform_experiment(mocker):
 
 @pytest.fixture
 def mock_capture(mocker):
-    return mocker.patch.object(module, "capture")
+    mocker.patch.object(module, "CosmobotPiCamera")
+    return mocker.patch.object(module, "capture_with_picamera")
 
 
 @pytest.fixture

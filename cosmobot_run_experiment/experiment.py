@@ -5,7 +5,7 @@ import time
 import traceback
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import capture_with_picamera, capture_with_raspistill, CosmobotPiCamera
+from .camera import capture_with_picamera, CosmobotPiCamera
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -107,7 +107,7 @@ def perform_experiment(configuration):
 
                 image_filepath = _get_image_filepath(variant, configuration)
 
-                if not variant.led_off:
+                if variant.led_on:
                     control_led(led_on=True)
 
                 capture_with_picamera(
@@ -124,7 +124,7 @@ def perform_experiment(configuration):
                 #     # TODO: add back in camera warm up time
                 # )
 
-                if not variant.led_off:
+                if variant.led_on:
                     control_led(led_on=False)
 
                 # If a sync is currently occuring, this is a no-op.

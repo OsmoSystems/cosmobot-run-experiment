@@ -10,12 +10,10 @@ from uuid import getnode as get_mac
 
 import yaml
 
-from cosmobot_run_experiment.camera import DEFAULT_EXPOSURE_TIME
+from .camera import DEFAULT_EXPOSURE_TIME, DEFAULT_ISO
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 from .s3 import list_experiments
 
-DEFAULT_ISO = 100
-DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
     "ExperimentConfiguration",
@@ -43,9 +41,12 @@ ExperimentVariant = namedtuple(
     [
         "exposure_time",  # length of camera exposure, seconds
         "iso",  # ISO
-        "camera_warm_up",  # amount of time to let the camera warm up before taking an image, seconds
-        "led_off",  # whether LED should be on or off
+        "led_on",  # whether LED should be on or off during capture
     ],
+)
+
+DEFAULT_VARIANT = ExperimentVariant(
+    exposure_time=DEFAULT_EXPOSURE_TIME, iso=DEFAULT_ISO, led_on=True
 )
 
 
@@ -163,7 +164,7 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant "--iso 100 --exposure-time 0.5 --camera-warm-up 1 --led-off"
+                    --variant "--iso 100 --exposure-time 0.5 --led-off"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
 
             Camera control:
@@ -202,16 +203,10 @@ def _get_variant_parser():
     )
 
     arg_parser.add_argument(
-        "--camera-warm-up",
-        required=False,
-        type=float,
-        default=5,
-        help="Time to allow the camera sensor to warm up before exposure, in seconds. Default: 5s. Minimum: 0.001s",
-    )
-
-    arg_parser.add_argument(
         "--led-off",
-        action="store_true",
+        action="store_false",
+        dest="led_on",
+        default=True,
         help="If set, LED will not be turned on for this variant",
     )
     return arg_parser
@@ -223,8 +218,7 @@ def _parse_variant(variant):
     return ExperimentVariant(
         exposure_time=parsed_args.exposure_time,
         iso=parsed_args.iso,
-        camera_warm_up=parsed_args.camera_warm_up,
-        led_off=parsed_args.led_off,
+        led_on=parsed_args.led_on,
     )
 
 
@@ -233,17 +227,13 @@ def get_experiment_variants(args):
 
     # add variants of exposure and iso lists if provided
     if args["exposures"]:
-        isos = args["isos"] or [DEFAULT_ISO]
         variants.extend(
-            _parse_variant("--exposure-time {exposure} --iso {iso}".format(**locals()))
+            ExperimentVariant(exposure_time=exposure, iso=iso, led_on=True)
             for exposure in args["exposures"]
-            for iso in isos
+            for iso in args["isos"] or [DEFAULT_ISO]
         )
 
-    if not variants:
-        variants = [_parse_variant(DEFAULT_CAPTURE_PARAMS)]
-
-    return variants
+    return variants or [DEFAULT_VARIANT]
 
 
 def _get_mac_address():
@@ -322,7 +312,7 @@ def get_experiment_configuration(cli_args):
     variants = get_experiment_variants(args)
 
     experiment_configuration = ExperimentConfiguration(
-        name=args["name"],
+        name=name,
         interval=args["interval"],
         duration=duration,
         start_date=start_date,
