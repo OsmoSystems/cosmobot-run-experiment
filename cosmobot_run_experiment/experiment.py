@@ -44,11 +44,35 @@ def _end_experiment_if_not_enough_space(configuration):
         )
 
 
-def _get_image_filepath(variant, configuration):
+def _get_variant_image_filepath(variant, experiment_directory_path):
     capture_timestamp = datetime.now()
 
     image_filename = get_image_filename(capture_timestamp, variant)
-    return os.path.join(configuration.experiment_directory_path, image_filename)
+    return os.path.join(experiment_directory_path, image_filename)
+
+
+def _capture_variant_image(camera, variant, experiment_directory_path):
+    image_filepath = _get_variant_image_filepath(variant, experiment_directory_path)
+
+    if variant.led_on:
+        control_led(led_on=True)
+
+    capture_with_picamera(
+        camera,
+        image_filepath=_postfix(image_filepath, "picamera"),
+        exposure_time=variant.exposure_time,
+        iso=variant.iso,
+    )
+
+    # capture_with_raspistill(
+    #     image_filepath=_postfix(image_filepath, "raspistill"),
+    #     exposure_time=variant.exposure_time,
+    #     iso=variant.iso,
+    #     # TODO: add back in camera warm up time
+    # )
+
+    if variant.led_on:
+        control_led(led_on=False)
 
 
 # TODO: remove (temporary for testing to distinguish between picamera and raspistill files)
@@ -73,9 +97,8 @@ def perform_experiment(configuration):
 
      Notes on local development:
        There is a helper function to simulate a capture of a file by copying it into
-       the location a capture would place a file.  You can use it by changing the from
-       from camera import capture => from camera import capture, simulate_capture_with_copy
-       and using simulate_capture_with_copy instead of capture.
+       the location a capture would place a file.  You can use it by changing the import and
+       using simulate_capture_with_copy instead of capture.
     """
 
     # print out warning that no duration has been set and inform how many
@@ -105,39 +128,39 @@ def perform_experiment(configuration):
             for variant in configuration.variants:
                 _end_experiment_if_not_enough_space(configuration)
 
-                image_filepath = _get_image_filepath(variant, configuration)
+                experiment_directory_path = configuration.experiment_directory_path
 
-                if variant.led_on:
-                    control_led(led_on=True)
+                _capture_variant_image(camera, variant, experiment_directory_path)
 
-                capture_with_picamera(
-                    camera,
-                    image_filepath=_postfix(image_filepath, "picamera"),
-                    exposure_time=variant.exposure_time,
-                    iso=variant.iso,
-                )
-
-                # capture_with_raspistill(
-                #     image_filepath=_postfix(image_filepath, "raspistill"),
-                #     exposure_time=variant.exposure_time,
-                #     iso=variant.iso,
-                #     # TODO: add back in camera warm up time
-                # )
-
-                if variant.led_on:
-                    control_led(led_on=False)
-
-                # If a sync is currently occuring, this is a no-op.
                 if not configuration.skip_sync:
-                    sync_directory_in_separate_process(
-                        configuration.experiment_directory_path
-                    )
+                    # If a sync is currently occurring, this is a no-op.
+                    sync_directory_in_separate_process(experiment_directory_path)
 
     end_experiment(
         configuration,
         experiment_ended_message="Experiment completed successfully!",
         has_errored=False,
     )
+
+
+def _perform_final_sync(experiment_directory_path, erase_synced_files):
+    """ If a file(s) is written after a sync process begins it does not get added to the list to sync.
+        This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
+        remaining images. To that end, we end any existing sync process and start a new one
+    """
+    logging.info("Beginning final sync to s3 due to end of experiment...")
+    end_syncing_process()
+    sync_directory_in_separate_process(
+        experiment_directory_path,
+        wait_for_finish=True,
+        exclude_log_files=False,
+        erase_synced_files=erase_synced_files,
+    )
+    logging.info("Final sync to s3 completed!")
+
+    # s3 mv does not remove a directory so we have to do it here after mv is complete
+    if erase_synced_files:
+        remove_experiment_directory(experiment_directory_path)
 
 
 def end_experiment(experiment_configuration, experiment_ended_message, has_errored):
@@ -156,24 +179,10 @@ def end_experiment(experiment_configuration, experiment_ended_message, has_error
     logging.info(experiment_ended_message)
 
     if not experiment_configuration.skip_sync:
-        # If a file(s) is written after a sync process begins it does not get added to the list to sync.
-        # This is fine during an experiment, but at the end of the experiment, we want to make sure to sync all the
-        # remaining images. To that end, we end any existing sync process and start a new one
-        logging.info("Beginning final sync to s3 due to end of experiment...")
-        end_syncing_process()
-        sync_directory_in_separate_process(
+        _perform_final_sync(
             experiment_configuration.experiment_directory_path,
-            wait_for_finish=True,
-            exclude_log_files=False,
-            erase_synced_files=experiment_configuration.erase_synced_files,
+            experiment_configuration.erase_synced_files,
         )
-        logging.info("Final sync to s3 completed!")
-
-        # s3 mv does not remove a directory so we have to do it here after mv is complete
-        if experiment_configuration.erase_synced_files:
-            remove_experiment_directory(
-                experiment_configuration.experiment_directory_path
-            )
 
     if experiment_configuration.review_exposure:
         review_exposure_statistics(experiment_configuration.experiment_directory_path)
