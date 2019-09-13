@@ -58,6 +58,7 @@ def _capture_variant_image(camera, variant, experiment_directory_path):
         control_led(led_on=True)
 
     camera.capture_with_settings(
+        # TODO: remove postfix when I'm done testing against raspistill
         image_filepath=_postfix(image_filepath, "picamera"),
         exposure_time=variant.exposure_time,
         iso=variant.iso,
@@ -67,7 +68,6 @@ def _capture_variant_image(camera, variant, experiment_directory_path):
     #     image_filepath=_postfix(image_filepath, "raspistill"),
     #     exposure_time=variant.exposure_time,
     #     iso=variant.iso,
-    #     # TODO: add back in camera warm up time
     # )
 
     if variant.led_on:

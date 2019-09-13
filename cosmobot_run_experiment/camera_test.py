@@ -4,16 +4,6 @@ from unittest.mock import Mock
 from . import camera as module
 
 
-default_capture_settings = {
-    "exposure_time": module.DEFAULT_EXPOSURE_TIME,
-    "iso": module.DEFAULT_ISO,
-    "resolution": module.DEFAULT_RESOLUTION,
-    "awb_mode": module.AWB_MODE,
-    "awb_gains": module.AWB_GAINS,
-    "quality": module.QUALITY,
-}
-
-
 class TestCaptureWithPiCamera:
     def test_sets_default_attributes(self):
         mock_camera = Mock()
@@ -27,11 +17,11 @@ class TestCaptureWithPiCamera:
     def test_sets_shutter_speed_and_framerate_based_on_exposure_time(self):
         mock_camera = Mock()
         module.capture_with_picamera(
-            camera=mock_camera, image_filepath="foo.jpeg", exposure_time=1 / 3
+            camera=mock_camera, image_filepath="foo.jpeg", exposure_time=2 / 9
         )
 
-        assert mock_camera.framerate == 3
-        assert mock_camera.shutter_speed == (1 / 3) * 1e6
+        assert mock_camera.framerate == 9 / 2
+        assert mock_camera.shutter_speed == 222222
 
     def test_captures_as_bayer_with_quality_jpeg(self):
         mock_capture = Mock()
