@@ -209,11 +209,18 @@ def _get_variant_parser():
         default=True,
         help="If set, LED will not be turned on for this variant",
     )
+
+    arg_parser.add_argument(
+        "--led-on",
+        action="store_true",
+        help="Deprecated. LED is now turned on by default during capture. Use --led-off to turn it off",
+    )
+
     return arg_parser
 
 
-def _parse_variant(variant):
-    parsed_args = _get_variant_parser().parse_args(variant.split())
+def _parse_variant(unparsed_variant_string):
+    parsed_args = _get_variant_parser().parse_args(unparsed_variant_string.split())
 
     return ExperimentVariant(
         exposure_time=parsed_args.exposure_time,
