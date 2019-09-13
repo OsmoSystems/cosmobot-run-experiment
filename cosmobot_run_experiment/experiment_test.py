@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
+from unittest.mock import Mock
+
 import pytest
+
 from . import experiment as module
 
 
@@ -21,7 +24,7 @@ def mock_perform_experiment(mocker):
 @pytest.fixture
 def mock_capture(mocker):
     mocker.patch.object(module, "CosmobotPiCamera")
-    return mocker.patch.object(module, "capture_with_picamera")
+    return mocker.patch.object(module, "_capture_variant_image")
 
 
 @pytest.fixture
@@ -118,3 +121,18 @@ class TestRunExperiment:
 
         assert exception_info.value.code == 1
         assert mock_perform_experiment.call_count == 0
+
+
+class TestEndExperiment:
+    @pytest.mark.parametrize("has_errored,expected_exit_code", [(True, 1), (False, 0)])
+    def test_returns_sys_exit_code_matches_has_errored(
+        self, mocker, has_errored, expected_exit_code
+    ):
+        mocker.patch.object(module, "_perform_final_sync")
+        mocker.patch.object(module, "review_exposure_statistics")
+        mock_configuration = Mock()
+
+        with pytest.raises(SystemExit) as sys_exit_error:
+            module.end_experiment(mock_configuration, "done!", has_errored=has_errored)
+
+            assert sys_exit_error.code == expected_exit_code

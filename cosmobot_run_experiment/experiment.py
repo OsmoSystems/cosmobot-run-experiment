@@ -5,7 +5,7 @@ import time
 import traceback
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import capture_with_picamera, CosmobotPiCamera
+from .camera import CosmobotPiCamera
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -57,8 +57,7 @@ def _capture_variant_image(camera, variant, experiment_directory_path):
     if variant.led_on:
         control_led(led_on=True)
 
-    capture_with_picamera(
-        camera,
+    camera.capture_with_settings(
         image_filepath=_postfix(image_filepath, "picamera"),
         exposure_time=variant.exposure_time,
         iso=variant.iso,
@@ -94,11 +93,6 @@ def perform_experiment(configuration):
         configuration: ExperimentConfiguration instance. Determines how the experiment should be performed.
      Returns:
         None
-
-     Notes on local development:
-       There is a helper function to simulate a capture of a file by copying it into
-       the location a capture would place a file.  You can use it by changing the import and
-       using simulate_capture_with_copy instead of capture.
     """
 
     # print out warning that no duration has been set and inform how many

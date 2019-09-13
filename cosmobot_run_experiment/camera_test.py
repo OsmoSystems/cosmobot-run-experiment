@@ -1,8 +1,49 @@
 import pytest
+from unittest.mock import Mock
+
 from . import camera as module
 
 
-class TestCapture:
+default_capture_settings = {
+    "exposure_time": module.DEFAULT_EXPOSURE_TIME,
+    "iso": module.DEFAULT_ISO,
+    "resolution": module.DEFAULT_RESOLUTION,
+    "awb_mode": module.AWB_MODE,
+    "awb_gains": module.AWB_GAINS,
+    "quality": module.QUALITY,
+}
+
+
+class TestCaptureWithPiCamera:
+    def test_sets_default_attributes(self):
+        mock_camera = Mock()
+        module.capture_with_picamera(camera=mock_camera, image_filepath="foo.jpeg")
+
+        assert mock_camera.iso == 100
+        assert mock_camera.resolution == (3280, 2464)
+        assert mock_camera.awb_mode == "off"
+        assert mock_camera.awb_gains == (1.307, 1.615)
+
+    def test_sets_shutter_speed_and_framerate_based_on_exposure_time(self):
+        mock_camera = Mock()
+        module.capture_with_picamera(
+            camera=mock_camera, image_filepath="foo.jpeg", exposure_time=1 / 3
+        )
+
+        assert mock_camera.framerate == 3
+        assert mock_camera.shutter_speed == (1 / 3) * 1e6
+
+    def test_captures_as_bayer_with_quality_jpeg(self):
+        mock_capture = Mock()
+        mock_camera = Mock(capture=mock_capture)
+        module.capture_with_picamera(
+            camera=mock_camera, image_filepath="foo.jpeg", quality=1000
+        )
+
+        mock_capture.assert_called_with("foo.jpeg", bayer=True, quality=1000)
+
+
+class TestCaptureWithRaspistill:
     def test_makes_expected_call_with_minimal_params(self, mocker):
         mock_check_call = mocker.patch.object(module, "check_call")
 
@@ -61,26 +102,3 @@ class TestCapture:
 
         with pytest.raises(Exception):
             module.capture_with_raspistill(mocker.sentinel.filename)
-
-
-class TestSimulateCaptureWithCopy:
-    def test_calls_something_other_than_raspistill(self, mocker):
-        mock_check_call = mocker.patch.object(module, "check_call")
-
-        module.simulate_capture_with_copy(mocker.sentinel.filename)
-
-        # Call args looks like [call(command, shell=True)] where call is a tuple
-        actual_call_command = mock_check_call.call_args[0][0]
-
-        assert "raspistill" not in actual_call_command
-
-    def test_accepts_additional_capture_params(self, mocker):
-        mock_check_call = mocker.patch.object(module, "check_call")
-        additional_capture_params = "additional!!"
-
-        module.simulate_capture_with_copy(
-            mocker.sentinel.filename,
-            additional_capture_params=additional_capture_params,
-        )
-
-        assert mock_check_call.called

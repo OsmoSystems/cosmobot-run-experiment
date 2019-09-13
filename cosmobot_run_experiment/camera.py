@@ -1,9 +1,9 @@
 from fractions import Fraction
 import logging
-import pkg_resources
 import platform
 import time
 from subprocess import check_call
+from typing import Tuple
 
 # Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
@@ -19,14 +19,9 @@ logging.basicConfig(
 
 
 # defaults recommended by Pagnutti. These only affect the .jpegs
+AWB_MODE = "off"
 AWB_GAINS = (1.307, 1.615)
 QUALITY = 100
-AWB_MODE = "off"
-AWB_QUALITY_CAPTURE_PARAMS = "-q {quality} -awb {awb_mode} -awbg {awb_gains}".format(
-    quality=QUALITY,
-    awb_mode=AWB_MODE,
-    awb_gains=",".join(str(gain) for gain in AWB_GAINS),
-)
 
 DEFAULT_EXPOSURE_TIME = 0.8
 DEFAULT_ISO = 100
@@ -53,54 +48,76 @@ class CosmobotPiCamera(picamera.PiCamera):
         self.framerate = 1
         super().__exit__(exc_type, exc_value, exc_tb)
 
+    # TODO: decide if I prefer having this as a method or just calling the function directly
+    def capture_with_settings(self, **kwargs):
+        capture_with_picamera(self, **kwargs)
 
-# TODO: maybe change this to just be `capture` and remove the old raspistill code?
-# TODO: could move this code into a capture method on the CosmobotPiCamera instead
+
 def capture_with_picamera(
-    camera, image_filepath, exposure_time=DEFAULT_EXPOSURE_TIME, iso=DEFAULT_ISO
+    camera: picamera.PiCamera,
+    image_filepath: str,
+    exposure_time: float = DEFAULT_EXPOSURE_TIME,
+    iso: int = DEFAULT_ISO,
+    resolution: Tuple[int] = DEFAULT_RESOLUTION,
+    awb_mode: str = AWB_MODE,
+    awb_gains: Tuple[int] = AWB_GAINS,
+    quality: int = QUALITY,
 ):
-    # Had to update gpu_mem (from 128 to 256) using raspi-config to prevent an out of memory error.
-    # TODO: update provisioing script with this: sudo raspi-config nonint do_memory_split 256
-    logging.debug("Setting resolution to {DEFAULT_RESOLUTION}".format(**globals()))
-    camera.resolution = DEFAULT_RESOLUTION
+    """ Capture a PiCamera RAW+JPEG image with specific settings, working around bugs
 
-    exposure_time_microseconds = int(exposure_time * MICROSECONDS_PER_SECOND)
-    framerate = Fraction(
-        MICROSECONDS_PER_SECOND, exposure_time_microseconds
-    )  # In frames per second
+    In PiCamera's implementation, capture settings have to be set as attributes on the camera instance
+    prior to calling the capture() method
+
+    Also, there are some subtleties and bugs that we work around by being careful of the order we set things
+
+    Args:
+        camera: a PiCamera instance
+        image_filepath: filepath where the image will be saved
+        exposure_time: number of seconds in the exposure
+        iso: iso for the exposure
+        resolution: resolution for the output jpeg image
+        awb_mode: auto white balance mode. Options include "off" or "auto". For more options, see:
+             https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
+        awb_gains: a tuple of values representing the (red, blue) balance of the camera.
+        quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
+    """
+
+    # Note: increase gpu_mem from 128 to 256 using raspi-config to prevent an out of memory error when setting
+    # large resolution images, e.g. (3280, 2464)
+    logging.debug("Setting resolution to {resolution}".format(**locals()))
+    camera.resolution = resolution
+
+    framerate = Fraction(1 / exposure_time)  # In frames per second
+    shutter_speed = exposure_time * 1e6  # In microseconds
 
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
     # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
     logging.debug("Setting framerate to {framerate} fps".format(**locals()))
     camera.framerate = framerate
 
-    # TODO: protect against shutter speeds >8s (bug causes it to hang)
-    # https://github.com/waveform80/picamera/issues/529
-    logging.debug(
-        "Setting shutter_speed to {exposure_time_microseconds}us".format(**locals())
-    )
-    camera.shutter_speed = exposure_time_microseconds
+    # Note: shutter speeds >8s cause PiCamera to hang. See https://github.com/waveform80/piself/issues/529
+    logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
+    camera.shutter_speed = shutter_speed
 
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
 
-    logging.debug(
-        "Setting awb to {AWB_MODE} {AWB_GAINS}".format(**locals(), **globals())
-    )
-    camera.awb_mode = AWB_MODE
-    camera.awb_gains = AWB_GAINS
+    logging.debug("Setting awb to {awb_mode} {awb_gains}".format(**locals()))
+    camera.awb_mode = awb_mode
+    camera.awb_gains = awb_gains
 
-    logging.info(
-        "Capturing image using PiCamera to {image_filepath}".format(**locals())
-    )
-    camera.capture(image_filepath, bayer=True, quality=QUALITY)
-    logging.debug("Captured image using PiCamera")
+    logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
+    camera.capture(image_filepath, bayer=True, quality=quality)
+    logging.debug("Captured PiCamera image")
 
 
 def capture_with_raspistill(
     image_filepath,
     exposure_time=DEFAULT_EXPOSURE_TIME,
     iso=DEFAULT_ISO,
+    awb_mode=AWB_MODE,
+    awb_gains=AWB_GAINS,
+    quality=QUALITY,
     warm_up_time=DEFAULT_WARM_UP_TIME,
     additional_capture_params="",
 ):
@@ -109,6 +126,10 @@ def capture_with_raspistill(
     Args:
         image_filepath: filepath where the image will be saved
         exposure_time: number of seconds in the exposure
+        awb_mode: auto white balance mode. Options include "off" or "auto". For more options, see:
+             https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
+        awb_gains: a tuple of values representing the (red, blue) balance of the camera.
+        quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
         warm_up_time: number of seconds to wait for the camera to warm up
         additional_capture_params: Additional parameters to pass to raspistill command
 
@@ -117,9 +138,11 @@ def capture_with_raspistill(
     """
     exposure_time_microseconds = int(exposure_time * 1e6)
     timeout_milliseconds = int(warm_up_time * 1e3)
+    awb_gains_str = ",".join(map(str, awb_gains))
+
     command = (
         'raspistill --raw -o "{image_filepath}"'
-        " {AWB_QUALITY_CAPTURE_PARAMS}"
+        " -q {quality} -awb {awb_mode} -awbg {awb_gains_str}"
         " -ss {exposure_time_microseconds}"
         " -ISO {iso}"
         " --timeout {timeout_milliseconds}"
@@ -127,22 +150,4 @@ def capture_with_raspistill(
     ).format(**locals(), **globals())
 
     logging.info("Capturing image using raspistill: {command}".format(**locals()))
-    check_call(command, shell=True)
-
-
-def simulate_capture_with_copy(filename, **kwargs):
-    """ Simulate capture by copying image file
-
-    Args:
-        filename: filename to copy a test image to
-        kwargs: ignored, only exists to keep the same signature as `capture()`
-
-    Returns:
-        Resulting command line output of the copy command
-    """
-    test_image_path = pkg_resources.resource_filename(
-        __name__, "v2_image_for_development.jpeg"
-    )
-    command = 'cp "{test_image_path}" "{filename}"'.format(**locals())
-    logging.info("Simulate capture: {command}".format(**locals()))
     check_call(command, shell=True)
