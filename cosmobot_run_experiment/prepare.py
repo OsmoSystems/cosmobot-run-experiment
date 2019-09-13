@@ -189,6 +189,7 @@ def _get_variant_parser():
     )
     arg_parser.add_argument(
         "-i",
+        "-ISO",  # To be backwards compatible with old raspistill params
         "--iso",
         required=False,
         type=int,

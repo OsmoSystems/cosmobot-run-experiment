@@ -246,18 +246,13 @@ class TestParseVariant:
         )
         assert module._parse_variant("") == expected_variant
 
-    # TODO: probably just rip out this error checking?
-    # def test_doesnt_allow_old_school_shutter_speed(self):
-    #     with pytest.raises(ValueError):
-    #         module._parse_variant("-ss 100000000")
-    #
-    # def test_doesnt_allow_old_school_timeout(self):
-    #     with pytest.raises(ValueError):
-    #         module._parse_variant("--timeout 1")
-
     @pytest.mark.parametrize(
         "short_version,long_version",
-        [("-ex 1", "--exposure-time 1"), ("-i 200", "--iso 200")],
+        [
+            ("-ex 1", "--exposure-time 1"),
+            ("-i 200", "--iso 200"),
+            ("-ISO 200", "--iso 200"),
+        ],
     )
     def test_allows_short_or_long_version_of_parameters(
         self, short_version, long_version
