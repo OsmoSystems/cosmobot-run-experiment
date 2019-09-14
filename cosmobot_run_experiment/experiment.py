@@ -5,7 +5,7 @@ import time
 import traceback
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import CosmobotPiCamera
+from .camera import CosmobotPiCamera, capture_with_picamera
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -57,7 +57,8 @@ def _capture_variant_image(camera, variant, experiment_directory_path):
     if variant.led_on:
         control_led(led_on=True)
 
-    camera.capture_with_settings(
+    capture_with_picamera(
+        camera,
         # TODO: remove postfix when I'm done testing against raspistill
         image_filepath=_postfix(image_filepath, "picamera"),
         exposure_time=variant.exposure_time,

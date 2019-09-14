@@ -1,13 +1,55 @@
+import os
 import pytest
+from pathlib import Path
 from unittest.mock import Mock
 
 from . import camera as module
 
 
+@pytest.fixture
+def mock_image_filepath(tmp_path):
+    return os.path.join(tmp_path, "foo.jpeg")
+
+
+@pytest.fixture
+def mock_picamera_capture(mocker):
+    return mocker.patch.object(module.PiCamera, "capture")
+
+
+class TestCosmobotPiCamera:
+    def test_deletes_empty_file_if_capture_raises(
+        self, mock_image_filepath, mock_picamera_capture
+    ):
+        def _mock_capture_with_interrupt(image_filepath, **kwargs):
+            Path(image_filepath).touch()
+            raise KeyboardInterrupt()
+
+        mock_picamera_capture.side_effect = _mock_capture_with_interrupt
+
+        camera = module.CosmobotPiCamera()
+
+        with pytest.raises(KeyboardInterrupt):
+            camera.capture(mock_image_filepath)
+            assert not os.path.exists(mock_image_filepath)
+
+    def test_doesnt_delete_empty_file_if_capture_succeeds(
+        self, mock_image_filepath, mock_picamera_capture
+    ):
+        def _mock_capture(image_filepath, **kwargs):
+            Path(image_filepath).touch()
+
+        mock_picamera_capture.side_effect = _mock_capture
+
+        camera = module.CosmobotPiCamera()
+        camera.capture(mock_image_filepath)
+
+        assert os.path.exists(mock_image_filepath)
+
+
 class TestCaptureWithPiCamera:
-    def test_sets_default_attributes(self):
+    def test_sets_default_attributes(self, mock_image_filepath):
         mock_camera = Mock()
-        module.capture_with_picamera(camera=mock_camera, image_filepath="foo.jpeg")
+        module.capture_with_picamera(mock_camera, image_filepath=mock_image_filepath)
 
         assert mock_camera.iso == 100
         assert mock_camera.resolution == (3280, 2464)
@@ -17,20 +59,19 @@ class TestCaptureWithPiCamera:
     def test_sets_shutter_speed_and_framerate_based_on_exposure_time(self):
         mock_camera = Mock()
         module.capture_with_picamera(
-            camera=mock_camera, image_filepath="foo.jpeg", exposure_time=2 / 9
+            mock_camera, mock_image_filepath, exposure_time=2 / 9
         )
 
         assert mock_camera.framerate == 9 / 2
         assert mock_camera.shutter_speed == 222222
 
-    def test_captures_as_bayer_with_quality_jpeg(self):
-        mock_capture = Mock()
-        mock_camera = Mock(capture=mock_capture)
-        module.capture_with_picamera(
-            camera=mock_camera, image_filepath="foo.jpeg", quality=1000
-        )
+    def test_captures_as_bayer_with_quality_jpeg(self, mock_image_filepath):
+        mock_camera = Mock()
+        module.capture_with_picamera(mock_camera, mock_image_filepath, quality=1000)
 
-        mock_capture.assert_called_with("foo.jpeg", bayer=True, quality=1000)
+        mock_camera.capture.assert_called_with(
+            mock_image_filepath, bayer=True, quality=1000
+        )
 
 
 class TestCaptureWithRaspistill:

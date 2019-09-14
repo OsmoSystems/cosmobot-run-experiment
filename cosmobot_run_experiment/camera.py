@@ -1,5 +1,6 @@
 from fractions import Fraction
 import logging
+import os
 import platform
 import time
 from subprocess import check_call
@@ -7,10 +8,10 @@ from typing import Tuple
 
 # Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
-    import picamera  # noqa: E0401  Unable to import
+    from picamera import PiCamera  # noqa: E0401  Unable to import
 else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
-    from .pi_stubs import picamera
+    from .pi_stubs.picamera import PiCamera
 
 logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
 logging.basicConfig(
@@ -29,11 +30,14 @@ DEFAULT_WARM_UP_TIME = 5
 DEFAULT_RESOLUTION = (3280, 2464)
 
 
-class CosmobotPiCamera(picamera.PiCamera):
-    """ Wraps the existing PiCamera context manager with an enforced warm up time and a bug workaround for closing """
+class CosmobotPiCamera(PiCamera):
+    """ Wraps the existing PiCamera context manager with some protections:
+         - an enforced warm up time
+         - a capture method that deletes the empty file if an error occurs during capture
+         - a bug workaround for closing
+    """
 
     def __enter__(self):
-        # TODO: parameterize this?
         # TODO: do we need to warm up anytime we change an important parameter?
         warm_up_time = DEFAULT_WARM_UP_TIME
         logging.info("Warming up for {warm_up_time}s".format(**locals()))
@@ -42,17 +46,26 @@ class CosmobotPiCamera(picamera.PiCamera):
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         # Work around https://github.com/waveform80/picamera/issues/528: set framerate to 1 before closing camera
-        logging.debug("Reset framerate to 1 before close.")
+        logging.debug("Resetting framerate to 1 before close.")
         self.framerate = 1
         super().__exit__(exc_type, exc_value, exc_tb)
 
-    # TODO: decide if I prefer having this as a method or just calling the function directly
-    def capture_with_settings(self, **kwargs):
-        capture_with_picamera(self, **kwargs)
+    def capture(self, image_filepath, **kwargs):
+        """ Cleans up after the parent capture method by deleting empty files
+
+        PiCamera seems to create an empty file first and then fill it. If it is interrupted during the capture
+        process we are left with an empty image file that breaks downstream processing code
+        """
+        try:
+            super().capture(image_filepath, **kwargs)
+        except KeyboardInterrupt:
+            logging.debug("KeyboardInterrupt during capture. Deleting empty file")
+            os.remove(image_filepath)
+            raise
 
 
 def capture_with_picamera(
-    camera: picamera.PiCamera,
+    camera: PiCamera,
     image_filepath: str,
     exposure_time: float = DEFAULT_EXPOSURE_TIME,
     iso: int = DEFAULT_ISO,
