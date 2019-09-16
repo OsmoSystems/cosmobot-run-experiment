@@ -8,7 +8,9 @@ from . import camera as module
 
 @pytest.fixture
 def mock_image_filepath(tmp_path):
-    return os.path.join(tmp_path, "foo.jpeg")
+    # tmp_path is a PosixPath instance. python 3.5's os.path.join doesn't know how to handle it.
+    tmp_path_str = str(tmp_path)
+    return os.path.join(tmp_path_str, "foo.jpeg")
 
 
 @pytest.fixture
