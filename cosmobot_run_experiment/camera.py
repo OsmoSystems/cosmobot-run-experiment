@@ -104,10 +104,8 @@ def capture_with_picamera(
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
     if led_on:
+        logging.debug("Setting flash_mode to 'on'")
         camera.flash_mode = "on"
-
-    # Turn off auto exposure so that it doesn't waste time trying to figure out exposure settings
-    camera.exposure_mode = "off"
 
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
@@ -125,6 +123,10 @@ def capture_with_picamera(
 
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
+
+    # Turn off auto exposure so that it doesn't waste time trying to figure out exposure settings
+    logging.debug("Setting exposure_mode to 'off'")
+    camera.exposure_mode = "off"
 
     logging.debug("Setting awb to {awb_mode} {awb_gains}".format(**locals()))
     camera.awb_mode = awb_mode
