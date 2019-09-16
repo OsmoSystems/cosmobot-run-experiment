@@ -29,6 +29,16 @@ DEFAULT_ISO = 100
 DEFAULT_WARM_UP_TIME = 5
 DEFAULT_RESOLUTION = (3280, 2464)
 
+# Setting exposure to 0 will use auto-exposure.
+# PiCamera hangs for exposures > ~7-8 seconds. See https://github.com/waveform80/picamera/issues/529
+VALID_EXPOSURE_RANGE = (0, 6)
+
+# Valid ISOs are hard to pin down. See:
+#  - these docs: https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.iso
+#  - this github issue: https://github.com/waveform80/picamera/issues/531
+# Setting ISO to 0 will use auto-exposure
+VALID_ISO_RANGE = (0, 800)
+
 
 class CosmobotPiCamera(PiCamera):
     """ Wraps the existing PiCamera context manager with some protections:
@@ -86,15 +96,13 @@ def capture_with_picamera(
         image_filepath: filepath where the image will be saved
         exposure_time: number of seconds in the exposure
         iso: iso for the exposure
-        resolution: resolution for the output jpeg image
+        resolution: resolution for the output jpeg image. Note: increase gpu_mem from 128 to 256 using raspi-config
+            to prevent an out of memory error when setting large resolution images, e.g. (3280, 2464)
         awb_mode: auto white balance mode. Options include "off" or "auto". For more options, see:
              https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
         awb_gains: a tuple of values representing the (red, blue) balance of the camera.
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
-
-    # Note: increase gpu_mem from 128 to 256 using raspi-config to prevent an out of memory error when setting
-    # large resolution images, e.g. (3280, 2464)
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
 
@@ -106,7 +114,6 @@ def capture_with_picamera(
     logging.debug("Setting framerate to {framerate} fps".format(**locals()))
     camera.framerate = framerate
 
-    # Note: shutter speeds >8s cause PiCamera to hang. See https://github.com/waveform80/piself/issues/529
     logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
     camera.shutter_speed = shutter_speed
 

@@ -121,6 +121,34 @@ def _default_variant_with(**kwargs):
     return module.ExperimentVariant(**variant_kwargs)
 
 
+class TestValidateInRange:
+    @pytest.mark.parametrize(
+        "value,range_",
+        # fmt: off
+        (
+            (0, (0, 10)),
+            (1.1, (0, 10)),
+            (10, (0, 10)),
+            (0, (-1, 1)))
+        # fmt: on
+    )
+    def test_in_range_doesnt_raise(self, value, range_):
+        module._validate_in_range(sentinel.name, value, range_)
+
+    @pytest.mark.parametrize(
+        "value,range_",
+        # fmt: off
+        (
+            (-1, (0, 10)),
+            (11, (0, 10)),
+            (1.1, (-1, 1)))
+        # fmt: on
+    )
+    def test_out_of_range_raises(self, value, range_):
+        with pytest.raises(ValueError):
+            module._validate_in_range("name", value, range_)
+
+
 class TestGetExperimentVariants:
     @pytest.mark.parametrize(
         "name,args,expected_variants",
@@ -187,6 +215,19 @@ class TestGetExperimentVariants:
     def test_variant_combos(self, name, args, expected_variants):
         actual_variants = module.get_experiment_variants(args)
         assert actual_variants == expected_variants
+
+    @pytest.mark.parametrize(
+        "name,args",
+        (
+            ("long exposure", {"variant": ["-ex 8"], "exposures": None, "isos": None}),
+            ("long exposures", {"variant": [], "exposures": [1, 2, 8], "isos": None}),
+            ("big iso", {"variant": ["--iso 900"], "exposures": None, "isos": None}),
+            ("big isos", {"variant": [], "exposures": [1], "isos": [100, 900]}),
+        ),
+    )
+    def test_raises_on_invalid_input(self, name, args):
+        with pytest.raises(ValueError):
+            module.get_experiment_variants(args)
 
 
 MockExperimentConfiguration = namedtuple(

@@ -10,7 +10,12 @@ from uuid import getnode as get_mac
 
 import yaml
 
-from .camera import DEFAULT_EXPOSURE_TIME, DEFAULT_ISO
+from .camera import (
+    DEFAULT_EXPOSURE_TIME,
+    DEFAULT_ISO,
+    VALID_EXPOSURE_RANGE,
+    VALID_ISO_RANGE,
+)
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 from .s3 import list_experiments
 
@@ -174,8 +179,8 @@ def _get_variant_parser():
         default=DEFAULT_EXPOSURE_TIME,
         help=(
             "Exposure time for the image to be taken, in seconds. "
-            "Behavior for exposure time >6s is undefined. "
-            "Default: {}s.".format(DEFAULT_EXPOSURE_TIME)
+            "Valid exposures are in the range {}, where 0 is auto-exposure. "
+            "Default: {}s.".format(list(VALID_EXPOSURE_RANGE), DEFAULT_EXPOSURE_TIME)
         ),
     )
     arg_parser.add_argument(
@@ -186,8 +191,9 @@ def _get_variant_parser():
         type=int,
         default=DEFAULT_ISO,
         help=(
-            "ISO for the image to be taken. A value from 100-800, in increments of 100. "
-            "Default: {}.".format(DEFAULT_ISO)
+            "ISO for the image to be taken. "
+            "Valid ISOs are in the range {}, where 0 is auto. "
+            "Default: {}.".format(list(VALID_ISO_RANGE), DEFAULT_ISO)
         ),
     )
 
@@ -218,6 +224,23 @@ def _parse_variant(unparsed_variant_string):
     )
 
 
+def _validate_in_range(name, value, range_):
+    min_, max_ = range_
+    if not min_ <= value <= max_:
+        # Convert to list so it prints with inclusive square brackets syntax
+        inclusive_range = list(range_)
+        raise ValueError(
+            "{name} ({value}) must be in the range {inclusive_range}".format(**locals())
+        )
+
+
+def _validate_variant(variant: ExperimentVariant):
+    _validate_in_range(
+        "Variant exposure_time", variant.exposure_time, VALID_EXPOSURE_RANGE
+    )
+    _validate_in_range("Variant ISO", variant.iso, VALID_ISO_RANGE)
+
+
 def get_experiment_variants(args):
     variants = [_parse_variant(variant) for variant in args["variant"]]
 
@@ -228,6 +251,9 @@ def get_experiment_variants(args):
             for exposure in args["exposures"]
             for iso in args["isos"] or [DEFAULT_ISO]
         )
+
+    for variant in variants:
+        _validate_variant(variant)
 
     return variants or [DEFAULT_VARIANT]
 
