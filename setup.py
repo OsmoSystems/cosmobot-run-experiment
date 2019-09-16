@@ -16,6 +16,7 @@ setup(
             "review_exposure = cosmobot_run_experiment.exposure:review_exposure",
             "set_led = cosmobot_run_experiment.led_control:set_led_cli",
             "flash_led = cosmobot_run_experiment.led_control:flash_led_cli",
+            "configure_picamera_flash = cosmobot_run_experiment.led_control:configure_picamera_flash_cli",
         ]
     },
     install_requires=[

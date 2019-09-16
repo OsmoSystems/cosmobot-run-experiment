@@ -2,6 +2,7 @@ import argparse
 import logging
 import platform
 import sys
+from subprocess import check_call
 from time import sleep
 
 # Support development without needing pi specific modules installed.
@@ -141,3 +142,19 @@ def flash_led_cli(cli_args=None):
 
     while True:
         flash_led_once(wait_time_seconds=args.wait_time, on_time_seconds=args.on_time)
+
+
+def configure_picamera_flash_cli():
+    """ Configures the raspberry pi to enable using flash with our PiCamera camera.
+    Must be run as sudo. Will reboot the pi.
+
+    See https://picamera.readthedocs.io/en/release-1.13/recipes2.html?highlight=flash#using-a-flash-with-the-camera
+    """
+    compile_device_tree_blob_command = "dtc -q -I dts -O dtb dt-blob.dts -o dt-blob.bin"
+    check_call(compile_device_tree_blob_command, shell=True)
+
+    copy_compiled_blob_command = "cp dt-blob.bin /boot/"
+    check_call(copy_compiled_blob_command, shell=True)
+
+    reboot_command = "reboot"
+    check_call(reboot_command, shell=True)
