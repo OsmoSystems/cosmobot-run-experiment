@@ -157,17 +157,9 @@ def _get_variant_parser():
             """
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
-                Example:
-                    --variant "--iso 100 --exposure-time 0.5 --led-off"
                 If multiple --variant parameters are provided, each variant will be used once per interval.
-
-            Camera control:
-                "--iso" should be a value from 100-800, in increments of 100
-                "--exposure-time" is in seconds, and is undefined above 6s (--exposure-time 6)
-                Ex: --variant "--iso 100 --exposure-time 0.5" --variant "--iso 200 --exposure-time 0.1".
-                Default: "--iso {DEFAULT_ISO} --exposure-time {DEFAULT_EXPOSURE_TIME}".
-
-            LED control:
+                Example:
+                    --variant "--iso 100 --exposure-time 0.5 --led-off" --variant "-i 200 -ex 1"
             """.format(
                 **globals()
             )
@@ -181,10 +173,9 @@ def _get_variant_parser():
         type=float,
         default=DEFAULT_EXPOSURE_TIME,
         help=(
-            "Exposure time for the image to be taken, in seconds."
-            " Default: {}s. Behavior for exposure time >6s is undefined.".format(
-                DEFAULT_EXPOSURE_TIME
-            )
+            "Exposure time for the image to be taken, in seconds. "
+            "Behavior for exposure time >6s is undefined. "
+            "Default: {}s.".format(DEFAULT_EXPOSURE_TIME)
         ),
     )
     arg_parser.add_argument(
@@ -194,7 +185,10 @@ def _get_variant_parser():
         required=False,
         type=int,
         default=DEFAULT_ISO,
-        help=("ISO for the image to be taken" " Default: {}.".format(DEFAULT_ISO)),
+        help=(
+            "ISO for the image to be taken. A value from 100-800, in increments of 100. "
+            "Default: {}.".format(DEFAULT_ISO)
+        ),
     )
 
     arg_parser.add_argument(
