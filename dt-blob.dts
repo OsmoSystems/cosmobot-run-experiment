@@ -1332,7 +1332,8 @@
             }; // pin
             pin@p14 { function = "uart0";  termination = "no_pulling"; drive_strength_mA = < 8 >; }; // TX uart0
             pin@p15 { function = "uart0";  termination = "pull_up";    drive_strength_mA = < 8 >; }; // RX uart0
-            pin@p17 { function = "output";  termination = "pull_down"; }; // PiCamera LED flash
+            pin@p17 { function = "output";  polarity = "active_low"; termination = "pull_up"; }; // PiCamera LED flash
+            // pin@p17 { function = "output";  termination = "pull_down"; }; // PiCamera LED flash
             pin@p28 { function = "input";  termination = "no_pulling"; polarity = "active_low"; }; // Hotplug
             pin@p29 { function = "output"; termination = "no_pulling"; }; // ACT_LED (GREEN)
             pin@p34 { function = "input";  termination = "pull_up";    drive_strength_mA = < 8 >; };
