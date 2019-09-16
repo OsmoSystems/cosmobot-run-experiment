@@ -97,7 +97,7 @@ def _parse_args(args):
     arg_parser.add_argument(
         "--exposures",
         required=False,
-        type=int,
+        type=float,
         nargs="+",
         default=None,
         help='List of exposures to iterate capture through ex. "--exposures 0.1, 1"',
