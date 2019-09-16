@@ -30,11 +30,6 @@ logging.basicConfig(
 )
 
 
-def _led_on_with_delay(delay):
-    time.sleep(delay)
-    control_led(led_on=True)
-
-
 def _end_experiment_if_not_enough_space(configuration):
     if not free_space_for_one_image():
         end_experiment(
@@ -54,13 +49,11 @@ def _get_variant_image_filepath(variant, experiment_directory_path):
 def _capture_variant_image(camera, variant, experiment_directory_path):
     image_filepath = _get_variant_image_filepath(variant, experiment_directory_path)
 
-    if variant.led_on:
-        control_led(led_on=True)
-
     capture_with_picamera(
         camera,
         # TODO: remove postfix when I'm done testing against raspistill
         image_filepath=_postfix(image_filepath, "picamera"),
+        led_on=variant.led_on,
         exposure_time=variant.exposure_time,
         iso=variant.iso,
     )
@@ -70,9 +63,6 @@ def _capture_variant_image(camera, variant, experiment_directory_path):
     #     exposure_time=variant.exposure_time,
     #     iso=variant.iso,
     # )
-
-    if variant.led_on:
-        control_led(led_on=False)
 
 
 # TODO: remove (temporary for testing to distinguish between picamera and raspistill files)

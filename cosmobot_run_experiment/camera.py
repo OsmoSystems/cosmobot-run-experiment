@@ -13,11 +13,6 @@ else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
     from .pi_stubs.picamera import PiCamera
 
-logging_format = "%(asctime)s [%(levelname)s]--- %(message)s"
-logging.basicConfig(
-    level=logging.DEBUG, format=logging_format, handlers=[logging.StreamHandler()]
-)
-
 
 # defaults recommended by Pagnutti. These only affect the .jpegs
 AWB_MODE = "off"
@@ -69,7 +64,10 @@ class CosmobotPiCamera(PiCamera):
         try:
             super().capture(image_filepath, **kwargs)
         except KeyboardInterrupt:
-            logging.debug("KeyboardInterrupt during capture. Deleting empty file")
+            logging.debug(
+                "KeyboardInterrupt during capture. "
+                "Deleting empty file: {image_filepath}".format(**locals())
+            )
             os.remove(image_filepath)
             raise
 
@@ -77,6 +75,7 @@ class CosmobotPiCamera(PiCamera):
 def capture_with_picamera(
     camera: PiCamera,
     image_filepath: str,
+    led_on: bool = True,
     exposure_time: float = DEFAULT_EXPOSURE_TIME,
     iso: int = DEFAULT_ISO,
     resolution: Tuple[int] = DEFAULT_RESOLUTION,
@@ -94,6 +93,7 @@ def capture_with_picamera(
     Args:
         camera: a PiCamera instance
         image_filepath: filepath where the image will be saved
+        led_on: whether to flash the LED during the exposure. Note: requires pre-configuring firmware using comfigure_picamera_flash.sh
         exposure_time: number of seconds in the exposure
         iso: iso for the exposure
         resolution: resolution for the output jpeg image. Note: increase gpu_mem from 128 to 256 using raspi-config
@@ -103,7 +103,10 @@ def capture_with_picamera(
         awb_gains: a tuple of values representing the (red, blue) balance of the camera.
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
-    camera.flash_mode = "on"
+    if led_on:
+        camera.flash_mode = "on"
+
+    # Turn off auto exposure so that it doesn't waste time trying to figure out exposure settings
     camera.exposure_mode = "off"
 
     logging.debug("Setting resolution to {resolution}".format(**locals()))
