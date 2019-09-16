@@ -1392,11 +1392,11 @@
                number = <1>;
             };
             pin_define@CAMERA_0_LED {
-               type = "external";
-               number = <6>;
+               type = "absent";
             };
             pin_define@FLASH_0_ENABLE {
-               type = "absent";
+               type = "external";
+               number = <6>;
             };
             pin_define@FLASH_0_INDICATOR {
                type = "absent";
