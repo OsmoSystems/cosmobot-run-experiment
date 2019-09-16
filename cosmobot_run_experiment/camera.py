@@ -64,7 +64,7 @@ class CosmobotPiCamera(PiCamera):
         try:
             super().capture(image_filepath, **kwargs)
         except KeyboardInterrupt:
-            logging.debug(
+            logging.info(
                 "KeyboardInterrupt during capture. "
                 "Deleting empty file: {image_filepath}".format(**locals())
             )
@@ -103,10 +103,6 @@ def capture_with_picamera(
         awb_gains: a tuple of values representing the (red, blue) balance of the camera.
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
-    if led_on:
-        logging.debug("Setting flash_mode to 'on'")
-        camera.flash_mode = "on"
-
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
 
@@ -124,13 +120,17 @@ def capture_with_picamera(
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
 
+    logging.debug("Setting awb to {awb_mode} {awb_gains}".format(**locals()))
+    camera.awb_mode = awb_mode
+    camera.awb_gains = awb_gains
+
     # Turn off auto exposure so that it doesn't waste time trying to figure out exposure settings
     logging.debug("Setting exposure_mode to 'off'")
     camera.exposure_mode = "off"
 
-    logging.debug("Setting awb to {awb_mode} {awb_gains}".format(**locals()))
-    camera.awb_mode = awb_mode
-    camera.awb_gains = awb_gains
+    if led_on:
+        logging.debug("Setting flash_mode to 'on'")
+        camera.flash_mode = "on"
 
     logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
     camera.capture(image_filepath, bayer=True, quality=quality)
