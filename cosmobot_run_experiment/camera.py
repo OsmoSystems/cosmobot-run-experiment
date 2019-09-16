@@ -103,6 +103,8 @@ def capture_with_picamera(
         awb_gains: a tuple of values representing the (red, blue) balance of the camera.
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
+    camera.flash_mode = "on"
+
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
 
