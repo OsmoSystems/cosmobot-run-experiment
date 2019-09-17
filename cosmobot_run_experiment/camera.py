@@ -127,12 +127,7 @@ def capture_with_picamera(
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
 
-    _wait_for_gains_to_settle(warm_up_time)
-
-    logging.debug("Setting exposure_mode to 'off'")
-    camera.exposure_mode = "off"
-
-    # 3. Finally, we control the shutter_speed
+    # 3. SControl the shutter_speed
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
     # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
     framerate = Fraction(1 / exposure_time)  # In frames per second
@@ -142,6 +137,12 @@ def capture_with_picamera(
     shutter_speed = int(exposure_time * 1e6)  # In microseconds
     logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
     camera.shutter_speed = shutter_speed
+
+    # 4. Give the camera time for the gains to "settle", and then fix them by setting exposure_mode to "off"
+    _wait_for_gains_to_settle(warm_up_time)
+
+    logging.debug("Setting exposure_mode to 'off'")
+    camera.exposure_mode = "off"
 
     flash_mode = "on" if led_on else "off"
     logging.debug("Setting flash_mode to {flash_mode}".format(**locals()))
