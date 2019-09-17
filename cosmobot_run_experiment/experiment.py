@@ -5,7 +5,7 @@ import time
 import traceback
 
 from cosmobot_run_experiment.file_structure import get_image_filename
-from .camera import CosmobotPiCamera, capture_with_picamera
+from .camera import CosmobotPiCamera, capture_with_picamera, capture_with_raspistill
 from .file_structure import iso_datetime_for_filename, remove_experiment_directory
 from .prepare import (
     create_file_structure_for_experiment,
@@ -46,24 +46,26 @@ def _get_variant_image_filepath(variant, experiment_directory_path):
     return os.path.join(experiment_directory_path, image_filename)
 
 
-def _capture_variant_image(camera, variant, experiment_directory_path):
+def _capture_variant_image(variant, experiment_directory_path):
     image_filepath = _get_variant_image_filepath(variant, experiment_directory_path)
 
-    capture_with_picamera(
-        camera,
-        # TODO: remove postfix when I'm done testing against raspistill
-        image_filepath=_postfix(image_filepath, "picamera"),
-        led_on=variant.led_on,
+    with CosmobotPiCamera() as camera:
+        capture_with_picamera(
+            camera,
+            # TODO: remove postfix when I'm done testing against raspistill
+            image_filepath=_postfix(image_filepath, "picamera"),
+            led_on=variant.led_on,
+            exposure_time=variant.exposure_time,
+            iso=variant.iso,
+            warm_up_time=variant.warm_up_time,
+        )
+
+    capture_with_raspistill(
+        image_filepath=_postfix(image_filepath, "raspistill"),
         exposure_time=variant.exposure_time,
         iso=variant.iso,
         warm_up_time=variant.warm_up_time,
     )
-
-    # capture_with_raspistill(
-    #     image_filepath=_postfix(image_filepath, "raspistill"),
-    #     exposure_time=variant.exposure_time,
-    #     iso=variant.iso,
-    # )
 
 
 # TODO: remove (temporary for testing to distinguish between picamera and raspistill files)
@@ -100,27 +102,26 @@ def perform_experiment(configuration):
     # Initial value of start_date results in immediate capture on first iteration in while loop
     next_capture_time = configuration.start_date
 
-    with CosmobotPiCamera() as camera:
-        while configuration.duration is None or datetime.now() < configuration.end_date:
-            if datetime.now() < next_capture_time:
-                time.sleep(0.1)  # No need to totally peg the CPU
-                continue
+    while configuration.duration is None or datetime.now() < configuration.end_date:
+        if datetime.now() < next_capture_time:
+            time.sleep(0.1)  # No need to totally peg the CPU
+            continue
 
-            # next_capture_time is agnostic to the time needed for capture and writing of image
-            next_capture_time = next_capture_time + timedelta(
-                seconds=configuration.interval
-            )
+        # next_capture_time is agnostic to the time needed for capture and writing of image
+        next_capture_time = next_capture_time + timedelta(
+            seconds=configuration.interval
+        )
 
-            for variant in configuration.variants:
-                _end_experiment_if_not_enough_space(configuration)
+        for variant in configuration.variants:
+            _end_experiment_if_not_enough_space(configuration)
 
-                experiment_directory_path = configuration.experiment_directory_path
+            experiment_directory_path = configuration.experiment_directory_path
 
-                _capture_variant_image(camera, variant, experiment_directory_path)
+            _capture_variant_image(variant, experiment_directory_path)
 
-                if not configuration.skip_sync:
-                    # If a sync is currently occurring, this is a no-op.
-                    sync_directory_in_separate_process(experiment_directory_path)
+            if not configuration.skip_sync:
+                # If a sync is currently occurring, this is a no-op.
+                sync_directory_in_separate_process(experiment_directory_path)
 
     end_experiment(
         configuration,
