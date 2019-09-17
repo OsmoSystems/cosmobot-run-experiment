@@ -56,6 +56,7 @@ def _capture_variant_image(camera, variant, experiment_directory_path):
         led_on=variant.led_on,
         exposure_time=variant.exposure_time,
         iso=variant.iso,
+        warm_up_time=variant.warm_up_time,
     )
 
     # capture_with_raspistill(
