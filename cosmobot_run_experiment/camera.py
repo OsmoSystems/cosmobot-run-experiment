@@ -107,6 +107,10 @@ def capture_with_picamera(
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
 
+    flash_mode = "on" if led_on else "off"
+    logging.debug("Setting flash_mode to {flash_mode}".format(**locals()))
+    camera.flash_mode = flash_mode
+
     # 1. White balance is controlled by two settings: awb_mode and awb_gains. By setting awb_mode to "off", we can then
     # fix the gains using awb_gains.
     # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
@@ -127,7 +131,7 @@ def capture_with_picamera(
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
 
-    # 3. SControl the shutter_speed
+    # 3. Control the shutter_speed
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
     # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
     framerate = Fraction(1 / exposure_time)  # In frames per second
@@ -143,10 +147,6 @@ def capture_with_picamera(
 
     logging.debug("Setting exposure_mode to 'off'")
     camera.exposure_mode = "off"
-
-    flash_mode = "on" if led_on else "off"
-    logging.debug("Setting flash_mode to {flash_mode}".format(**locals()))
-    camera.flash_mode = flash_mode
 
     logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
     camera.capture(image_filepath, bayer=True, quality=quality)
@@ -175,7 +175,7 @@ def capture_with_raspistill(
     """
     exposure_time_microseconds = int(exposure_time * 1e6)
     timeout_milliseconds = int(warm_up_time * 1e3)
-    awb_gains_str = ",".join(map(str, awb_gains))
+    awb_gains_str = ",".join(map(str, PAGNUTTI_AWB_GAINS))
 
     command = (
         'raspistill --raw -o "{image_filepath}"'
