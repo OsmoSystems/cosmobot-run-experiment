@@ -19,7 +19,7 @@ def set_gain(camera, gain, value):
     if gain not in [MMAL_PARAMETER_ANALOG_GAIN, MMAL_PARAMETER_DIGITAL_GAIN]:
         raise ValueError("The gain parameter was not valid")
     ret = mmal.mmal_port_parameter_set_rational(
-        cam._camera.control._port, gain, to_rational(value)
+        camera._camera.control._port, gain, to_rational(value)
     )
     if ret == 4:
         raise exc.PiCameraMMALError(
