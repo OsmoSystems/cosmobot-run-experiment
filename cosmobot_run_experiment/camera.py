@@ -9,6 +9,7 @@ from typing import Tuple
 # Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
     from picamera import PiCamera  # noqa: E0401  Unable to import
+    from set_picamera_gain import set_analog_gain
 else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
     from .pi_stubs.picamera import PiCamera
@@ -103,6 +104,8 @@ def capture_with_picamera(
             to prevent an out of memory error when setting large resolution images, e.g. (3280, 2464)
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
+    logging.debug("Setting analog_gain to {iso}".format(**locals()))
+    set_analog_gain(camera, analog_gain=iso)
 
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
@@ -128,8 +131,8 @@ def capture_with_picamera(
     logging.debug("Setting exposure_mode to 'auto' to allow resetting gains")
     camera.exposure_mode = "auto"
 
-    logging.debug("Setting iso to {iso}".format(**locals()))
-    camera.iso = iso
+    # logging.debug("Setting iso to {iso}".format(**locals()))
+    # camera.iso = iso
 
     # 3. Control the shutter_speed
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
