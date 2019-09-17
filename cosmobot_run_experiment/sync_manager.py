@@ -49,7 +49,11 @@ def sync_directory_in_separate_process(
     if _is_sync_process_running():
         return
 
-    additional_sync_params = "--exclude *.log*" if exclude_log_files else ""
+    # Raspistill and our version of PiCamera save temporary images with filenames appended with "~"
+    exclude_temp = "--exclude *~ "
+    exclude_log = "--exclude *.log* " if exclude_log_files else ""
+
+    additional_sync_params = exclude_temp + exclude_log
 
     _SYNC_PROCESS = multiprocessing.Process(
         target=sync_to_s3, args=(directory, additional_sync_params, erase_synced_files)
