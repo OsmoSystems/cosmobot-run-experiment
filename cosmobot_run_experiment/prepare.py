@@ -268,6 +268,7 @@ def get_experiment_variants(args):
 
     for variant in variants:
         _validate_variant(variant)
+        print(variant)
 
     return variants or [DEFAULT_VARIANT]
 
