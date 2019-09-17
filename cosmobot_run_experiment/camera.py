@@ -141,6 +141,10 @@ def capture_with_picamera(
     logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
     camera.shutter_speed = shutter_speed
 
+    flash_mode = "on" if led_on else "off"
+    logging.debug("Setting flash_mode to {flash_mode}".format(**locals()))
+    camera.flash_mode = flash_mode
+
     logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
     camera.capture(image_filepath, bayer=True, quality=quality)
     logging.debug("Captured PiCamera image")
