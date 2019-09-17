@@ -104,8 +104,10 @@ def capture_with_picamera(
             to prevent an out of memory error when setting large resolution images, e.g. (3280, 2464)
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
-    logging.debug("Setting analog_gain to {iso}".format(**locals()))
-    set_analog_gain(camera, analog_gain=iso)
+    # HACK: co-opt iso for analog_gain setting
+    analog_gain = iso
+    logging.debug("Setting analog_gain to {analog_gain}".format(**locals()))
+    set_analog_gain(camera, analog_gain)
 
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
