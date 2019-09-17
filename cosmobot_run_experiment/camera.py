@@ -133,12 +133,11 @@ def capture_with_picamera(
     camera.exposure_mode = "off"
 
     # 3. Finally, we control the shutter_speed
-    # The framerate limits the shutter speed for exposures >= 1s, so it must be set *before* shutter speed
+    # The framerate limits the shutter speed, so it must be set *before* shutter speed
     # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
-    if exposure_time >= 1:
-        framerate = Fraction(1 / exposure_time)  # In frames per second
-        logging.debug("Setting framerate to {framerate} fps".format(**locals()))
-        camera.framerate = framerate
+    framerate = Fraction(1 / exposure_time)  # In frames per second
+    logging.debug("Setting framerate to {framerate} fps".format(**locals()))
+    camera.framerate = framerate
 
     shutter_speed = int(exposure_time * 1e6)  # In microseconds
     logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
