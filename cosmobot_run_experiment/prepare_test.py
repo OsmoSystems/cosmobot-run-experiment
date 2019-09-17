@@ -114,6 +114,7 @@ def _default_variant_with(**kwargs):
     variant_kwargs = {
         "exposure_time": 0.8,
         "iso": 100,
+        "warm_up_time": 2,
         "led_on": True,
         **kwargs,
     }
@@ -273,15 +274,17 @@ class TestCreateFileStructureForExperiment:
 
 class TestParseVariant:
     def test_creates_variant_with_params(self):
-        variant = module._parse_variant("--iso 123 --exposure-time 0.4 --led-off")
+        variant = module._parse_variant(
+            "--iso 123 --exposure-time 0.4 --warm-up-time 5 --led-off"
+        )
         expected_variant = module.ExperimentVariant(
-            exposure_time=0.4, iso=123, led_on=False
+            exposure_time=0.4, iso=123, warm_up_time=5, led_on=False
         )
         assert variant == expected_variant
 
     def test_creates_variant_has_sane_defaults(self):
         expected_variant = module.ExperimentVariant(
-            exposure_time=0.8, iso=100, led_on=True
+            exposure_time=0.8, iso=100, warm_up_time=2, led_on=True
         )
         assert module._parse_variant("") == expected_variant
 

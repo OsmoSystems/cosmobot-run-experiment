@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import picamera
-from picamera import mmal, mmalobj, exc
+from picamera import mmal, exc
 from picamera.mmalobj import to_rational
 import time
 

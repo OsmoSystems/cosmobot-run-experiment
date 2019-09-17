@@ -261,7 +261,12 @@ def get_experiment_variants(args):
     # add variants of exposure and iso lists if provided
     if args["exposures"]:
         variants.extend(
-            ExperimentVariant(exposure_time=exposure, iso=iso, led_on=True)
+            ExperimentVariant(
+                exposure_time=exposure,
+                iso=iso,
+                warm_up_time=DEFAULT_WARM_UP_TIME,
+                led_on=True,
+            )
             for exposure in args["exposures"]
             for iso in args["isos"] or [DEFAULT_ISO]
         )
