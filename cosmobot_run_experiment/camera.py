@@ -14,14 +14,14 @@ else:
     from .pi_stubs.picamera import PiCamera
 
 
-# defaults recommended by Pagnutti. These only affect the .jpegs
-AWB_MODE = "off"
-AWB_GAINS = (1.307, 1.615)
-QUALITY = 100
+# Default auto-white-balance gains recommended by Pagnutti. These only affect the .jpegs.
+# awb_gains are a tuple of values representing the (red, blue) balance of the camera.
+PAGNUTTI_AWB_GAINS = (1.307, 1.615)
+JPEG_QUALITY = 100
 
 DEFAULT_EXPOSURE_TIME = 0.8
 DEFAULT_ISO = 100
-DEFAULT_WARM_UP_TIME = 5
+DEFAULT_WARM_UP_TIME = 2
 DEFAULT_RESOLUTION = (3280, 2464)
 
 # Setting exposure to 0 will use auto-exposure.
@@ -35,6 +35,13 @@ VALID_EXPOSURE_RANGE = (0, 6)
 VALID_ISO_RANGE = (0, 800)
 
 
+def _wait_for_gains_to_settle(warm_up_time: int):
+    """ Sleep for warm_up_time seconds to let the camera 'warm up', i.e. let the analog and digital gains settle
+    """
+    logging.info("Warming up for {warm_up_time}s".format(**locals()))
+    time.sleep(warm_up_time)
+
+
 class CosmobotPiCamera(PiCamera):
     """ Wraps the existing PiCamera context manager with some protections:
          - an enforced warm up time
@@ -43,10 +50,7 @@ class CosmobotPiCamera(PiCamera):
     """
 
     def __enter__(self):
-        # TODO: do we need to warm up anytime we change an important parameter?
-        warm_up_time = DEFAULT_WARM_UP_TIME
-        logging.info("Warming up for {warm_up_time}s".format(**locals()))
-        time.sleep(warm_up_time)
+        _wait_for_gains_to_settle(DEFAULT_WARM_UP_TIME)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
@@ -79,9 +83,8 @@ def capture_with_picamera(
     exposure_time: float = DEFAULT_EXPOSURE_TIME,
     iso: int = DEFAULT_ISO,
     resolution: Tuple[int] = DEFAULT_RESOLUTION,
-    awb_mode: str = AWB_MODE,
-    awb_gains: Tuple[int] = AWB_GAINS,
-    quality: int = QUALITY,
+    quality: int = JPEG_QUALITY,
+    warm_up_time=DEFAULT_WARM_UP_TIME,
 ):
     """ Capture a PiCamera RAW+JPEG image with specific settings, working around bugs
 
@@ -98,39 +101,45 @@ def capture_with_picamera(
         iso: iso for the exposure
         resolution: resolution for the output jpeg image. Note: increase gpu_mem from 128 to 256 using raspi-config
             to prevent an out of memory error when setting large resolution images, e.g. (3280, 2464)
-        awb_mode: auto white balance mode. Options include "off" or "auto". For more options, see:
-             https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
-        awb_gains: a tuple of values representing the (red, blue) balance of the camera.
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
+
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
 
+    # 1. White balance is controlled by two settings: awb_mode and awb_gains. By setting awb_mode to "off", we can then
+    # fix the gains using awb_gains.
+    # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
+    logging.debug(
+        "Setting awb_mode to 'off'. "
+        "Fixing awb_gains at {PAGNUTTI_AWB_GAINS}".format(**globals())
+    )
+    camera.awb_mode = "off"
+    camera.awb_gains = PAGNUTTI_AWB_GAINS
+
+    # 2. Exposure sensitivity is more complicated. The camera's analog_gain and digital_gains can't be controlled
+    # directly, but can be "influenced" by setting ISO and then waiting, giving the gains some time to "settle".
+    # Then, we can set exposure_mode to "off" to fix the gains (this must happen *after* setting the ISO)
+    # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.exposure_mode
+    logging.debug("Setting iso to {iso}".format(**locals()))
+    camera.iso = iso
+
+    _wait_for_gains_to_settle(warm_up_time)
+
+    logging.debug("Setting exposure_mode to 'off'")
+    camera.exposure_mode = "off"
+
+    # 3. Finally, we control the shutter_speed
+    # The framerate limits the shutter speed, so it must be set *before* shutter speed
+    # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
     framerate = Fraction(1 / exposure_time)  # In frames per second
     shutter_speed = int(exposure_time * 1e6)  # In microseconds
 
-    # The framerate limits the shutter speed, so it must be set *before* shutter speed
-    # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
     logging.debug("Setting framerate to {framerate} fps".format(**locals()))
     camera.framerate = framerate
 
     logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
     camera.shutter_speed = shutter_speed
-
-    logging.debug("Setting iso to {iso}".format(**locals()))
-    camera.iso = iso
-
-    logging.debug("Setting awb to {awb_mode} {awb_gains}".format(**locals()))
-    camera.awb_mode = awb_mode
-    camera.awb_gains = awb_gains
-
-    # Turn off auto exposure so that it doesn't waste time trying to figure out exposure settings
-    logging.debug("Setting exposure_mode to 'off'")
-    camera.exposure_mode = "off"
-
-    if led_on:
-        logging.debug("Setting flash_mode to 'on'")
-        camera.flash_mode = "on"
 
     logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
     camera.capture(image_filepath, bayer=True, quality=quality)
@@ -141,9 +150,7 @@ def capture_with_raspistill(
     image_filepath,
     exposure_time=DEFAULT_EXPOSURE_TIME,
     iso=DEFAULT_ISO,
-    awb_mode=AWB_MODE,
-    awb_gains=AWB_GAINS,
-    quality=QUALITY,
+    quality=JPEG_QUALITY,
     warm_up_time=DEFAULT_WARM_UP_TIME,
     additional_capture_params="",
 ):
@@ -152,9 +159,6 @@ def capture_with_raspistill(
     Args:
         image_filepath: filepath where the image will be saved
         exposure_time: number of seconds in the exposure
-        awb_mode: auto white balance mode. Options include "off" or "auto". For more options, see:
-             https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
-        awb_gains: a tuple of values representing the (red, blue) balance of the camera.
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
         warm_up_time: number of seconds to wait for the camera to warm up
         additional_capture_params: Additional parameters to pass to raspistill command
@@ -168,7 +172,7 @@ def capture_with_raspistill(
 
     command = (
         'raspistill --raw -o "{image_filepath}"'
-        " -q {quality} -awb {awb_mode} -awbg {awb_gains_str}"
+        ' -q {quality} -awb "off" -awbg {awb_gains_str}'
         " -ss {exposure_time_microseconds}"
         " -ISO {iso}"
         " --timeout {timeout_milliseconds}"
