@@ -8,11 +8,13 @@ from typing import Tuple
 
 # Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
-    from picamera import PiCamera  # noqa: E0401  Unable to import
-    from cosmobot_run_experiment.set_picamera_gain import set_analog_gain
+    from picamera import PiCamera, mmal, exc  # noqa: E0401  Unable to import
+    from picamera.mmalobj import to_rational
 else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
     from .pi_stubs.picamera import PiCamera
+
+    # TODO: add stubs for mmal stuff
 
 
 # Default auto-white-balance gains recommended by Pagnutti. These only affect the .jpegs.
@@ -32,8 +34,8 @@ VALID_EXPOSURE_RANGE = (0, 6)
 # Valid ISOs are hard to pin down. See:
 #  - these docs: https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.iso
 #  - this github issue: https://github.com/waveform80/picamera/issues/531
-# Setting ISO to 0 will use auto-exposure
-VALID_ISO_RANGE = (0, 800)
+# Since we've had to work around multiple issues, our workaround only applies between ISO 54 and 500
+VALID_ISO_RANGE = (54, 500)
 
 
 def _wait_for_gains_to_settle(warm_up_time: int):
@@ -41,6 +43,31 @@ def _wait_for_gains_to_settle(warm_up_time: int):
     """
     logging.info("Warming up for {warm_up_time}s".format(**locals()))
     time.sleep(warm_up_time)
+
+
+def _get_analog_gain_from_iso(iso):
+    """
+    See detailed analysis here: https://github.com/waveform80/picamera/issues/531
+    This function maps from an ISO to a desired actual analog_gain, working around the fact that
+    PiCamera doesn't seem to properly fix the analog_gain for a given ISO.
+    The mapping used here is a linear function that appears to fit the data between ISO=54 and ISO=500.
+    The function is defined by the two endpoints:
+        ISO     analog_gain
+        54      1
+        800     14.72
+    """
+    # PiCamera docs suggest this should be ISO 60, but experimentally we found this to be 54
+    x1, y1 = (54, 1)
+    # From PiCamera docs, which fits our experimental data up to ISO 500
+    x2, y2 = (800, 14.72)
+    m = (y2 - y1) / (x2 - x1)
+    b = y1 - m * x1
+
+    return m * iso + b
+
+
+def _get_tmp_filepath(filepath):
+    return f"{filepath}~"
 
 
 class CosmobotPiCamera(PiCamera):
@@ -60,25 +87,50 @@ class CosmobotPiCamera(PiCamera):
         self.framerate = 1
         super().__exit__(exc_type, exc_value, exc_tb)
 
+    # Inspired by this gist: https://gist.github.com/rwb27/a23808e9f4008b48de95692a38ddaa08/
+    # with small modifications
+    def _set_gain(self, gain_type, gain):
+        """Set the analog gain of a PiCamera.
+
+        camera: the picamera.PiCamera() instance you are configuring
+        gain: either MMAL_PARAMETER_ANALOG_GAIN or MMAL_PARAMETER_DIGITAL_GAIN
+        gain: a numeric value that can be converted to a rational number.
+        """
+        return_code = mmal.mmal_port_parameter_set_rational(
+            self._camera.control._port, gain_type, to_rational(gain)
+        )
+        if return_code == 4:
+            raise exc.PiCameraMMALError(
+                return_code,
+                "Are you running the latest version of the userland libraries? "
+                "Gain setting was introduced in late 2017.",
+            )
+        elif return_code != 0:
+            raise exc.PiCameraMMALError(return_code)
+
+    def set_analog_gain(self, analog_gain):
+        MMAL_PARAMETER_ANALOG_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x59
+        self._set_gain(MMAL_PARAMETER_ANALOG_GAIN, analog_gain)
+
+    def set_digital_gain(self, analog_gain):
+        MMAL_PARAMETER_DIGITAL_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x5A
+        self._set_gain(MMAL_PARAMETER_DIGITAL_GAIN, analog_gain)
+
     def capture(self, image_filepath, **kwargs):
-        """ Cleans up after the parent capture method by deleting empty files
+        """ Cleans up after the parent capture method by saving to a temporary file first, and only renaming if capture
+        succeeds
 
         PiCamera seems to create an empty file first and then fill it. If it is interrupted during the capture
-        process we are left with an empty image file that breaks downstream processing code
+        process we are left with an empty image file that breaks downstream processing code.
         """
-        try:
-            super().capture(image_filepath, **kwargs)
-        except KeyboardInterrupt:
-            logging.info(
-                "KeyboardInterrupt during capture. "
-                "Deleting empty file: {image_filepath}".format(**locals())
-            )
-            os.remove(image_filepath)
-            raise
+
+        tmp_image_filepath = _get_tmp_filepath(image_filepath)
+        super().capture(tmp_image_filepath, **kwargs)
+        os.rename(tmp_image_filepath, image_filepath)
 
 
 def capture_with_picamera(
-    camera: PiCamera,
+    camera: CosmobotPiCamera,
     image_filepath: str,
     led_on: bool = True,
     exposure_time: float = DEFAULT_EXPOSURE_TIME,
@@ -97,18 +149,13 @@ def capture_with_picamera(
     Args:
         camera: a PiCamera instance
         image_filepath: filepath where the image will be saved
-        led_on: whether to flash the LED during the exposure. Note: requires pre-configuring firmware using comfigure_picamera_flash.sh
+        led_on: whether to flash the LED during the exposure. Note: requires pre-configuring firmware
         exposure_time: number of seconds in the exposure
         iso: iso for the exposure
         resolution: resolution for the output jpeg image. Note: increase gpu_mem from 128 to 256 using raspi-config
             to prevent an out of memory error when setting large resolution images, e.g. (3280, 2464)
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
-    # HACK: co-opt iso for analog_gain setting
-    analog_gain = iso
-    logging.debug("Setting analog_gain to {analog_gain}".format(**locals()))
-    set_analog_gain(camera, analog_gain)
-
     logging.debug("Setting resolution to {resolution}".format(**locals()))
     camera.resolution = resolution
 
@@ -130,11 +177,16 @@ def capture_with_picamera(
     # directly, but can be "influenced" by setting ISO and then waiting, giving the gains some time to "settle".
     # Then, we can set exposure_mode to "off" to fix the gains (this must happen *after* setting the ISO)
     # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.exposure_mode
-    logging.debug("Setting exposure_mode to 'auto' to allow resetting gains")
-    camera.exposure_mode = "auto"
+    # logging.debug("Setting exposure_mode to 'auto' to allow resetting gains")
+    # camera.exposure_mode = "auto"
 
     # logging.debug("Setting iso to {iso}".format(**locals()))
     # camera.iso = iso
+
+    analog_gain = _get_analog_gain_from_iso(iso)
+    logging.debug("Desired ISO: {iso}".format(**locals()))
+    logging.debug("Setting analog_gain to {analog_gain}".format(**locals()))
+    camera.set_analog_gain(analog_gain)
 
     # 3. Control the shutter_speed
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
@@ -184,7 +236,7 @@ def capture_with_raspistill(
 
     command = (
         'raspistill --raw -o "{image_filepath}"'
-        ' -q {quality} -awb "off" -awbg {awb_gains_str}'
+        " -q {quality} -awb off -awbg {awb_gains_str}"
         " -ss {exposure_time_microseconds}"
         " -ISO {iso}"
         " --timeout {timeout_milliseconds}"

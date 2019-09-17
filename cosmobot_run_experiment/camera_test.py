@@ -8,9 +8,7 @@ from . import camera as module
 
 @pytest.fixture
 def mock_image_filepath(tmp_path):
-    # tmp_path is a PosixPath instance. python 3.5's os.path.join doesn't know how to handle it.
-    tmp_path_str = str(tmp_path)
-    return os.path.join(tmp_path_str, "foo.jpeg")
+    return os.path.join(tmp_path, "foo.jpeg")
 
 
 @pytest.fixture
@@ -18,34 +16,39 @@ def mock_picamera_capture(mocker):
     return mocker.patch.object(module.PiCamera, "capture")
 
 
+def _mock_capture(image_filepath, **kwargs):
+    Path(image_filepath).touch()
+
+
+def _mock_capture_with_interrupt(image_filepath, **kwargs):
+    _mock_capture(image_filepath, **kwargs)
+    raise KeyboardInterrupt()
+
+
 class TestCosmobotPiCamera:
-    def test_deletes_empty_file_if_capture_raises(
+    def test_doesnt_rename_tmp_file_if_capture_raises(
         self, mock_image_filepath, mock_picamera_capture
     ):
-        def _mock_capture_with_interrupt(image_filepath, **kwargs):
-            Path(image_filepath).touch()
-            raise KeyboardInterrupt()
-
         mock_picamera_capture.side_effect = _mock_capture_with_interrupt
 
         camera = module.CosmobotPiCamera()
 
         with pytest.raises(KeyboardInterrupt):
             camera.capture(mock_image_filepath)
-            assert not os.path.exists(mock_image_filepath)
 
-    def test_doesnt_delete_empty_file_if_capture_succeeds(
+        assert os.path.exists(f"{mock_image_filepath}~")
+        assert not os.path.exists(mock_image_filepath)
+
+    def test_renames_tmp_file_if_capture_succeeds(
         self, mock_image_filepath, mock_picamera_capture
     ):
-        def _mock_capture(image_filepath, **kwargs):
-            Path(image_filepath).touch()
-
         mock_picamera_capture.side_effect = _mock_capture
 
         camera = module.CosmobotPiCamera()
         camera.capture(mock_image_filepath)
 
         assert os.path.exists(mock_image_filepath)
+        assert not os.path.exists(f"{mock_image_filepath}~")
 
 
 class TestCaptureWithPiCamera:
@@ -53,7 +56,8 @@ class TestCaptureWithPiCamera:
         mock_camera = Mock()
         module.capture_with_picamera(mock_camera, image_filepath=mock_image_filepath)
 
-        assert mock_camera.iso == 100
+        # TODO: add tests for setting analog_gain
+        # assert mock_camera.iso == 100
         assert mock_camera.resolution == (3280, 2464)
         assert mock_camera.awb_mode == "off"
         assert mock_camera.awb_gains == (1.307, 1.615)
@@ -83,7 +87,7 @@ class TestCaptureWithRaspistill:
         filename = "output_file.jpeg"
         expected_command = (
             'raspistill --raw -o "output_file.jpeg"'
-            " -q 100 -awb off -awbg 1.307,1.615 -ss 800000 -ISO 100 --timeout 5000 "
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 800000 -ISO 100 --timeout 2000 "
         )
 
         module.capture_with_raspistill(filename)
@@ -98,7 +102,7 @@ class TestCaptureWithRaspistill:
         filename = "output_file.jpeg"
         expected_command = (
             'raspistill --raw -o "output_file.jpeg"'
-            " -q 100 -awb off -awbg 1.307,1.615 -ss 333333 -ISO 100 --timeout 5000 "
+            " -q 100 -awb off -awbg 1.307,1.615 -ss 333333 -ISO 100 --timeout 2000 "
         )
 
         module.capture_with_raspistill(filename, exposure_time=1 / 3)

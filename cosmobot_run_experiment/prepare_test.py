@@ -237,9 +237,7 @@ MockExperimentConfiguration = namedtuple(
 
 @pytest.fixture
 def mock_config(tmp_path):
-    # tmp_path is a PosixPath instance. python 3.5's os.path.join doesn't know how to handle it.
-    tmp_path_str = str(tmp_path)
-    experiment_directory_path = os.path.join(tmp_path_str, "mock_experiment_name")
+    experiment_directory_path = os.path.join(tmp_path, "mock_experiment_name")
 
     return MockExperimentConfiguration(
         experiment_directory_path=experiment_directory_path,
