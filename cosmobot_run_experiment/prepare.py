@@ -13,6 +13,7 @@ import yaml
 from .camera import (
     DEFAULT_EXPOSURE_TIME,
     DEFAULT_ISO,
+    DEFAULT_WARM_UP_TIME,
     VALID_EXPOSURE_RANGE,
     VALID_ISO_RANGE,
 )
@@ -46,6 +47,7 @@ ExperimentVariant = namedtuple(
     [
         "exposure_time",  # length of camera exposure, seconds
         "iso",  # ISO
+        "warm_up_time",
         "led_on",  # whether LED should be on or off during capture
     ],
 )
@@ -198,6 +200,14 @@ def _get_variant_parser():
     )
 
     arg_parser.add_argument(
+        "--warm-up-time",
+        required=False,
+        type=int,
+        default=DEFAULT_WARM_UP_TIME,
+        help="Time to wait for camera settings to 'settle' before capturing image, in seconds.",
+    )
+
+    arg_parser.add_argument(
         "--led-off",
         action="store_false",
         dest="led_on",
@@ -220,6 +230,7 @@ def _parse_variant(unparsed_variant_string):
     return ExperimentVariant(
         exposure_time=parsed_args.exposure_time,
         iso=parsed_args.iso,
+        warm_up_time=parsed_args.warm_up_time,
         led_on=parsed_args.led_on,
     )
 

@@ -121,6 +121,9 @@ def capture_with_picamera(
     # directly, but can be "influenced" by setting ISO and then waiting, giving the gains some time to "settle".
     # Then, we can set exposure_mode to "off" to fix the gains (this must happen *after* setting the ISO)
     # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.exposure_mode
+    logging.debug("Setting exposure_mode to 'auto' to allow resetting gains")
+    camera.exposure_mode = "auto"
+
     logging.debug("Setting iso to {iso}".format(**locals()))
     camera.iso = iso
 
