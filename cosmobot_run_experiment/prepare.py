@@ -53,7 +53,10 @@ ExperimentVariant = namedtuple(
 )
 
 DEFAULT_VARIANT = ExperimentVariant(
-    exposure_time=DEFAULT_EXPOSURE_TIME, iso=DEFAULT_ISO, led_on=True
+    exposure_time=DEFAULT_EXPOSURE_TIME,
+    iso=DEFAULT_ISO,
+    warm_up_time=DEFAULT_WARM_UP_TIME,
+    led_on=True,
 )
 
 
