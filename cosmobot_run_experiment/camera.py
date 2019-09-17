@@ -9,7 +9,7 @@ from typing import Tuple
 # Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
     from picamera import PiCamera  # noqa: E0401  Unable to import
-    from set_picamera_gain import set_analog_gain
+    from cosmobot_run_experiment.set_picamera_gain import set_analog_gain
 else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
     from .pi_stubs.picamera import PiCamera
