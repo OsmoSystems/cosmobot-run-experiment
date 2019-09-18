@@ -60,7 +60,7 @@ def _capture_variant_image(variant, experiment_directory_path):
             warm_up_time=variant.warm_up_time,
         )
 
-    control_led(led_on=variant.led_on)
+    # control_led(led_on=variant.led_on)
 
     capture_with_raspistill(
         image_filepath=_postfix(image_filepath, "raspistill"),
@@ -69,7 +69,7 @@ def _capture_variant_image(variant, experiment_directory_path):
         warm_up_time=variant.warm_up_time,
     )
 
-    control_led(led_on=False)
+    # control_led(led_on=False)
 
 
 # TODO: remove (temporary for testing to distinguish between picamera and raspistill files)
