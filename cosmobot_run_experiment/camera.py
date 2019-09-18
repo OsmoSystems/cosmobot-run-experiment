@@ -69,7 +69,8 @@ def _get_analog_gain_from_iso(iso):
 class CosmobotPiCamera(PiCamera):
     """ Wraps the existing PiCamera context manager with some protections:
          - an enforced warm up time
-         - a capture method that deletes the empty file if an error occurs during capture
+         - a capture method that uses a temporary file to protect against errors during capture
+         - analog_gain and digital_gain properties that allow directly setting the gains
          - a bug workaround for closing
     """
 
@@ -104,17 +105,17 @@ class CosmobotPiCamera(PiCamera):
         elif return_code != 0:
             raise exc.PiCameraMMALError(return_code)
 
-    def set_analog_gain(self, analog_gain):
+    def _set_analog_gain(self, analog_gain):
         MMAL_PARAMETER_ANALOG_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x59
         self._set_gain(MMAL_PARAMETER_ANALOG_GAIN, analog_gain)
 
-    analog_gain = property(PiCamera._get_analog_gain, set_analog_gain)
+    analog_gain = property(PiCamera._get_analog_gain, _set_analog_gain)
 
-    def set_digital_gain(self, analog_gain):
+    def _set_digital_gain(self, analog_gain):
         MMAL_PARAMETER_DIGITAL_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x5A
         self._set_gain(MMAL_PARAMETER_DIGITAL_GAIN, analog_gain)
 
-    digital_gain = property(PiCamera._get_digital_gain, set_digital_gain)
+    digital_gain = property(PiCamera._get_digital_gain, _set_digital_gain)
 
     def capture(self, image_filepath, **kwargs):
         """ Cleans up after the parent capture method by saving to a temporary file first, and only renaming if capture
