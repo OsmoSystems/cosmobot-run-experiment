@@ -75,9 +75,9 @@ class CosmobotPiCamera(PiCamera):
          - a bug workaround for closing
     """
 
-    def __enter__(self):
-        _wait_for_warm_up(DEFAULT_WARM_UP_TIME)
-        return self
+    # def __enter__(self):
+    #     _wait_for_warm_up(DEFAULT_WARM_UP_TIME)
+    #     return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         # Work around https://github.com/waveform80/picamera/issues/528: set framerate to 1 before closing camera
