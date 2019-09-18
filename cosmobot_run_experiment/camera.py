@@ -161,10 +161,6 @@ def capture_with_picamera(
     logging.debug(f"Setting resolution to {resolution}")
     camera.resolution = resolution
 
-    flash_mode = "on" if led_on else "off"
-    logging.debug(f"Setting flash_mode to {flash_mode}")
-    camera.flash_mode = flash_mode
-
     # 1. White balance is controlled by two settings: awb_mode and awb_gains. By setting awb_mode to "off", we can then
     # fix the gains using awb_gains.
     # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
@@ -204,6 +200,10 @@ def capture_with_picamera(
 
     # logging.debug("Setting exposure_mode to 'off'")
     # camera.exposure_mode = "off"
+
+    flash_mode = "on" if led_on else "off"
+    logging.debug(f"Setting flash_mode to {flash_mode}")
+    camera.flash_mode = flash_mode
 
     logging.info(f"Capturing PiCamera image to {image_filepath}")
     camera.capture(image_filepath, format="jpeg", bayer=True, quality=quality)
