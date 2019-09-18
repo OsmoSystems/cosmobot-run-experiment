@@ -41,7 +41,7 @@ VALID_ISO_RANGE = (54, 500)
 def _wait_for_warm_up(warm_up_time: int):
     """ Sleep for warm_up_time seconds to let the camera 'warm up', i.e. let the analog and digital gains settle
     """
-    logging.info("Warming up for {warm_up_time}s".format(**locals()))
+    logging.info(f"Warming up for {warm_up_time}s")
     time.sleep(warm_up_time)
 
 
@@ -157,49 +157,45 @@ def capture_with_picamera(
             to prevent an out of memory error when setting large resolution images, e.g. (3280, 2464)
         quality: the quality of the JPEG encoder as an integer ranging from 1 to 100
     """
-    logging.debug("Setting resolution to {resolution}".format(**locals()))
+    logging.debug(f"Setting resolution to {resolution}")
     camera.resolution = resolution
 
     flash_mode = "on" if led_on else "off"
-    logging.debug("Setting flash_mode to {flash_mode}".format(**locals()))
+    logging.debug(f"Setting flash_mode to {flash_mode}")
     camera.flash_mode = flash_mode
 
     # 1. White balance is controlled by two settings: awb_mode and awb_gains. By setting awb_mode to "off", we can then
     # fix the gains using awb_gains.
     # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.awb_mode
     logging.debug(
-        "Setting awb_mode to 'off'. "
-        "Fixing awb_gains at {PAGNUTTI_AWB_GAINS}".format(**globals())
+        f"Setting awb_mode to 'off'. Fixing awb_gains at {PAGNUTTI_AWB_GAINS}"
     )
     camera.awb_mode = "off"
     camera.awb_gains = PAGNUTTI_AWB_GAINS
 
-    # 2. Exposure sensitivity is more complicated. The camera's analog_gain and digital_gains can't be controlled
+    # 2. Exposure sensitivity is more complicated. PiCamera's analog_gain and digital_gains can't be controlled
     # directly, but can be "influenced" by setting ISO and then waiting, giving the gains some time to "settle".
-    # Then, we can set exposure_mode to "off" to fix the gains (this must happen *after* setting the ISO)
+    # Then, theoretically we can set exposure_mode to "off" to fix the gains (this must happen *after* setting the ISO)
     # See https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.exposure_mode
-    # logging.debug("Setting exposure_mode to 'auto' to allow resetting gains")
-    # camera.exposure_mode = "auto"
 
-    # logging.debug("Setting iso to {iso}".format(**locals()))
-    # camera.iso = iso
+    # However, in practice this never worked. Instead we updated our CosmobotPiCamera wrapper with the ability to set
+    # the analog_gain directly, and calculate the appropriate analog_gain given the desired iso (to match the docs and
+    # what we get through raspistill)
 
     analog_gain = _get_analog_gain_from_iso(iso)
-    logging.debug("Desired ISO: {iso}".format(**locals()))
-    logging.debug("Setting analog_gain to {analog_gain}".format(**locals()))
-    # camera.set_analog_gain(analog_gain)
+    logging.debug(f"Desired ISO: {iso}")
+    logging.debug(f"Setting analog_gain to {analog_gain}")
     camera.analog_gain = analog_gain
-    logging.debug("Read analog_gain as {}".format(camera.analog_gain))
 
     # 3. Control the shutter_speed
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
     # https://picamera.readthedocs.io/en/release-1.13/recipes1.html?highlight=framerate#capturing-in-low-light
     framerate = Fraction(1 / exposure_time)  # In frames per second
-    logging.debug("Setting framerate to {framerate} fps".format(**locals()))
+    logging.debug(f"Setting framerate to {framerate} fps")
     camera.framerate = framerate
 
     shutter_speed = int(exposure_time * 1e6)  # In microseconds
-    logging.debug("Setting shutter_speed to {shutter_speed}us".format(**locals()))
+    logging.debug(f"Setting shutter_speed to {shutter_speed}us")
     camera.shutter_speed = shutter_speed
 
     # 4. Give the camera time for the gains to "settle", and then fix them by setting exposure_mode to "off"
@@ -208,7 +204,7 @@ def capture_with_picamera(
     logging.debug("Setting exposure_mode to 'off'")
     camera.exposure_mode = "off"
 
-    logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
+    logging.info(f"Capturing PiCamera image to {image_filepath}")
     camera.capture(image_filepath, format="jpeg", bayer=True, quality=quality)
     logging.debug("Captured PiCamera image")
 
