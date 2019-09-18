@@ -108,13 +108,13 @@ class CosmobotPiCamera(PiCamera):
         MMAL_PARAMETER_ANALOG_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x59
         self._set_gain(MMAL_PARAMETER_ANALOG_GAIN, analog_gain)
 
-    analog_gain = property(super()._get_analog_gain, set_analog_gain)
+    analog_gain = property(PiCamera._get_analog_gain, set_analog_gain)
 
     def set_digital_gain(self, analog_gain):
         MMAL_PARAMETER_DIGITAL_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x5A
         self._set_gain(MMAL_PARAMETER_DIGITAL_GAIN, analog_gain)
 
-    digital_gain = property(super()._get_digital_gain, set_digital_gain)
+    digital_gain = property(PiCamera._get_digital_gain, set_digital_gain)
 
     def capture(self, image_filepath, **kwargs):
         """ Cleans up after the parent capture method by saving to a temporary file first, and only renaming if capture
