@@ -206,7 +206,7 @@ def capture_with_picamera(
     camera.exposure_mode = "off"
 
     logging.info("Capturing PiCamera image to {image_filepath}".format(**locals()))
-    camera.capture(image_filepath, bayer=True, quality=quality)
+    camera.capture(image_filepath, format="jpeg", bayer=True, quality=quality)
     logging.debug("Captured PiCamera image")
 
 
