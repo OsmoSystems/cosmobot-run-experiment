@@ -14,8 +14,6 @@ else:
     logging.warning("Using library stubs for non-raspberry-pi machine")
     from .pi_stubs.picamera import PiCamera
 
-    # TODO: add stubs for mmal stuff
-
 
 # Default auto-white-balance gains recommended by Pagnutti. These only affect the .jpegs.
 # awb_gains are a tuple of values representing the (red, blue) balance of the camera.
@@ -47,7 +45,6 @@ def _wait_for_warm_up(warm_up_time: int):
 
 def _get_analog_gain_from_iso(iso):
     """
-    See detailed analysis here: https://github.com/waveform80/picamera/issues/531
     This function maps from an ISO to a desired actual analog_gain, working around the fact that
     PiCamera doesn't seem to properly fix the analog_gain for a given ISO.
     The mapping used here is a linear function that appears to fit the data between ISO=54 and ISO=500.
@@ -55,6 +52,8 @@ def _get_analog_gain_from_iso(iso):
         ISO     analog_gain
         54      1
         800     14.72
+
+    See detailed analysis here: https://github.com/waveform80/picamera/issues/531
     """
     # PiCamera docs suggest this should be ISO 60, but experimentally we found this to be 54
     x1, y1 = (54, 1)
