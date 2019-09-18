@@ -38,7 +38,7 @@ VALID_EXPOSURE_RANGE = (0, 6)
 VALID_ISO_RANGE = (54, 500)
 
 
-def _wait_for_gains_to_settle(warm_up_time: int):
+def _wait_for_warm_up(warm_up_time: int):
     """ Sleep for warm_up_time seconds to let the camera 'warm up', i.e. let the analog and digital gains settle
     """
     logging.info("Warming up for {warm_up_time}s".format(**locals()))
@@ -75,7 +75,7 @@ class CosmobotPiCamera(PiCamera):
     """
 
     def __enter__(self):
-        _wait_for_gains_to_settle(DEFAULT_WARM_UP_TIME)
+        _wait_for_warm_up(DEFAULT_WARM_UP_TIME)
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
@@ -87,10 +87,9 @@ class CosmobotPiCamera(PiCamera):
     # Inspired by this gist: https://gist.github.com/rwb27/a23808e9f4008b48de95692a38ddaa08/
     # with small modifications
     def _set_gain(self, gain_type, gain):
-        """Set the analog gain of a PiCamera.
+        """Set the analog or digital gain of a PiCamera.
 
-        camera: the picamera.PiCamera() instance you are configuring
-        gain: either MMAL_PARAMETER_ANALOG_GAIN or MMAL_PARAMETER_DIGITAL_GAIN
+        gain_type: either MMAL_PARAMETER_ANALOG_GAIN or MMAL_PARAMETER_DIGITAL_GAIN
         gain: a numeric value that can be converted to a rational number.
         """
         return_code = mmal.mmal_port_parameter_set_rational(
@@ -204,7 +203,7 @@ def capture_with_picamera(
     camera.shutter_speed = shutter_speed
 
     # 4. Give the camera time for the gains to "settle", and then fix them by setting exposure_mode to "off"
-    _wait_for_gains_to_settle(warm_up_time)
+    _wait_for_warm_up(warm_up_time)
 
     logging.debug("Setting exposure_mode to 'off'")
     camera.exposure_mode = "off"

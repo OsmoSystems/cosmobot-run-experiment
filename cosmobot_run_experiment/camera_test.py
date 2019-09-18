@@ -56,11 +56,17 @@ class TestCaptureWithPiCamera:
         mock_camera = Mock()
         module.capture_with_picamera(mock_camera, image_filepath=mock_image_filepath)
 
-        # TODO: add tests for setting analog_gain
-        # assert mock_camera.iso == 100
         assert mock_camera.resolution == (3280, 2464)
         assert mock_camera.awb_mode == "off"
         assert mock_camera.awb_gains == (1.307, 1.615)
+
+    def test_sets_analog_gain_based_on_iso(self, mock_image_filepath):
+        mock_camera = Mock()
+        module.capture_with_picamera(
+            mock_camera, image_filepath=mock_image_filepath, iso=54
+        )
+
+        assert mock_camera.analog_gain == 1
 
     def test_sets_shutter_speed_and_framerate_based_on_exposure_time(self):
         mock_camera = Mock()
@@ -76,7 +82,7 @@ class TestCaptureWithPiCamera:
         module.capture_with_picamera(mock_camera, mock_image_filepath, quality=1000)
 
         mock_camera.capture.assert_called_with(
-            mock_image_filepath, bayer=True, quality=1000
+            mock_image_filepath, format="jpeg", bayer=True, quality=1000
         )
 
 
