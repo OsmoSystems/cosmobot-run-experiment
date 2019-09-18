@@ -66,10 +66,6 @@ def _get_analog_gain_from_iso(iso):
     return m * iso + b
 
 
-def _get_tmp_filepath(filepath):
-    return f"{filepath}~"
-
-
 class CosmobotPiCamera(PiCamera):
     """ Wraps the existing PiCamera context manager with some protections:
          - an enforced warm up time
@@ -124,7 +120,8 @@ class CosmobotPiCamera(PiCamera):
         process we are left with an empty image file that breaks downstream processing code.
         """
 
-        tmp_image_filepath = _get_tmp_filepath(image_filepath)
+        # Note: this means output format must be specified explicitly, as the "~" confuses the mimetype guesser
+        tmp_image_filepath = f"{image_filepath}~"
         super().capture(tmp_image_filepath, **kwargs)
         os.rename(tmp_image_filepath, image_filepath)
 
