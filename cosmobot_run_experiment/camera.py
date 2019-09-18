@@ -49,17 +49,20 @@ def _get_analog_gain_from_iso(iso):
     """
     This function maps from an ISO to a desired actual analog_gain, working around the fact that
     PiCamera doesn't seem to properly fix the analog_gain for a given ISO.
-    The mapping used here is a linear function that appears to fit the data between ISO=54 and ISO=500.
+    The mapping used here is a linear function that appears to fit the data between ISO 54 and ISO 580.
     The function is defined by the two endpoints:
         ISO     analog_gain     comment
         54      1               PiCamera docs suggest this should be ISO 60, but experimentally we found 54
-        579.678 2731/256        Experimentally determined - the analog gain maxes out here
-        800     14.72           From PiCamera docs. The line through this fits our experimental data up to ISO 500
+        579.678 10.668          Experimentally determined - the analog gain maxes out here
 
-    See detailed analysis here: https://github.com/waveform80/picamera/issues/531
+    It is worth nothing that the PiCamera docs map ISO 800 to 14.72 _total_ gain. The line through this point
+    agrees with our data up to ~ISO 580, at which point the _analog_ gain seems to max out.
+
+    Detailed analysis of issue: https://github.com/waveform80/picamera/issues/531
+    Experimental data: https://docs.google.com/spreadsheets/d/1zdEaKhonmSGIbpHwuU7aBYxcXBc9KKiAsplBzOH_KLs
     """
     reference_isos = [54, 579.678]
-    reference_analog_gains = [1, 2731 / 256]
+    reference_analog_gains = [1, 10.668]
 
     return np.interp(iso, reference_isos, reference_analog_gains)
 
