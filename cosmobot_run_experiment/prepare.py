@@ -205,7 +205,7 @@ def _get_variant_parser():
     arg_parser.add_argument(
         "--warm-up-time",
         required=False,
-        type=int,
+        type=float,
         default=DEFAULT_WARM_UP_TIME,
         help="Time to wait for camera settings to 'settle' before capturing image, in seconds.",
     )
