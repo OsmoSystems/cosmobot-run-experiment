@@ -202,8 +202,8 @@ def capture_with_picamera(
     # 4. Give the camera time for the gains to "settle", and then fix them by setting exposure_mode to "off"
     _wait_for_warm_up(warm_up_time)
 
-    logging.debug("Setting exposure_mode to 'off'")
-    camera.exposure_mode = "off"
+    # logging.debug("Setting exposure_mode to 'off'")
+    # camera.exposure_mode = "off"
 
     logging.info(f"Capturing PiCamera image to {image_filepath}")
     camera.capture(image_filepath, format="jpeg", bayer=True, quality=quality)
