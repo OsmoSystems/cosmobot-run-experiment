@@ -108,9 +108,13 @@ class CosmobotPiCamera(PiCamera):
         MMAL_PARAMETER_ANALOG_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x59
         self._set_gain(MMAL_PARAMETER_ANALOG_GAIN, analog_gain)
 
+    analog_gain = property(super()._get_analog_gain, set_analog_gain)
+
     def set_digital_gain(self, analog_gain):
         MMAL_PARAMETER_DIGITAL_GAIN = mmal.MMAL_PARAMETER_GROUP_CAMERA + 0x5A
         self._set_gain(MMAL_PARAMETER_DIGITAL_GAIN, analog_gain)
+
+    digital_gain = property(super()._get_digital_gain, set_digital_gain)
 
     def capture(self, image_filepath, **kwargs):
         """ Cleans up after the parent capture method by saving to a temporary file first, and only renaming if capture
@@ -183,7 +187,9 @@ def capture_with_picamera(
     analog_gain = _get_analog_gain_from_iso(iso)
     logging.debug("Desired ISO: {iso}".format(**locals()))
     logging.debug("Setting analog_gain to {analog_gain}".format(**locals()))
-    camera.set_analog_gain(analog_gain)
+    # camera.set_analog_gain(analog_gain)
+    camera.analog_gain = analog_gain
+    logging.debug("Read analog_gain as {}".format(camera.analog_gain))
 
     # 3. Control the shutter_speed
     # The framerate limits the shutter speed, so it must be set *before* shutter speed
