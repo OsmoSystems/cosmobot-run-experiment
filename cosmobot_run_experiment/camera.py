@@ -117,6 +117,25 @@ class CosmobotPiCamera(PiCamera):
 
     digital_gain = property(PiCamera._get_digital_gain, _set_digital_gain)
 
+    def _control_callback(self, port, buf):
+        print("I am a callback!!!!!")
+        print(f"command: {buf.command}")
+        try:
+            if buf.command == mmal.MMAL_EVENT_ERROR:
+                raise exc.PiCameraRuntimeError(
+                    "No data received from sensor. Check all connections, "
+                    "including the SUNNY chip on the camera board"
+                )
+            elif buf.command != mmal.MMAL_EVENT_PARAMETER_CHANGED:
+                raise exc.PiCameraRuntimeError(
+                    "Received unexpected camera control callback event, "
+                    "0x%08x" % buf[0].cmd
+                )
+        except Exception as exc:
+            # Pass the exception to the main thread; next time
+            # check_camera_open() is called this will get raised
+            self._camera_exception = exc
+
     def capture(self, image_filepath, **kwargs):
         """ Cleans up after the parent capture method by saving to a temporary file first, and only renaming if capture
         succeeds
@@ -198,12 +217,12 @@ def capture_with_picamera(
     # 4. Give the camera time for the gains to "settle", and then fix them by setting exposure_mode to "off"
     _wait_for_warm_up(warm_up_time)
 
-    # logging.debug("Setting exposure_mode to 'off'")
-    # camera.exposure_mode = "off"
+    logging.debug("Setting exposure_mode to 'off'")
+    camera.exposure_mode = "off"
 
-    flash_mode = "on" if led_on else "off"
-    logging.debug(f"Setting flash_mode to {flash_mode}")
-    camera.flash_mode = flash_mode
+    # flash_mode = "on" if led_on else "off"
+    # logging.debug(f"Setting flash_mode to {flash_mode}")
+    # camera.flash_mode = flash_mode
 
     logging.info(f"Capturing PiCamera image to {image_filepath}")
     camera.capture(image_filepath, format="jpeg", bayer=True, quality=quality)
