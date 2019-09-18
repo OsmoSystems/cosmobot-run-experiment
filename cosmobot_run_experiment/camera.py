@@ -6,6 +6,8 @@ import time
 from subprocess import check_call
 from typing import Tuple
 
+import numpy as np
+
 # Support development without needing pi specific modules installed.
 if platform.machine() == "armv7l":
     from picamera import PiCamera, mmal, exc  # noqa: E0401  Unable to import
@@ -49,20 +51,17 @@ def _get_analog_gain_from_iso(iso):
     PiCamera doesn't seem to properly fix the analog_gain for a given ISO.
     The mapping used here is a linear function that appears to fit the data between ISO=54 and ISO=500.
     The function is defined by the two endpoints:
-        ISO     analog_gain
-        54      1
-        800     14.72
+        ISO     analog_gain     comment
+        54      1               PiCamera docs suggest this should be ISO 60, but experimentally we found 54
+        579.678 2731/256        Experimentally determined - the analog gain maxes out here
+        800     14.72           From PiCamera docs. The line through this fits our experimental data up to ISO 500
 
     See detailed analysis here: https://github.com/waveform80/picamera/issues/531
     """
-    # PiCamera docs suggest this should be ISO 60, but experimentally we found this to be 54
-    x1, y1 = (54, 1)
-    # From PiCamera docs, which fits our experimental data up to ISO 500
-    x2, y2 = (800, 14.72)
-    m = (y2 - y1) / (x2 - x1)
-    b = y1 - m * x1
+    reference_isos = [54, 579.678]
+    reference_analog_gains = [1, 2731 / 256]
 
-    return m * iso + b
+    return np.interp(iso, reference_isos, reference_analog_gains)
 
 
 class CosmobotPiCamera(PiCamera):

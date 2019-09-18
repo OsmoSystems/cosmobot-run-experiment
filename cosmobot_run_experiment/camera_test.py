@@ -25,6 +25,25 @@ def _mock_capture_with_interrupt(image_filepath, **kwargs):
     raise KeyboardInterrupt()
 
 
+class TestGetAnalogGainFromIso:
+    @pytest.mark.parametrize(
+        "iso,expected_analog_gain",
+        # fmt: off
+        (
+            (53, 1),  # The analog_gain bottoms out at 1 below ISO ~= 54
+            (54, 1),
+            (100, 1.846),
+            (579.678, 2731/256),
+            (800, 2731/256),  # The analog_gain maxes out at ISO ~= 579
+            # (800, 14.72),
+        )
+        # fmt: on
+    )
+    def test_points(self, iso, expected_analog_gain):
+        actual = module._get_analog_gain_from_iso(iso)
+        assert actual == pytest.approx(expected_analog_gain, abs=1e-3)
+
+
 class TestCosmobotPiCamera:
     def test_doesnt_rename_tmp_file_if_capture_raises(
         self, mock_image_filepath, mock_picamera_capture
