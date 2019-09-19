@@ -39,8 +39,12 @@ def sync_directory_in_separate_process(
 ):
     """ Instantiates a separate process for syncing a directory to s3.  Stores a reference to the process to check
         later for subsequent syncs.
+
+    Files ending in ~ are always excluded from sync.
+
      Args:
         directory: directory to sync
+        exclude_log_files (optional, default=True): If True, don't sync log files (*.log*)
         wait_for_finish (optional): If True, wait for new process to complete before returning from the function.
      Returns:
         None.
@@ -49,7 +53,9 @@ def sync_directory_in_separate_process(
     if _is_sync_process_running():
         return
 
-    additional_sync_params = "--exclude *.log*" if exclude_log_files else ""
+    additional_sync_params = (
+        "--exclude *.log*" if exclude_log_files else ""
+    ) + " --exclude *~"
 
     _SYNC_PROCESS = multiprocessing.Process(
         target=sync_to_s3, args=(directory, additional_sync_params, erase_synced_files)
