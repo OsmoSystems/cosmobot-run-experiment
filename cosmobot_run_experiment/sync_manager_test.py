@@ -45,9 +45,9 @@ class TestIsSyncProcessRunning:
         self, mock_multiprocess_process
     ):
         module.sync_directory_in_separate_process(
-            "/tmp", wait_for_finish=False, exclude_log_files=True
+            "/tmp", wait_for_finish=False, exclude_log_and_temporary_files=True
         )
-        expected_additional_sync_params = "--exclude *.log*"
+        expected_additional_sync_params = "--exclude *.log* --exclude *~"
         expected_erase_synced_files = False
         mock_multiprocess_process.assert_called_with(
             target=s3.sync_to_s3,

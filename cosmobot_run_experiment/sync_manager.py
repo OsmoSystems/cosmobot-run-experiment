@@ -35,12 +35,17 @@ def end_syncing_process():
 
 
 def sync_directory_in_separate_process(
-    directory, wait_for_finish=False, exclude_log_files=True, erase_synced_files=False
+    directory,
+    wait_for_finish=False,
+    exclude_log_and_temporary_files=True,
+    erase_synced_files=False,
 ):
     """ Instantiates a separate process for syncing a directory to s3.  Stores a reference to the process to check
         later for subsequent syncs.
      Args:
         directory: directory to sync
+        exclude_log_and_temporary_files (optional, default=True): If True, exclude log files (*.log*) and temporary
+            files (ending in "~"). The latter is useful for ignoring raspistill's temporary .jpeg~ files.
         wait_for_finish (optional): If True, wait for new process to complete before returning from the function.
      Returns:
         None.
@@ -49,7 +54,9 @@ def sync_directory_in_separate_process(
     if _is_sync_process_running():
         return
 
-    additional_sync_params = "--exclude *.log*" if exclude_log_files else ""
+    additional_sync_params = (
+        "--exclude *.log* --exclude *~" if exclude_log_and_temporary_files else ""
+    )
 
     _SYNC_PROCESS = multiprocessing.Process(
         target=sync_to_s3, args=(directory, additional_sync_params, erase_synced_files)
