@@ -152,7 +152,7 @@ def end_experiment(experiment_configuration, experiment_ended_message, has_error
         sync_directory_in_separate_process(
             experiment_configuration.experiment_directory_path,
             wait_for_finish=True,
-            exclude_log_and_temporary_files=False,
+            exclude_log_files=False,
             erase_synced_files=experiment_configuration.erase_synced_files,
         )
         logging.info("Final sync to s3 completed!")
