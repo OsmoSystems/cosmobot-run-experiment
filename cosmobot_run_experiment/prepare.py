@@ -402,8 +402,4 @@ def _get_ip_info():
     """ Get IP address information for all IP addresses for this device
     Omits non-global addresses (mainly loopback and link)
     """
-    return (
-        check_output("ip address show scope global", shell=True)
-        .decode("utf-8")
-        .rstrip()
-    )
+    return check_output("hostname -I", shell=True).decode("utf-8").rstrip()
