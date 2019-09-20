@@ -30,7 +30,7 @@ ExperimentConfiguration = namedtuple(
         "experiment_directory_path",  # directory/path to write files to
         "command",  # full command with arguments issued to start the experiment from the command line
         "git_hash",  # git hash of camera-sensor-prototype repo
-        "ip_info",  # relevant IP addresses
+        "ip_addresses",  # relevant IP addresses
         "hostname",  # hostname of the device the experient was executed on
         "mac",  # mac address
         "skip_sync",  # whether to skip syncing to s3
@@ -339,7 +339,7 @@ def get_experiment_configuration(cli_args):
         experiment_directory_path=experiment_directory_path,
         command=" ".join(sys.argv),
         git_hash=_get_git_hash(),
-        ip_info=_get_ip_info(),
+        ip_addresses=_get_ip_addresses(),
         hostname=gethostname(),
         mac=mac_address,
         variants=variants,
@@ -398,12 +398,8 @@ def _get_git_hash():
     return command_output
 
 
-def _get_ip_info():
+def _get_ip_addresses():
     """ Get IP address information for all IP addresses for this device
     Omits non-global addresses (mainly loopback and link)
     """
-    return (
-        check_output("ip address show scope global", shell=True)
-        .decode("utf-8")
-        .rstrip()
-    )
+    return check_output("hostname -I", shell=True).decode("utf-8").rstrip()
