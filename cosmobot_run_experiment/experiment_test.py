@@ -52,10 +52,10 @@ MOCK_EXPERIMENT_CONFIGURATION = {
     "interval": 0.1,
     "variants": [
         ExperimentVariant(
-            capture_params="-ISO 100",
+            additional_capture_params="",
+            iso=100,
             exposure_time=0.001,
             camera_warm_up=0.001,
-            led_on=False,
         )
     ],
     "group_results": False,

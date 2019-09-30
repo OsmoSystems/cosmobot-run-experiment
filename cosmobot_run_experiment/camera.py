@@ -6,12 +6,15 @@ from subprocess import check_call
 AWB_QUALITY_CAPTURE_PARAMS = "-q 100 -awb off -awbg 1.307,1.615"
 
 DEFAULT_EXPOSURE_TIME = 0.8
+DEFAULT_ISO = 100
+DEFAULT_WARM_UP_TIME = 5
 
 
 def capture(
     filename,
     exposure_time=DEFAULT_EXPOSURE_TIME,
-    warm_up_time=5,
+    iso=DEFAULT_ISO,
+    warm_up_time=DEFAULT_WARM_UP_TIME,
     additional_capture_params="",
 ):
     """ Capture raw image JPEG+EXIF using command line
@@ -19,6 +22,7 @@ def capture(
     Args:
         filename: filename to save an image to
         exposure_time: number of seconds in the exposure
+        iso: the ISO setting
         warm_up_time: number of seconds to wait for the camera to warm up
         additional_capture_params: Additional parameters to pass to raspistill command
 
@@ -31,6 +35,7 @@ def capture(
         'raspistill --raw -o "{filename}"'
         " {AWB_QUALITY_CAPTURE_PARAMS}"
         " -ss {exposure_time_microseconds}"
+        " -ISO {iso}"
         " --timeout {timeout_milliseconds}"
         " {additional_capture_params}"
     ).format(**locals(), **globals())

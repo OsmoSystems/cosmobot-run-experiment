@@ -107,116 +107,76 @@ def test_hostname_is_correct(
 def _default_variant_with(**kwargs):
     """ get an ExperimentVariant with overridable default settings """
     variant_kwargs = {
-        "capture_params": "",
         "exposure_time": 0.8,
+        "iso": 100,
         "camera_warm_up": 5,
-        "led_on": False,
+        "additional_capture_params": "",
         **kwargs,
     }
     return module.ExperimentVariant(**variant_kwargs)
 
 
 class TestGetExperimentVariants:
-    def test_exposure_no_iso_uses_default_iso(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [],
-            "exposures": [1, 2],
-            "isos": None,
-        }
-
-        expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=2),
-        ]
-
-        actual = module.get_experiment_variants(args)
-        assert actual == expected
-
-    def test_exposure_and_iso_generate_correct_variants(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [],
-            "exposures": [1, 2],
-            "isos": [100, 200],
-        }
-
-        expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=2),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=2),
-        ]
-
-        actual = module.get_experiment_variants(args)
-        assert actual == expected
-
-    def test_exposure_and_iso_and_variant_generate_correct_variants(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": ["--exposure-time 0.4 -ISO 100"],
-            "exposures": [1, 2.5],
-            "isos": [100, 200],
-        }
-
-        expected = [
-            _default_variant_with(capture_params="-ISO 100", exposure_time=0.4),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=1),
-            _default_variant_with(capture_params="-ISO 100", exposure_time=2.5),
-            _default_variant_with(capture_params="-ISO 200", exposure_time=2.5),
-        ]
-
-        actual = module.get_experiment_variants(args)
-        assert actual == expected
-
-    def test_only_variants_generate_correct_variants(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [" -ISO 100", " -ISO 200"],
-            "exposures": None,
-            "isos": None,
-        }
-
-        expected = [
-            _default_variant_with(capture_params="-ISO 100"),
-            _default_variant_with(capture_params="-ISO 200"),
-        ]
-
-        actual = module.get_experiment_variants(args)
-        assert actual == expected
-
-    def test_led_params_passed_through(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [" -ISO 100 --led-on"],
-            "exposures": None,
-            "isos": None,
-        }
-
-        expected = [_default_variant_with(capture_params="-ISO 100", led_on=True)]
-
-        actual = module.get_experiment_variants(args)
-        assert actual == expected
-
-    def test_no_variant_args_produces_default_variant(self):
-        args = {
-            "name": "test",
-            "interval": 10,
-            "variant": [],
-            "exposures": None,
-            "isos": None,
-        }
-
-        expected = [_default_variant_with(capture_params="-ISO 100")]
-
-        actual = module.get_experiment_variants(args)
-        assert actual == expected
+    @pytest.mark.parametrize(
+        "name,args,expected_variants",
+        (
+            (
+                "exposures no iso uses default iso",
+                {"variant": [], "exposures": [1, 2], "isos": None},
+                [
+                    _default_variant_with(exposure_time=1),
+                    _default_variant_with(exposure_time=2),
+                ],
+            ),
+            (
+                "exposures and isos",
+                {"variant": [], "exposures": [1, 2], "isos": [100, 200]},
+                [
+                    _default_variant_with(iso=100, exposure_time=1),
+                    _default_variant_with(iso=200, exposure_time=1),
+                    _default_variant_with(iso=100, exposure_time=2),
+                    _default_variant_with(iso=200, exposure_time=2),
+                ],
+            ),
+            (
+                "exposures and isos and variant",
+                {
+                    "variant": ["--exposure-time 0.4 --iso 100"],
+                    "exposures": [1, 2.5],
+                    "isos": [200, 300],
+                },
+                [
+                    _default_variant_with(iso=100, exposure_time=0.4),
+                    _default_variant_with(iso=200, exposure_time=1),
+                    _default_variant_with(iso=300, exposure_time=1),
+                    _default_variant_with(iso=200, exposure_time=2.5),
+                    _default_variant_with(iso=300, exposure_time=2.5),
+                ],
+            ),
+            (
+                "variants only",
+                {
+                    "variant": ["--iso 200", "--iso 300"],
+                    "exposures": None,
+                    "isos": None,
+                },
+                [_default_variant_with(iso=200), _default_variant_with(iso=300)],
+            ),
+            (
+                "ignores deprecated led-on param and doesn't blow up",
+                {"variant": ["--led-on"], "exposures": None, "isos": None},
+                [_default_variant_with()],
+            ),
+            (
+                "no variant args produces default variant",
+                {"variant": [], "exposures": None, "isos": None},
+                [_default_variant_with()],
+            ),
+        ),
+    )
+    def test_variant_combos(self, name, args, expected_variants):
+        actual_variants = module.get_experiment_variants(args)
+        assert actual_variants == expected_variants
 
 
 class TestCreateFileStructureForExperiment:
@@ -271,21 +231,21 @@ class TestCreateFileStructureForExperiment:
 
 
 class TestParseVariant:
+    def test_doesnt_explode_on_deprecated_parameters(self):
+        module._parse_variant(" --led-on")
+
     def test_creates_variant_with_params(self):
         variant = module._parse_variant(
-            "--iso 123 --exposure-time 0.4 --camera-warm-up 5 --led-on"
+            "--iso 123 --exposure-time 0.4 --camera-warm-up 5"
         )
         expected_variant = module.ExperimentVariant(
-            capture_params="--iso 123", exposure_time=0.4, camera_warm_up=5, led_on=True
+            iso=123, exposure_time=0.4, camera_warm_up=5, additional_capture_params=""
         )
         assert variant == expected_variant
 
     def test_creates_variant_has_sane_defaults(self):
         expected_variant = module.ExperimentVariant(
-            capture_params=module.DEFAULT_CAPTURE_PARAMS,
-            exposure_time=0.8,
-            camera_warm_up=5,
-            led_on=False,
+            exposure_time=0.8, iso=100, camera_warm_up=5, additional_capture_params=""
         )
         assert module._parse_variant("") == expected_variant
 
