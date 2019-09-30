@@ -2,7 +2,7 @@ import argparse
 import sys
 import os
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime
 from socket import gethostname
 from subprocess import check_output, CalledProcessError
 from textwrap import dedent
@@ -25,7 +25,6 @@ ExperimentConfiguration = namedtuple(
         "duration",  # how long in seconds should the experiment run for
         "variants",  # array of ExperimentVariants that define different capture settings to be run each iteration
         "start_date",  # date the experiment was started
-        "end_date",  # date at which to end the experiment.  If duration is not set then this is effectively indefinite
         "group_results",  # store results in the same directory as the previous run with this experiment name
         "experiment_directory_path",  # directory/path to write files to
         "command",  # full command with arguments issued to start the experiment from the command line
@@ -312,9 +311,6 @@ def get_experiment_configuration(cli_args):
 
     duration = args["duration"]
     start_date = datetime.now()
-    end_date = (
-        start_date if duration is None else start_date + timedelta(seconds=duration)
-    )
     mac_address = _get_mac_address()
     mac_last_4 = _get_mac_last_4()
 
@@ -334,7 +330,6 @@ def get_experiment_configuration(cli_args):
         interval=args["interval"],
         duration=duration,
         start_date=start_date,
-        end_date=end_date,
         group_results=group_results,
         experiment_directory_path=experiment_directory_path,
         command=" ".join(sys.argv),

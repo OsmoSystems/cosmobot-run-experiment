@@ -54,25 +54,31 @@ def perform_experiment(configuration):
        from camera import capture => from camera import capture, simulate_capture_with_copy
        and using simulate_capture_with_copy instead of capture.
     """
+    duration = configuration.duration
 
     # print out warning that no duration has been set and inform how many
     # estimated images can be stored
-    if configuration.duration is None:
+    if duration is None:
         how_many_images_can_be_captured = how_many_images_with_free_space()
         logging.info("No experimental duration provided.")
         logging.info(
             "Estimated number of images that can be captured with free space: "
             "{how_many_images_can_be_captured}".format(**locals())
         )
+    # Start capturing immediately
+    first_capture_time = datetime.now()
+    next_capture_time = first_capture_time
 
-    # Initial value of start_date results in immediate capture on first iteration in while loop
-    next_capture_time = configuration.start_date
+    # Continue capturing for set duration or indefinitely
+    last_capture_time = (
+        None if duration is None else first_capture_time + timedelta(seconds=duration)
+    )
 
     # Prep an executor so we can control the LED in detail
     # while raspistill does its whole (camera warm-up + exposure + file save) thing
     led_executor = ThreadPoolExecutor(max_workers=1)
 
-    while configuration.duration is None or datetime.now() < configuration.end_date:
+    while last_capture_time is None or datetime.now() < last_capture_time:
         if datetime.now() < next_capture_time:
             time.sleep(0.1)  # No need to totally peg the CPU
             continue
