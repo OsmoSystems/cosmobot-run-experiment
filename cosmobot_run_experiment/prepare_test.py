@@ -374,3 +374,57 @@ class TestGetExperimentDirectoryPath:
         )
         assert actual_path == expected_path
         mock_list_experiments.assert_not_called()
+
+
+MOCK_MINIMUM_PARAMETERS = [
+    "--name",
+    "automated_integration_test",
+    "--interval",
+    "0.1",  # Long enough to do an actual loop; not long enough to make the test feel slow
+    "--duration",
+    "0.1",  # Match duration to interval to force exactly one iteration
+]
+
+
+class TestGetExperimentConfiguration:
+    def test_constructs_configuration_from_minimum_parameters(self, mocker):
+        mocker.patch.object(module, "_get_git_hash").return_value = sentinel.git_hash
+        mocker.patch.object(
+            module, "_get_ip_addresses"
+        ).return_value = sentinel.ip_addresses
+        mocker.patch.object(
+            module, "get_experiment_variants"
+        ).return_value = sentinel.variants
+        mocker.patch.object(module, "_get_mac_last_4").return_value = "1A2B"
+        mocker.patch.object(
+            module, "_get_mac_address"
+        ).return_value = sentinel.mac_address
+        mocker.patch.object(module, "gethostname").return_value = sentinel.hostname
+        mocker.patch.object(module, "sys").argv = ["mock command"]
+        mock_date = datetime.datetime(2019, 1, 1, 12, 0, 0)
+        mock_datetime = mocker.patch.object(module, "datetime")
+        mock_datetime.now.return_value = mock_date
+
+        actual = module.get_experiment_configuration(MOCK_MINIMUM_PARAMETERS)
+
+        expected_path = "/home/pi/camera-sensor-output/2019-01-01--12-00-00-Pi1A2B-automated_integration_test"
+
+        expected = module.ExperimentConfiguration(
+            name="automated_integration_test",
+            interval=0.1,
+            duration=0.1,
+            start_date=mock_date,
+            experiment_directory_path=expected_path,
+            command="mock command",
+            git_hash=sentinel.git_hash,
+            ip_addresses=sentinel.ip_addresses,
+            hostname=sentinel.hostname,
+            mac=sentinel.mac_address,
+            variants=sentinel.variants,
+            erase_synced_files=False,
+            group_results=False,
+            review_exposure=False,
+            skip_sync=False,
+        )
+
+        assert actual == expected
