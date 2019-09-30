@@ -48,7 +48,8 @@ def mock_free_space_for_one_image(mocker):
 
 MOCK_EXPERIMENT_CONFIGURATION = {
     "name": "automated_integration_test",
-    "interval": 0.2,
+    "duration": 0.1,
+    "interval": 0.1,
     "variants": [
         ExperimentVariant(
             capture_params="-ISO 100",
@@ -59,6 +60,7 @@ MOCK_EXPERIMENT_CONFIGURATION = {
     ],
     "group_results": False,
     "experiment_directory_path": "/mock/path/to",
+    "start_date": sentinel.start_date,
     "command": sentinel.command,
     "git_hash": sentinel.git_hash,
     "ip_addresses": sentinel.ip_addresses,
@@ -70,16 +72,8 @@ MOCK_EXPERIMENT_CONFIGURATION = {
 }
 
 
-def _get_mock_experiment_configuration_with(duration):
-    """ Create an ExperimentConfiguration with valid start and end dates (for right now)
-    """
-    start_time = datetime.now()
-    return ExperimentConfiguration(
-        **MOCK_EXPERIMENT_CONFIGURATION,
-        duration=duration,
-        start_date=start_time,
-        end_date=start_time + timedelta(seconds=duration),
-    )
+def _mock_experiment_configuration_with(**kwargs):
+    return ExperimentConfiguration(**{**MOCK_EXPERIMENT_CONFIGURATION, **kwargs})
 
 
 class TestPerformExperiment:
@@ -87,7 +81,7 @@ class TestPerformExperiment:
         self, mock_capture, mock_free_space_for_one_image
     ):
         start_time = datetime.now()
-        mock_configuration = _get_mock_experiment_configuration_with(duration=0.2)
+        mock_configuration = _mock_experiment_configuration_with(duration=0.2)
 
         with pytest.raises(SystemExit):
             module.perform_experiment(mock_configuration)
@@ -104,7 +98,9 @@ class TestPerformExperiment:
     def test_image_count_roughly_correct(
         self, mock_capture, mock_free_space_for_one_image
     ):
-        mock_configuration = _get_mock_experiment_configuration_with(duration=0.5)
+        mock_configuration = _mock_experiment_configuration_with(
+            duration=0.5, interval=0.2
+        )
 
         with pytest.raises(SystemExit):
             module.perform_experiment(mock_configuration)
@@ -115,7 +111,7 @@ class TestPerformExperiment:
         self, mock_capture, mock_free_space_for_one_image
     ):
         mock_free_space_for_one_image.return_value = False
-        mock_configuration = _get_mock_experiment_configuration_with(duration=0.2)
+        mock_configuration = _mock_experiment_configuration_with()
 
         with pytest.raises(SystemExit):
             module.perform_experiment(mock_configuration)
