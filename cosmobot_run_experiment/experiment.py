@@ -99,8 +99,8 @@ def perform_experiment(configuration):
             _end_experiment_if_not_enough_space(configuration)
 
             experiment_directory_path = configuration.experiment_directory_path
-            image_filepath = (
-                _get_variant_image_filepath(variant, experiment_directory_path),
+            image_filepath = _get_variant_image_filepath(
+                variant, experiment_directory_path
             )
 
             capture(
