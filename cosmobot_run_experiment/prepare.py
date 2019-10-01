@@ -250,7 +250,7 @@ def get_experiment_variants(args):
     variants = [_parse_variant(variant) for variant in args["variant"]]
 
     # add variants of exposure and iso lists if provided
-    if args["exposures"]:
+    if args["exposures"] or args["isos"]:
         variants.extend(
             ExperimentVariant(
                 exposure_time=exposure,
@@ -258,7 +258,7 @@ def get_experiment_variants(args):
                 camera_warm_up=DEFAULT_WARM_UP_TIME,
                 additional_capture_params="",
             )
-            for exposure in args["exposures"]
+            for exposure in args["exposures"] or [DEFAULT_EXPOSURE_TIME]
             for iso in args["isos"] or [DEFAULT_ISO]
         )
 

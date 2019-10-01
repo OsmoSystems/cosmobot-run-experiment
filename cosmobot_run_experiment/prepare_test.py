@@ -129,6 +129,15 @@ class TestGetExperimentVariants:
                 ],
             ),
             (
+                "isos no exposure uses default exposure",
+                {"variant": [], "exposures": None, "isos": [200, 300, 400]},
+                [
+                    _default_variant_with(iso=200),
+                    _default_variant_with(iso=300),
+                    _default_variant_with(iso=400),
+                ],
+            ),
+            (
                 "exposures and isos",
                 {"variant": [], "exposures": [1, 2], "isos": [100, 200]},
                 [
