@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from unittest.mock import sentinel
 
+from freezegun import freeze_time
 import pytest
 
 from .prepare import ExperimentConfiguration, ExperimentVariant
@@ -52,10 +53,7 @@ MOCK_EXPERIMENT_CONFIGURATION = {
     "interval": 0.1,
     "variants": [
         ExperimentVariant(
-            additional_capture_params="",
-            iso=100,
-            exposure_time=0.001,
-            camera_warm_up=0.001,
+            additional_capture_params="", iso=500, exposure_time=0.123, camera_warm_up=4
         )
     ],
     "group_results": False,
@@ -94,6 +92,27 @@ class TestPerformExperiment:
         # and cause this to fail.
         max_test_time = timedelta(seconds=0.3)
         assert elapsed_time < max_test_time
+
+    @freeze_time("2019-01-01 12:00:01")
+    def test_capture_called_with_correct_params(
+        self, mock_capture, mock_free_space_for_one_image
+    ):
+        # With time frozen, force the experiment to end
+        mock_capture.side_effect = SystemExit()
+
+        mock_configuration = _mock_experiment_configuration_with()
+
+        with pytest.raises(SystemExit):
+            module.perform_experiment(mock_configuration)
+
+        expected_filepath = "/mock/path/to/2019-01-01--12-00-01_additional_capture_params__exposure_time_0.123_iso_500_camera_warm_up_4_.jpeg"  # noqa: E501 line too long
+        mock_capture.assert_called_with(
+            expected_filepath,
+            exposure_time=0.123,
+            iso=500,
+            warm_up_time=4,
+            additional_capture_params="",
+        )
 
     def test_image_count_roughly_correct(
         self, mock_capture, mock_free_space_for_one_image
