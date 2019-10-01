@@ -175,8 +175,8 @@ def _get_variant_parser():
                     --variant "-ISO 100 --exposure-time 0.5 --camera-warm-up 1"
 
                 If multiple --variant parameters are provided, each variant will be used once per interval.
-                Example:
-                    --variant "--iso 100 --exposure-time 0.5" -v "-i 200 -ex 1"
+                Example (using the short-form parameter flags):
+                    -v "-i 100 -ex 0.5" -v "-i 200 -ex 1"
             """
         )
     )
