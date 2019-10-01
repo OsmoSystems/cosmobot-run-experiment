@@ -13,8 +13,7 @@ else:
     from cosmobot_run_experiment.pi_stubs import board, digitalio
 
 
-DIGITAL_LED_PIN_ON_HIGH = board.D5
-DIGITAL_LED_PIN_ON_LOW = board.D6
+DIGITAL_LED_PIN = board.D5
 
 
 def _set_dio_pin(pin, value: bool):
@@ -30,18 +29,12 @@ def _set_dio_pin(pin, value: bool):
 
 
 def control_led(led_on=True):
-    """ turn on/off Digital IO LED
+    """ turn on/off Digital IO LED on pin D5
 
-    This function is intended to be used to turn an LED on and off.
+    This function is intended to be used to turn an LED on pin D5 on and off.
 
-    However, it is implemented to actually control _two_ pins, in opposite directions.
-
-    This allows us to choose whether we are controlling the LED through a device which
-    turns the LED *on* when the pin is *high*, or *on* when the pin is *low*, simply by
-    connecting to the appropriate pin:
-
-        D5: LED *on* when the pin is *high*
-        D6: LED *on* when the pin is *low*
+    Assumes that we are controlling the LED through a device which
+    turns the LED *on* when the pin is *high* and *off* when the pin is *low*.
 
     Args:
         led_on: boolean; if True, turn LED on. if False, turn LED off
@@ -51,8 +44,7 @@ def control_led(led_on=True):
     logging.info(
         "Turning LED {led_setpoint}".format(led_setpoint="on" if led_on else "off")
     )
-    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_HIGH, value=led_on)
-    _set_dio_pin(pin=DIGITAL_LED_PIN_ON_LOW, value=not led_on)
+    _set_dio_pin(pin=DIGITAL_LED_PIN, value=led_on)
 
 
 def set_led_cli(cli_args=None):
@@ -68,9 +60,7 @@ def set_led_cli(cli_args=None):
         cli_args = sys.argv[1:]
 
     arg_parser = argparse.ArgumentParser(
-        description="Turn on or off LED on digital pin {} (if pin high = led on) or {} (if pin low = led on)".format(
-            DIGITAL_LED_PIN_ON_HIGH, DIGITAL_LED_PIN_ON_LOW
-        )
+        description="Turn on or off LED on digital pin {}".format(DIGITAL_LED_PIN)
     )
 
     arg_parser.add_argument(
@@ -119,9 +109,8 @@ def flash_led_cli(cli_args=None):
 
     arg_parser = argparse.ArgumentParser(
         description=(
-            "Flash LED on/off indefinitely on digital pin "
-            "{} (if pin high = led on) or {} (if pin low = led on) (kill with ctrl+c)"
-        ).format(DIGITAL_LED_PIN_ON_HIGH, DIGITAL_LED_PIN_ON_LOW)
+            "Flash LED on/off indefinitely on digital pin {} (kill with ctrl+c)"
+        ).format(DIGITAL_LED_PIN)
     )
 
     arg_parser.add_argument(

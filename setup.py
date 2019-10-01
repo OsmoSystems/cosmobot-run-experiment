@@ -31,8 +31,6 @@ setup(
         # To install editable (local): pip install -e .[io]
         # fmt: off
         "io": [
-            "adafruit-circuitpython-neopixel",
-            "rpi_ws281x",
             "RPI.GPIO",
         ]
         # fmt: on

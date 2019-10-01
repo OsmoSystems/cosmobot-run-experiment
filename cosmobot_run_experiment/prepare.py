@@ -10,12 +10,13 @@ from uuid import getnode as get_mac
 
 import yaml
 
-from cosmobot_run_experiment.camera import DEFAULT_EXPOSURE_TIME
+from cosmobot_run_experiment.camera import (
+    DEFAULT_EXPOSURE_TIME,
+    DEFAULT_ISO,
+    DEFAULT_WARM_UP_TIME,
+)
 from .file_structure import iso_datetime_for_filename, get_base_output_path
 from .s3 import list_experiments
-
-DEFAULT_ISO = 100
-DEFAULT_CAPTURE_PARAMS = " -ISO {DEFAULT_ISO}".format(**locals())
 
 ExperimentConfiguration = namedtuple(
     "ExperimentConfiguration",
@@ -41,11 +42,19 @@ ExperimentConfiguration = namedtuple(
 ExperimentVariant = namedtuple(
     "ExperimentVariant",
     [
-        "capture_params",  # parameters to pass to raspistill binary through the command line
+        "additional_capture_params",  # parameters to pass to raspistill binary through the command line
         "exposure_time",  # length of camera exposure, seconds
+        "iso",  # ISO
         "camera_warm_up",  # amount of time to let the camera warm up before taking an image, seconds
-        "led_on",  # whether LED should be on or off
     ],
+)
+
+
+DEFAULT_VARIANT = ExperimentVariant(
+    exposure_time=DEFAULT_EXPOSURE_TIME,
+    iso=DEFAULT_ISO,
+    camera_warm_up=DEFAULT_WARM_UP_TIME,
+    additional_capture_params="",
 )
 
 
@@ -84,6 +93,7 @@ def _parse_args(args):
         help="Duration in seconds. Optional: if not provided, will run indefinitely.",
     )
     arg_parser.add_argument(
+        "-v",
         "--variant",
         required=False,
         type=str,
@@ -95,7 +105,7 @@ def _parse_args(args):
     arg_parser.add_argument(
         "--exposures",
         required=False,
-        type=int,
+        type=float,
         nargs="+",
         default=None,
         help='List of exposures to iterate capture through ex. "--exposures 0.1, 1"',
@@ -154,7 +164,7 @@ def _get_variant_parser():
     """ Get the argparse.ArgumentParser instance used to parse LED variants out of a --variant command-line parameter
     """
     # Set this up so that _get_variant_parser().format_help() can be (roughly) used to describe
-    arg_parser = argparse.ArgumentParser(
+    variant_arg_parser = argparse.ArgumentParser(
         # Hack: use "prog" for the whole intro since the .format_help() formatter places this nicely up front
         # with the LED param details afterwards
         prog=dedent(
@@ -162,25 +172,16 @@ def _get_variant_parser():
             --variant "VARIANT_PARAMS".
                 VARIANT_PARAMS describes a variant of camera and LED parameters to use during experiment.
                 Example:
-                    --variant "-ISO 100 --exposure-time 0.5 --camera-warm-up 1 --led-on"
+                    --variant "-ISO 100 --exposure-time 0.5 --camera-warm-up 1"
+
                 If multiple --variant parameters are provided, each variant will be used once per interval.
-
-            Camera control:
-                raspistill camera parameters within each --variant flag are passed directly to raspistill.
-                Some relevant parameters:
-                    "-ISO" should be a value from 100-800, in increments of 100
-                    "--exposure-time" is in seconds, and is undefined above 6s (--exposure-time 6)
-                Ex: --variant "-ISO 100 --exposure-time 0.5 " --variant "-ISO 200 --exposure-time 0.1".
-                Default: "{DEFAULT_CAPTURE_PARAMS}".
-
-            LED control:
-            """.format(
-                **globals()
-            )
+                Example (using the short-form parameter flags):
+                    -v "-i 100 -ex 0.5" -v "-i 200 -ex 1"
+            """
         )
     )
 
-    arg_parser.add_argument(
+    variant_arg_parser.add_argument(
         "-ex",
         "--exposure-time",
         required=False,
@@ -193,19 +194,29 @@ def _get_variant_parser():
             )
         ),
     )
-    arg_parser.add_argument(
+    variant_arg_parser.add_argument(
+        "-i",
+        "-ISO",  # To be backwards compatible with old raspistill params
+        "--iso",
+        required=False,
+        type=int,
+        default=DEFAULT_ISO,
+        help=("ISO for the image to be taken. Default: {}.".format(DEFAULT_ISO)),
+    )
+    variant_arg_parser.add_argument(
         "--camera-warm-up",
         required=False,
         type=float,
         default=5,
         help="Time to allow the camera sensor to warm up before exposure, in seconds. Default: 5s. Minimum: 0.001s",
     )
-    arg_parser.add_argument(
+    variant_arg_parser.add_argument(
         "--led-on",
+        required=False,
         action="store_true",
-        help="If set, LED will be turned on for this variant",
+        help="Deprecated. The LED is now always controlled directly through raspistill",
     )
-    return arg_parser
+    return variant_arg_parser
 
 
 def _parse_variant(variant):
@@ -214,24 +225,24 @@ def _parse_variant(variant):
     )
 
     # capture_params aren't parsed as regular args - they'll just be passed wholesale into raspistill
-    capture_params = " ".join(remaining_args_for_capture) or DEFAULT_CAPTURE_PARAMS
+    additional_capture_params = " ".join(remaining_args_for_capture)
 
-    if "-ss" in capture_params:
+    if "-ss" in additional_capture_params:
         raise ValueError(
             "Setting shutter speed via -ss is no longer supported. Please use --exposure-time or -ex in seconds."
         )
 
-    if "--timeout" in capture_params:
+    if "--timeout" in additional_capture_params:
         raise ValueError(
             "Setting camera warm-up time via --timeout is no longer supported."
             " Please use --camera-warm-up in seconds."
         )
 
     return ExperimentVariant(
-        capture_params=capture_params,
+        additional_capture_params=additional_capture_params,
         exposure_time=parsed_args.exposure_time,
+        iso=parsed_args.iso,
         camera_warm_up=parsed_args.camera_warm_up,
-        led_on=parsed_args.led_on,
     )
 
 
@@ -239,18 +250,19 @@ def get_experiment_variants(args):
     variants = [_parse_variant(variant) for variant in args["variant"]]
 
     # add variants of exposure and iso lists if provided
-    if args["exposures"]:
-        isos = args["isos"] or [DEFAULT_ISO]
+    if args["exposures"] or args["isos"]:
         variants.extend(
-            _parse_variant("--exposure-time {exposure} -ISO {iso}".format(**locals()))
-            for exposure in args["exposures"]
-            for iso in isos
+            ExperimentVariant(
+                exposure_time=exposure,
+                iso=iso,
+                camera_warm_up=DEFAULT_WARM_UP_TIME,
+                additional_capture_params="",
+            )
+            for exposure in args["exposures"] or [DEFAULT_EXPOSURE_TIME]
+            for iso in args["isos"] or [DEFAULT_ISO]
         )
 
-    if not variants:
-        variants = [_parse_variant(DEFAULT_CAPTURE_PARAMS)]
-
-    return variants
+    return variants or [DEFAULT_VARIANT]
 
 
 def _get_mac_address():
