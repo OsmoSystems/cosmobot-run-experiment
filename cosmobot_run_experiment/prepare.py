@@ -201,7 +201,7 @@ def _get_variant_parser():
         required=False,
         type=int,
         default=DEFAULT_ISO,
-        help=("ISO for the image to be taken. " "Default: {}.".format(DEFAULT_ISO)),
+        help=("ISO for the image to be taken. Default: {}.".format(DEFAULT_ISO)),
     )
     variant_arg_parser.add_argument(
         "--camera-warm-up",

@@ -29,11 +29,11 @@ def _set_dio_pin(pin, value: bool):
 
 
 def control_led(led_on=True):
-    """ turn on/off Digital IO LED
+    """ turn on/off Digital IO LED on pin D5
 
     This function is intended to be used to turn an LED on pin D5 on and off.
 
-    It assumes that we are controlling the LED through a device which
+    Assumes that we are controlling the LED through a device which
     turns the LED *on* when the pin is *high* and *off* when the pin is *low*.
 
     Args:
