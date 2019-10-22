@@ -294,16 +294,14 @@ class TestGetExperimentDirectoryPath:
 
         mock_list_experiments.return_value = [
             "date3-Pi1234-bad_experiment",
-            "date2-{pi_experiment_name}".format(**locals()),
-            "date1-{pi_experiment_name}".format(**locals()),
+            f"date2-{pi_experiment_name}",
+            f"date1-{pi_experiment_name}",
         ]
 
         actual_path = module._get_experiment_directory_path(
             group_results, pi_experiment_name, start_date
         )
-        expected_path = os.path.join(
-            "base-output-path", "date2-{pi_experiment_name}".format(**locals())
-        )
+        expected_path = os.path.join(f"base-output-path", f"date2-{pi_experiment_name}")
         assert actual_path == expected_path
 
     def test_generates_dir_name_when_no_matching_directory_for_group_results(
@@ -319,8 +317,7 @@ class TestGetExperimentDirectoryPath:
         ]
 
         expected_path = os.path.join(
-            "base-output-path",
-            "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
+            "base-output-path", f"1988-09-01--00-00-00-{pi_experiment_name}"
         )
         actual_path = module._get_experiment_directory_path(
             group_results, pi_experiment_name, start_date
@@ -335,8 +332,7 @@ class TestGetExperimentDirectoryPath:
         start_date = datetime.datetime(year=1988, month=9, day=1)
 
         expected_path = os.path.join(
-            "base-output-path",
-            "1988-09-01--00-00-00-{pi_experiment_name}".format(**locals()),
+            "base-output-path", f"1988-09-01--00-00-00-{pi_experiment_name}"
         )
         actual_path = module._get_experiment_directory_path(
             group_results, pi_experiment_name, start_date

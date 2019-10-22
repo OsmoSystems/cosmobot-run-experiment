@@ -32,15 +32,15 @@ def capture(
     exposure_time_microseconds = int(exposure_time * 1e6)
     timeout_milliseconds = int(warm_up_time * 1e3)
     command = (
-        'raspistill --raw -o "{filename}"'
-        " {AWB_QUALITY_CAPTURE_PARAMS}"
-        " -ss {exposure_time_microseconds}"
-        " -ISO {iso}"
-        " --timeout {timeout_milliseconds}"
-        " {additional_capture_params}"
-    ).format(**locals(), **globals())
+        f'raspistill --raw -o "{filename}"'
+        f" {AWB_QUALITY_CAPTURE_PARAMS}"
+        f" -ss {exposure_time_microseconds}"
+        f" -ISO {iso}"
+        f" --timeout {timeout_milliseconds}"
+        f" {additional_capture_params}"
+    )
 
-    logging.info("Capturing image using raspistill: {command}".format(**locals()))
+    logging.info(f"Capturing image using raspistill: {command}")
     check_call(command, shell=True)
 
 
@@ -61,6 +61,6 @@ def simulate_capture_with_copy(
     test_image_path = pkg_resources.resource_filename(
         __name__, "v2_image_for_development.jpeg"
     )
-    command = 'cp "{test_image_path}" "{filename}"'.format(**locals())
-    logging.info("Simulate capture: {command}".format(**locals()))
+    command = f'cp "{test_image_path}" "{filename}"'
+    logging.info(f"Simulate capture: {command}")
     check_call(command, shell=True)

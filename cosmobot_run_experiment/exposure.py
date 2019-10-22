@@ -37,12 +37,12 @@ def _generate_statistics(
         "overexposed_percent": overexposed_pixel_count_by_channel.sum() / rgb_image.size,
         "underexposed_percent": underexposed_pixel_count_by_channel.sum() / rgb_image.size,
         **{
-            "overexposed_percent_{}".format(color):
+            f"overexposed_percent_{color}":
                 overexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
                 for color_index, color in enumerate(COLOR_CHANNELS)
         },
         **{
-            "underexposed_percent_{}".format(color):
+            f"underexposed_percent_{color}":
                 underexposed_pixel_count_by_channel[color_index] / per_channel_pixel_count
                 for color_index, color in enumerate(COLOR_CHANNELS)
         },

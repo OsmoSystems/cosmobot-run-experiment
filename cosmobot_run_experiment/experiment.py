@@ -73,7 +73,7 @@ def perform_experiment(configuration):
         logging.info("No experimental duration provided.")
         logging.info(
             "Estimated number of images that can be captured with free space: "
-            "{how_many_images_can_be_captured}".format(**locals())
+            f"{how_many_images_can_be_captured}"
         )
     # Start capturing immediately
     first_capture_time = datetime.now()
@@ -175,8 +175,7 @@ def end_experiment(experiment_configuration, experiment_ended_message, has_error
 def set_up_log_file_with_base_handler(experiment_directory, start_date):
     iso_ish_datetime = iso_datetime_for_filename(start_date)
     log_filepath = os.path.join(
-        experiment_directory,
-        "{iso_ish_datetime}_experiment.log".format(iso_ish_datetime=iso_ish_datetime),
+        experiment_directory, f"{iso_ish_datetime}_experiment.log"
     )
     log_file_handler = logging.FileHandler(log_filepath)
     formatter = logging.Formatter(logging_format)
@@ -209,10 +208,8 @@ def run_experiment(cli_args=None):
 
         if not hostname_is_correct(configuration.hostname):
             quit_message = (
-                '"{configuration.hostname}" is not a valid hostname.'
-                " Contact your local dev for instructions on setting a valid hostname.".format(
-                    **locals()
-                )
+                f'"{configuration.hostname}" is not a valid hostname.'
+                " Contact your local dev for instructions on setting a valid hostname."
             )
             logging.error(quit_message)
             sys.exit(1)
