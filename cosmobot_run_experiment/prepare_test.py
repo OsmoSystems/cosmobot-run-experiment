@@ -296,7 +296,7 @@ class TestGetExperimentDirectoryPath:
         actual_path = module._get_experiment_directory_path(
             group_results, pi_experiment_name, start_date
         )
-        expected_path = os.path.join(f"base-output-path", f"date2-{pi_experiment_name}")
+        expected_path = os.path.join("base-output-path", f"date2-{pi_experiment_name}")
         assert actual_path == expected_path
 
     def test_generates_dir_name_when_no_matching_directory_for_group_results(
