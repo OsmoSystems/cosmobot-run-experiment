@@ -23,27 +23,8 @@ jobs:
           command: |
             tox -r -e py36
 
-  build35:
-    docker:
-      - image: python:3.5
-
-    steps:
-      - checkout
-
-      - run:
-          name: install tox
-          command: |
-            pip install tox
-
-      - run:
-          name: tox -r to install and run tests and flake. Run py35 env only
-          command: |
-            tox -r -e py35
-
-
 workflows:
   version: 2
   build:
     jobs:
-      - build35
       - build36

@@ -28,9 +28,7 @@ def _process_param_for_filename(param):
     handled_types = (str, int, float)
     if not isinstance(param, handled_types):
         raise TypeError(
-            "I'm not sure I know how to handle this param of type {type}: {param}".format(
-                type=type(param), param=param
-            )
+            f"I'm not sure I know how to handle this param of type {type(param)}: {param}"
         )
     return str(param).replace("-", "").replace(" ", "_")
 
@@ -51,9 +49,7 @@ def get_image_filename(current_datetime, variant):
         )
         for key, value in variant._asdict().items()
     )
-    image_filename = "{iso_ish_datetime}_{variant_params_for_filename}_.jpeg".format(
-        **locals()
-    )
+    image_filename = f"{iso_ish_datetime}_{variant_params_for_filename}_.jpeg"
     return image_filename
 
 

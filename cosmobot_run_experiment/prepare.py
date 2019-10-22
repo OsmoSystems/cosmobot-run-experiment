@@ -117,8 +117,8 @@ def _parse_args(args):
         nargs="+",
         default=None,
         help='List of isos to iterate capture through ex. "--isos 100 200"\n'
-        "If not provided and --exposures is provided, ISO {DEFAULT_ISO} "
-        "will be used when iterating over exposures.".format(**globals()),
+        f"If not provided and --exposures is provided, ISO {DEFAULT_ISO} "
+        "will be used when iterating over exposures.",
     )
     arg_parser.add_argument(
         "--skip-temperature",
@@ -189,9 +189,7 @@ def _get_variant_parser():
         default=DEFAULT_EXPOSURE_TIME,
         help=(
             "Exposure time for the image to be taken, in seconds."
-            " Default: {}s. Behavior for exposure time >6s is undefined.".format(
-                DEFAULT_EXPOSURE_TIME
-            )
+            f" Default: {DEFAULT_EXPOSURE_TIME}s. Behavior for exposure time >6s is undefined."
         ),
     )
     variant_arg_parser.add_argument(
@@ -295,7 +293,7 @@ def _get_most_recent_experiment_directory_name(pi_experiment_name):
 
 def _generate_experiment_directory_name(start_date, pi_experiment_name):
     iso_ish_datetime = iso_datetime_for_filename(start_date)
-    return "{iso_ish_datetime}-{pi_experiment_name}".format(**locals())
+    return f"{iso_ish_datetime}-{pi_experiment_name}"
 
 
 def _get_experiment_directory_path(group_results, pi_experiment_name, start_date):
@@ -329,7 +327,7 @@ def get_experiment_configuration(cli_args):
     name = args["name"]
     group_results = args["group_results"]
 
-    pi_experiment_name = "Pi{mac_last_4}-{name}".format(**locals())
+    pi_experiment_name = f"Pi{mac_last_4}-{name}"
 
     experiment_directory_path = _get_experiment_directory_path(
         group_results, pi_experiment_name, start_date
@@ -385,7 +383,7 @@ def hostname_is_correct(hostname):
         Boolean: is hostname valid
     """
     mac_last_4 = _get_mac_last_4()
-    return hostname == "pi-cam-{mac_last_4}".format(**locals())
+    return hostname == f"pi-cam-{mac_last_4}"
 
 
 def _get_git_hash():

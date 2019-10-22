@@ -50,9 +50,7 @@ class TestCapture:
         # Call args looks like [call(command, shell=True)] where call is a tuple
         actual_call_command = mock_check_call.call_args[0][0]
 
-        padded_additional_capture_params = " {additional_capture_params}".format(
-            **locals()
-        )
+        padded_additional_capture_params = f" {additional_capture_params}"
         assert actual_call_command.endswith(padded_additional_capture_params)
 
     def test_blows_up_if_check_call_fails(self, mocker):

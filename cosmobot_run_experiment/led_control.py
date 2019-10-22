@@ -17,11 +17,7 @@ DIGITAL_LED_PIN = board.D5
 
 
 def _set_dio_pin(pin, value: bool):
-    logging.info(
-        "Setting DIO pin {pin} -> {pin_setpoint}".format(
-            pin=pin, pin_setpoint="high" if value else "low"
-        )
-    )
+    logging.info(f'Setting DIO pin {pin} -> {"high" if value else "low"}')
 
     dio_pin = digitalio.DigitalInOut(pin=pin)
     dio_pin.direction = digitalio.Direction.OUTPUT
@@ -60,7 +56,7 @@ def set_led_cli(cli_args=None):
         cli_args = sys.argv[1:]
 
     arg_parser = argparse.ArgumentParser(
-        description="Turn on or off LED on digital pin {}".format(DIGITAL_LED_PIN)
+        description=f"Turn on or off LED on digital pin {DIGITAL_LED_PIN}"
     )
 
     arg_parser.add_argument(
